@@ -1,0 +1,110 @@
+import type { ResumeProfile } from './resume.model';
+
+export const RESUME = {
+  name: 'Nawaphon Isarathanachaikul',
+  title: 'Full Stack Developer',
+  summary: [
+    'Use front-end libraries and frameworks to build user interfaces that meet user requirements.',
+    'Integrate application programming interfaces (APIs) to fetch data and present it clearly on screen.',
+    'Build and refine responsive user interfaces.',
+    'Build APIs that integrate with databases and return required results as JSON or SOAP.',
+    'Perform create, read, update, and delete (CRUD) operations to manage user data across industries.',
+    'Build pipelines that automate recurring development cycles.',
+    'Use containerization to reduce development time.',
+    'Use container orchestration systems to coordinate distributed applications.',
+  ],
+  details: {
+    location: 'Bangkok, Bangkok, Thailand',
+    phoneLabel: 'Available on request',
+    email: 'nawaphon2539@gmail.com',
+    nationality: 'Thai',
+    birthDate: '9 September 1996',
+  },
+  links: [
+    {
+      label: 'GitHub',
+      url: 'https://github.com/nawaphonOHM',
+    },
+    {
+      label: 'Personal website',
+      url: 'https://leader-board.ohm-mho.space/',
+    },
+  ],
+  skills: ['Spring Boot', 'RDBMS', 'Kafka', 'Redis', 'Angular', 'React'],
+  experience: [
+    {
+      role: 'Back End Developer',
+      company: 'Accord Innovations',
+      location: 'Bangkok',
+      period: 'Apr 2026 — Present',
+      highlights: [
+        'Work in a hybrid outsourcing role at InnovestX.',
+        'Complete wording-change tasks in each sprint.',
+        'Use Claude Code as an agent to complete routine coding tasks that follow technical designs from the lead.',
+        'Use Claude Code as an agent for tasks without a lead-provided technical design, including clarifying requirements with the project manager and designing REST APIs and DBMS tables with recommendations from the lead.',
+        'Fix bugs raised by QA using approaches including Elasticsearch and Kubernetes pod logs.',
+        'Deploy completed tasks to SIT and UAT environments.',
+        'Coordinate with DevOps on infrastructure needs, including API routing, API keys for new microservices, request-path permissions, HTTP-method allowlisting in the internal firewall, and public API gateway changes.',
+        'Write Bash smoke-test scripts with AI assistance.',
+        'Document technical API details for callers and QA engineers in Confluence.',
+        'Deliver CRUD features, process Kafka topic data to meet business requirements, use Caffeine and Redis caches, and send data to the notification system managed by InnovestX.',
+      ],
+      technologies: [
+        'Claude Code',
+        'REST APIs',
+        'DBMS',
+        'Elasticsearch',
+        'Kubernetes',
+        'Kafka',
+        'Caffeine',
+        'Redis',
+        'Bash',
+        'Confluence',
+      ],
+    },
+    {
+      role: 'Software Engineer',
+      company: 'Saitech Solution',
+      location: 'Bangkok',
+      period: 'May 2024 — Jun 2025',
+      highlights: [
+        'Worked as an outsourced onsite engineer at Aycap, a subsidiary of Bank of Ayudhya.',
+        "Built a Regulatory Data Transformation (RDT) feature that shows the bank's client credit card usage by categories defined by the Bank of Thailand (BOT).",
+        'Built an RDT feature that allows users to download data in Excel format.',
+        'Built integrations with other systems, including email and an encrypted system that notifies the Bank of Thailand of updates.',
+      ],
+      technologies: ['React', 'Go', 'Gin', 'Oracle'],
+    },
+    {
+      role: 'Software Engineer',
+      company: 'Nityo Infotech',
+      location: 'Bangkok',
+      period: 'Jan 2023 — Dec 2023',
+      highlights: [
+        'Worked as an outsourced onsite engineer at TISCO Bank.',
+        'Maintained the source code and updated it in response to requirement changes.',
+      ],
+      technologies: ['Node.js', 'MongoDB via internal API', 'Scala', 'Apache Spark', 'AWS'],
+    },
+    {
+      role: 'Software Engineer Backend',
+      company: 'LINE MAN Wongnai',
+      location: 'Bangkok',
+      period: 'May 2022 — Jul 2022',
+      highlights: [
+        'Maintained the restaurant system to reflect changing requirements and technical concerns.',
+      ],
+      technologies: ['Spring Boot 2.7.x', 'Go', 'Gin', 'gRPC', 'GraphQL', 'PostgreSQL', 'AWS'],
+    },
+    {
+      role: 'Full-Stack Software Developer',
+      company: 'WiseSoft',
+      location: 'Bangkok',
+      period: 'Jan 2020 — Apr 2022',
+      highlights: [
+        "Helped the team create a tax system that presents companies' paid-tax history according to Thailand's tax laws.",
+      ],
+      technologies: ['Angular 7.x', 'Spring Boot 2.7.x', 'Spring Batch', 'IBM Db2'],
+    },
+  ],
+} as const satisfies ResumeProfile;

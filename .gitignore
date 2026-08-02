@@ -2,6 +2,7 @@
 
 # Compiled output
 /dist
+/public/downloads/nawaphon-isarathanachaikul-resume.pdf
 /tmp
 /out-tsc
 /bazel-out

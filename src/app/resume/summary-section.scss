@@ -1,0 +1,159 @@
+:host {
+  display: block;
+}
+
+.section-heading {
+  display: grid;
+  gap: 1.5rem;
+  align-items: end;
+}
+
+.section-kicker {
+  margin: 0 0 0.65rem;
+  color: var(--resume-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+h2 {
+  max-width: 19ch;
+  margin: 0;
+  color: var(--resume-text);
+  font-size: clamp(2rem, 4.8vw, 3.45rem);
+  font-weight: 780;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.section-lead {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--resume-muted);
+  font-size: 1.03rem;
+  line-height: 1.75;
+}
+
+ol {
+  margin-bottom: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.summary-card {
+  --mat-card-outlined-container-color: color-mix(
+    in srgb,
+    var(--resume-surface) 94%,
+    var(--resume-brand-soft)
+  );
+  --mat-card-outlined-outline-color: var(--resume-border);
+  border-radius: 1.25rem;
+  color: var(--resume-text);
+  transition:
+    border-color 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.summary-card:hover {
+  border-color: color-mix(in srgb, var(--resume-accent) 45%, var(--resume-border));
+  box-shadow: 0 1rem 2.5rem rgb(12 45 76 / 8%);
+  transform: translateY(-0.2rem);
+}
+
+mat-card-content {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  padding: 1.5rem;
+}
+
+.summary-number {
+  display: grid;
+  width: 2.45rem;
+  height: 2.45rem;
+  place-items: center;
+  border-radius: 0.75rem;
+  background: var(--resume-brand-soft);
+  color: var(--resume-brand);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.summary-card p {
+  margin: 0;
+  color: var(--resume-text);
+  line-height: 1.7;
+}
+
+@media (min-width: 48rem) {
+  .section-heading {
+    grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.9fr);
+  }
+}
+
+@media (max-width: 30rem) {
+  mat-card-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  section {
+    padding: 7mm 0 5mm !important;
+  }
+
+  .section-heading {
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 8mm;
+  }
+
+  .section-kicker {
+    margin-bottom: 1.5mm;
+    font-size: 6.5pt;
+  }
+
+  h2 {
+    font-size: 18pt;
+    letter-spacing: -0.035em;
+  }
+
+  .section-lead {
+    font-size: 8pt;
+    line-height: 1.4;
+  }
+
+  ol {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 2.5mm !important;
+    margin-top: 4mm !important;
+  }
+
+  .summary-card {
+    border-radius: 2.5mm;
+    transform: none !important;
+    break-inside: avoid;
+  }
+
+  mat-card-content {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 2.5mm;
+    padding: 3mm;
+  }
+
+  .summary-number {
+    width: 7mm;
+    height: 7mm;
+    border-radius: 1.5mm;
+    font-size: 6pt;
+  }
+
+  .summary-card p {
+    font-size: 8pt;
+    line-height: 1.35;
+  }
+}

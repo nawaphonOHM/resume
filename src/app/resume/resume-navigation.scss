@@ -1,0 +1,77 @@
+:host {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: block;
+}
+
+.navigation-shell {
+  border-bottom: 1px solid color-mix(in srgb, var(--resume-border) 75%, transparent);
+  background: color-mix(in srgb, var(--resume-page) 88%, transparent);
+  box-shadow: 0 0.5rem 2rem rgb(7 17 31 / 5%);
+  backdrop-filter: blur(1rem);
+}
+
+.navigation-toolbar {
+  width: min(100%, 78rem);
+  min-height: 4.5rem;
+  margin-inline: auto;
+  gap: 1.5rem;
+  padding-inline: clamp(1rem, 4vw, 2rem);
+  background: transparent;
+  color: var(--resume-text);
+}
+
+.brand-mark {
+  display: inline-grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--resume-brand) 42%, transparent);
+  border-radius: 0.875rem;
+  background: var(--resume-sidebar);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  box-shadow: 0 0.5rem 1.25rem rgb(10 40 74 / 20%);
+}
+
+.navigation-link {
+  --mat-button-text-label-text-color: var(--resume-muted);
+  --mat-button-text-hover-state-layer-color: var(--resume-brand);
+  letter-spacing: 0.01em;
+}
+
+.navigation-link-active {
+  --mat-button-text-label-text-color: var(--resume-brand);
+  background: var(--resume-brand-soft);
+  font-weight: 700;
+}
+
+.desktop-control {
+  display: none;
+}
+
+.mobile-control {
+  display: inline-flex;
+}
+
+@media (min-width: 48rem) {
+  .desktop-control {
+    display: inline-flex;
+  }
+
+  .mobile-control {
+    display: none;
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .navigation-toolbar {
+    min-height: 4rem;
+    gap: 0.5rem;
+  }
+}
