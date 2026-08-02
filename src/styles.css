@@ -1,1 +1,313 @@
-/* You can add global styles to this file, and also import other style files */
+@import 'material-icons/iconfont/material-icons.css';
+@import 'tailwindcss';
+
+@theme inline {
+  --color-page: var(--resume-page);
+  --color-surface: var(--resume-surface);
+  --color-surface-raised: var(--resume-surface-raised);
+  --color-ink: var(--resume-text);
+  --color-muted: var(--resume-muted);
+  --color-brand: var(--resume-brand);
+  --color-brand-strong: var(--resume-brand-strong);
+  --color-brand-soft: var(--resume-brand-soft);
+  --color-accent: var(--resume-accent);
+  --color-outline: var(--resume-border);
+  --color-sidebar: var(--resume-sidebar);
+  --color-sidebar-ink: var(--resume-sidebar-text);
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --breakpoint-xs: 30rem;
+  --container-resume: 75rem;
+  --radius-panel: 1.5rem;
+  --shadow-soft: var(--resume-shadow);
+}
+
+:root,
+.resume-theme-light {
+  color-scheme: light;
+  --resume-page: #f4f7fb;
+  --resume-surface: #ffffff;
+  --resume-surface-raised: #e8eef6;
+  --resume-text: #172033;
+  --resume-muted: #526078;
+  --resume-brand: #123b67;
+  --resume-brand-strong: #0a284a;
+  --resume-brand-soft: #dbeafd;
+  --resume-accent: #1769aa;
+  --resume-border: #c7d3e1;
+  --resume-sidebar: #0b2847;
+  --resume-sidebar-text: #f5f9ff;
+  --resume-focus: #005fcc;
+  --resume-shadow: 0 1.25rem 3.75rem rgb(13 39 70 / 12%);
+}
+
+.resume-theme-dark {
+  color-scheme: dark;
+  --resume-page: #07111f;
+  --resume-surface: #0d1b2d;
+  --resume-surface-raised: #14253a;
+  --resume-text: #eef5ff;
+  --resume-muted: #b1bed0;
+  --resume-brand: #9bc7ff;
+  --resume-brand-strong: #d7e9ff;
+  --resume-brand-soft: #17355a;
+  --resume-accent: #7cb8ff;
+  --resume-border: #30455f;
+  --resume-sidebar: #06182b;
+  --resume-sidebar-text: #f5f9ff;
+  --resume-focus: #8dc5ff;
+  --resume-shadow: 0 1.25rem 3.75rem rgb(0 0 0 / 34%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.resume-theme-light) {
+    color-scheme: dark;
+    --resume-page: #07111f;
+    --resume-surface: #0d1b2d;
+    --resume-surface-raised: #14253a;
+    --resume-text: #eef5ff;
+    --resume-muted: #b1bed0;
+    --resume-brand: #9bc7ff;
+    --resume-brand-strong: #d7e9ff;
+    --resume-brand-soft: #17355a;
+    --resume-accent: #7cb8ff;
+    --resume-border: #30455f;
+    --resume-sidebar: #06182b;
+    --resume-sidebar-text: #f5f9ff;
+    --resume-focus: #8dc5ff;
+    --resume-shadow: 0 1.25rem 3.75rem rgb(0 0 0 / 34%);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 20rem;
+  min-height: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
+  background: var(--resume-page);
+}
+
+body {
+  min-width: 20rem;
+  min-height: 100vh;
+  margin: 0;
+  background: var(--resume-page);
+  color: var(--resume-text);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 0.1875rem solid var(--resume-focus);
+  outline-offset: 0.1875rem;
+}
+
+::selection {
+  background: var(--resume-brand-soft);
+  color: var(--resume-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 11mm 12mm 13mm;
+}
+
+@media print {
+  :root,
+  html.resume-theme-light,
+  html.resume-theme-dark {
+    color-scheme: light !important;
+    --resume-page: #ffffff !important;
+    --resume-surface: #ffffff !important;
+    --resume-surface-raised: #eef3f8 !important;
+    --resume-text: #172033 !important;
+    --resume-muted: #44516a !important;
+    --resume-brand: #123b67 !important;
+    --resume-brand-strong: #0a284a !important;
+    --resume-brand-soft: #dbeafd !important;
+    --resume-accent: #1769aa !important;
+    --resume-border: #b9c7d7 !important;
+    --resume-sidebar: #0b2847 !important;
+    --resume-sidebar-text: #f5f9ff !important;
+    --resume-focus: #005fcc !important;
+    --resume-shadow: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    box-shadow: none !important;
+    transition: none !important;
+  }
+
+  html,
+  body {
+    min-width: 0;
+    min-height: 0;
+    background: #ffffff !important;
+  }
+
+  body {
+    color: #172033 !important;
+    font-size: 9pt;
+    line-height: 1.4;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  a[href] {
+    text-decoration: none;
+  }
+
+  app-experience-timeline section {
+    padding: 0 !important;
+    break-before: page;
+  }
+
+  app-experience-timeline .section-heading {
+    grid-template-columns: 1.1fr 0.9fr !important;
+    gap: 8mm !important;
+    margin-bottom: 5mm !important;
+  }
+
+  app-experience-timeline .section-kicker {
+    margin-bottom: 1.5mm !important;
+    font-size: 6.5pt !important;
+  }
+
+  app-experience-timeline h2 {
+    font-size: 18pt !important;
+    letter-spacing: -0.035em !important;
+  }
+
+  app-experience-timeline .section-lead {
+    font-size: 8pt !important;
+    line-height: 1.4 !important;
+  }
+
+  app-experience-timeline .timeline {
+    margin-top: 0 !important;
+  }
+
+  app-experience-timeline .timeline::before {
+    top: 4mm !important;
+    bottom: 4mm !important;
+    left: 4mm !important;
+    width: 0.35mm !important;
+  }
+
+  app-experience-timeline .timeline-item {
+    grid-template-columns: 8mm minmax(0, 1fr) !important;
+    gap: 3mm !important;
+    break-inside: avoid;
+  }
+
+  app-experience-timeline .timeline-item:first-child {
+    break-inside: auto;
+  }
+
+  app-experience-timeline .timeline-item + .timeline-item {
+    margin-top: 4mm !important;
+  }
+
+  app-experience-timeline .timeline-marker {
+    width: 8mm !important;
+    height: 8mm !important;
+    border-width: 0.8mm !important;
+    font-size: 6pt !important;
+  }
+
+  app-experience-timeline .experience-card {
+    border-radius: 2.5mm !important;
+  }
+
+  app-experience-timeline .experience-header {
+    flex-direction: row !important;
+    gap: 4mm !important;
+    padding: 3.5mm 4mm !important;
+    break-after: avoid;
+  }
+
+  app-experience-timeline .company {
+    margin-bottom: 0.8mm !important;
+    font-size: 6.5pt !important;
+  }
+
+  app-experience-timeline h3 {
+    font-size: 12pt !important;
+  }
+
+  app-experience-timeline .location {
+    margin-top: 1mm !important;
+    font-size: 7pt !important;
+  }
+
+  app-experience-timeline .location mat-icon {
+    display: none !important;
+  }
+
+  app-experience-timeline .period {
+    padding: 1.2mm 2mm !important;
+    font-size: 6.5pt !important;
+  }
+
+  app-experience-timeline mat-card-content {
+    padding: 3.5mm 4mm !important;
+  }
+
+  app-experience-timeline .highlights {
+    gap: 1.2mm !important;
+    margin-bottom: 3mm !important;
+  }
+
+  app-experience-timeline .highlights li {
+    padding-left: 3mm !important;
+    color: #44516a !important;
+    font-size: 7.5pt !important;
+    line-height: 1.38 !important;
+    break-inside: avoid;
+  }
+
+  app-experience-timeline .highlights li::before {
+    top: 0.55em !important;
+    width: 1.1mm !important;
+    height: 1.1mm !important;
+  }
+
+  app-experience-timeline mat-chip {
+    min-height: 6mm !important;
+    font-size: 6.5pt !important;
+  }
+}

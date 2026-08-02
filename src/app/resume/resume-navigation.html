@@ -1,0 +1,98 @@
+<header class="navigation-shell print-hidden">
+  <mat-toolbar class="navigation-toolbar">
+    <a
+      class="brand-mark"
+      href="#about"
+      aria-label="Go to About section"
+      (click)="sectionSelected.emit('about')"
+    >
+      <span aria-hidden="true">NI</span>
+    </a>
+
+    <nav class="hidden items-center gap-1 md:flex" aria-label="Portfolio sections">
+      @for (section of sections; track section.id) {
+        <a
+          mat-button
+          class="navigation-link"
+          [class.navigation-link-active]="activeSection() === section.id"
+          [attr.aria-current]="activeSection() === section.id ? 'location' : null"
+          [href]="'#' + section.id"
+          (click)="sectionSelected.emit(section.id)"
+        >
+          {{ section.label }}
+        </a>
+      }
+    </nav>
+
+    <span class="flex-1"></span>
+
+    <div class="flex items-center gap-1" role="group" aria-label="Résumé controls">
+      <button
+        mat-icon-button
+        type="button"
+        [attr.aria-label]="themeControlLabel()"
+        [matTooltip]="themeControlLabel()"
+        (click)="themeToggled.emit()"
+      >
+        <mat-icon aria-hidden="true">{{ themeIcon() }}</mat-icon>
+      </button>
+
+      <button
+        mat-icon-button
+        class="desktop-control"
+        type="button"
+        aria-label="Print résumé"
+        matTooltip="Print résumé"
+        (click)="printRequested.emit()"
+      >
+        <mat-icon aria-hidden="true">print</mat-icon>
+      </button>
+
+      <a
+        mat-icon-button
+        class="desktop-control"
+        [href]="downloadUrl"
+        download="nawaphon-isarathanachaikul-resume.pdf"
+        aria-label="Download résumé as PDF"
+        matTooltip="Download résumé as PDF"
+      >
+        <mat-icon aria-hidden="true">download</mat-icon>
+      </a>
+
+      <button
+        mat-icon-button
+        class="mobile-control"
+        type="button"
+        aria-label="Open section menu"
+        [matMenuTriggerFor]="mobileMenu"
+      >
+        <mat-icon aria-hidden="true">menu</mat-icon>
+      </button>
+    </div>
+  </mat-toolbar>
+</header>
+
+<mat-menu #mobileMenu="matMenu" xPosition="before">
+  @for (section of sections; track section.id) {
+    <a
+      mat-menu-item
+      [href]="'#' + section.id"
+      [attr.aria-current]="activeSection() === section.id ? 'location' : null"
+      (click)="sectionSelected.emit(section.id)"
+    >
+      <mat-icon aria-hidden="true">chevron_right</mat-icon>
+      <span>{{ section.label }}</span>
+    </a>
+  }
+
+  <mat-divider></mat-divider>
+
+  <button mat-menu-item type="button" (click)="printRequested.emit()">
+    <mat-icon aria-hidden="true">print</mat-icon>
+    <span>Print résumé</span>
+  </button>
+  <a mat-menu-item [href]="downloadUrl" download="nawaphon-isarathanachaikul-resume.pdf">
+    <mat-icon aria-hidden="true">download</mat-icon>
+    <span>Download PDF</span>
+  </a>
+</mat-menu>

@@ -1,0 +1,97 @@
+<aside aria-label="Skills and public profile">
+  <section
+    id="skills"
+    class="scroll-mt-24 py-16 sm:py-20"
+    data-resume-section
+    aria-labelledby="skills-title"
+  >
+    <mat-card class="skills-panel">
+      <mat-card-content>
+        <div>
+          <p class="section-kicker section-kicker-light">Technical toolkit</p>
+          <h2 id="skills-title">Core skills</h2>
+          <p class="skills-lead">Six technologies highlighted in the original résumé.</p>
+        </div>
+
+        <mat-chip-set aria-label="Core technical skills">
+          @for (skill of profile().skills; track skill) {
+            <mat-chip>{{ skill }}</mat-chip>
+          }
+        </mat-chip-set>
+      </mat-card-content>
+    </mat-card>
+  </section>
+
+  <section
+    id="profile"
+    class="scroll-mt-24 py-16 sm:py-20"
+    data-resume-section
+    aria-labelledby="profile-title"
+  >
+    <div class="section-heading">
+      <div>
+        <p class="section-kicker">Public details</p>
+        <h2 id="profile-title">Profile and links</h2>
+      </div>
+      <p class="section-lead">
+        Public contact and personal details from the résumé, with the phone number kept private.
+      </p>
+    </div>
+
+    <div class="mt-10 grid gap-5 lg:grid-cols-2">
+      <mat-card appearance="outlined" class="profile-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar aria-hidden="true">badge</mat-icon>
+          <mat-card-title>Profile details</mat-card-title>
+          <mat-card-subtitle>Public résumé information</mat-card-subtitle>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content>
+          <dl>
+            <div>
+              <dt>Location</dt>
+              <dd>{{ profile().details.location }}</dd>
+            </div>
+            <div>
+              <dt>Phone</dt>
+              <dd>{{ profile().details.phoneLabel }}</dd>
+            </div>
+            <div>
+              <dt>Email</dt>
+              <dd>
+                <a [href]="emailHref()">{{ profile().details.email }}</a>
+              </dd>
+            </div>
+            <div>
+              <dt>Nationality</dt>
+              <dd>{{ profile().details.nationality }}</dd>
+            </div>
+            <div>
+              <dt>Date of birth</dt>
+              <dd>{{ profile().details.birthDate }}</dd>
+            </div>
+          </dl>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card appearance="outlined" class="profile-card links-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar aria-hidden="true">link</mat-icon>
+          <mat-card-title>Online</mat-card-title>
+          <mat-card-subtitle>External profiles and projects</mat-card-subtitle>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content>
+          <div class="links-list">
+            @for (link of profile().links; track link.url) {
+              <a mat-stroked-button [href]="link.url" target="_blank" rel="noopener noreferrer">
+                <span>{{ link.label }}</span>
+                <mat-icon aria-hidden="true">open_in_new</mat-icon>
+              </a>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </section>
+</aside>
