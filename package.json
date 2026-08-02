@@ -39,7 +39,7 @@
     "pdfmake": "^0.3.11",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.3.3",
-    "typescript": "~6.0.2",
+    "typescript": "~7.0.2",
     "vitest": "^4.0.8"
   },
   "engines": {
