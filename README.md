@@ -1,59 +1,80 @@
-# Resume
+# Nawaphon Isarathanachaikul — Résumé Portfolio
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.1.2.
+A public Angular single-page résumé built with Angular Material and Tailwind CSS. It includes responsive section navigation, remembered light and dark themes, browser-print styling, and a reproducible phone-redacted PDF download.
 
-## Development server
+## Requirements
 
-To start a local development server, run:
+- Node.js 22
+- npm 10
 
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Install and run locally
 
 ```bash
-ng generate component component-name
+npm ci
+npm start
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Open `http://localhost:4200/`. The development server reloads when source files change.
+
+## Edit résumé content
+
+All publishable résumé facts live in `src/app/resume/resume.data.ts` and conform to the contracts in `src/app/resume/resume.model.ts`. Update that data source rather than duplicating content in component templates.
+
+The phone value must remain `Available on request`. Do not add a phone number, a `tel:` link, or the private source PDF anywhere under the project.
+
+## Formatting and tests
 
 ```bash
-ng generate --help
+npm run format
+npm run format:check
+npm test -- --watch=false
 ```
 
-## Building
+Prettier formats TypeScript, Angular templates, styles, JSON, and Markdown.
 
-To build the project run:
+## Regenerate the redacted PDF
 
 ```bash
-ng build
+npm run pdf
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+This command creates a production browser build and then runs `tools/generate-resume-pdf.mjs`. Puppeteer renders the same Angular print view used by the website and writes:
 
-## Running unit tests
+```text
+public/downloads/nawaphon-isarathanachaikul-resume.pdf
+```
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+The generator validates required content, rejects phone-like data and `tel:` links, and fails if the PDF is unexpectedly small. To run only the generator against an existing browser build, use `npm run pdf:generate`.
+
+## Production build
 
 ```bash
-ng test
+npm run build
 ```
 
-## Running end-to-end tests
+The public build performs these operations in order:
 
-For end-to-end (e2e) testing, run:
+1. Compile the Angular application.
+2. Generate the redacted PDF from that compiled page.
+3. Compile again so the generated PDF is included in the final static artifact.
 
-```bash
-ng e2e
+Upload the contents of this directory to a web root:
+
+```text
+dist/resume/browser/
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+The output is host-neutral and requires no backend, runtime API, route rewrites, or server-side rendering.
 
-## Additional Resources
+## Useful scripts
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+| Command                     | Purpose                                                           |
+| --------------------------- | ----------------------------------------------------------------- |
+| `npm start`                 | Run the Angular development server.                               |
+| `npm run watch`             | Continuously create development builds.                           |
+| `npm run build:app`         | Create one Angular production build without regenerating the PDF. |
+| `npm run pdf`               | Build the page and regenerate the redacted PDF.                   |
+| `npm run build`             | Produce the complete static handoff, including the latest PDF.    |
+| `npm test -- --watch=false` | Run the Vitest suite once.                                        |
+| `npm run format`            | Format the project with Prettier.                                 |
+| `npm run format:check`      | Verify formatting without changing files.                         |
