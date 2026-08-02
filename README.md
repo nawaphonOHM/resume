@@ -4,7 +4,7 @@ A public Angular single-page résumé built with Angular Material and Tailwind C
 
 ## Requirements
 
-- Node.js 22
+- Node.js 22.22.3 or newer
 - npm 10
 
 ## Install and run locally
@@ -27,10 +27,10 @@ The phone value must remain `Available on request`. Do not add a phone number, a
 ```bash
 npm run format
 npm run format:check
-npm test -- --watch=false
+npm test
 ```
 
-Prettier formats TypeScript, Angular templates, styles, JSON, and Markdown.
+Prettier formats TypeScript, Angular templates, styles, JSON, and Markdown. The test command runs both the Angular suite and the PDF generator regression suite.
 
 ## Regenerate the redacted PDF
 
@@ -38,13 +38,15 @@ Prettier formats TypeScript, Angular templates, styles, JSON, and Markdown.
 npm run pdf
 ```
 
-This command creates a production browser build and then runs `tools/generate-resume-pdf.mjs`. Puppeteer renders the same Angular print view used by the website and writes:
+This command runs `tools/generate-resume-pdf.mjs`, which imports the same typed résumé data used by Angular and writes:
 
 ```text
 public/downloads/nawaphon-isarathanachaikul-resume.pdf
 ```
 
-The generator validates required content, rejects phone-like data and `tel:` links, and fails if the PDF is unexpectedly small. To run only the generator against an existing browser build, use `npm run pdf:generate`.
+The generator uses the pure-JavaScript `pdfmake` library and standard PDF fonts. It does not launch a browser or require browser-related host libraries, so the build works on managed platforms such as DigitalOcean App Platform.
+
+Before writing the artifact, the generator verifies content parity with `resume.data.ts`, rejects phone-like data, `tel:` links, and non-HTTPS external links, and validates the PDF header, minimum size, and link annotations. `npm run pdf:generate` is an equivalent explicit command.
 
 ## Production build
 
@@ -54,9 +56,8 @@ npm run build
 
 The public build performs these operations in order:
 
-1. Compile the Angular application.
-2. Generate the redacted PDF from that compiled page.
-3. Compile again so the generated PDF is included in the final static artifact.
+1. Generate the redacted PDF directly from the typed résumé data.
+2. Compile the Angular application once so the PDF is included in the final static artifact.
 
 Upload the contents of this directory to a web root:
 
@@ -68,13 +69,15 @@ The output is host-neutral and requires no backend, runtime API, route rewrites,
 
 ## Useful scripts
 
-| Command                     | Purpose                                                           |
-| --------------------------- | ----------------------------------------------------------------- |
-| `npm start`                 | Run the Angular development server.                               |
-| `npm run watch`             | Continuously create development builds.                           |
-| `npm run build:app`         | Create one Angular production build without regenerating the PDF. |
-| `npm run pdf`               | Build the page and regenerate the redacted PDF.                   |
-| `npm run build`             | Produce the complete static handoff, including the latest PDF.    |
-| `npm test -- --watch=false` | Run the Vitest suite once.                                        |
-| `npm run format`            | Format the project with Prettier.                                 |
-| `npm run format:check`      | Verify formatting without changing files.                         |
+| Command                | Purpose                                                              |
+| ---------------------- | -------------------------------------------------------------------- |
+| `npm start`            | Run the Angular development server.                                  |
+| `npm run watch`        | Continuously create development builds.                              |
+| `npm run build:app`    | Create one Angular production build without regenerating the PDF.    |
+| `npm run pdf`          | Regenerate the redacted PDF without building or launching a browser. |
+| `npm run build`        | Produce the complete static handoff, including the latest PDF.       |
+| `npm test`             | Run the Angular and PDF generator test suites once.                  |
+| `npm run test:app`     | Run the Angular test suite.                                          |
+| `npm run test:pdf`     | Run the PDF portability, content, and privacy tests.                 |
+| `npm run format`       | Format the project with Prettier.                                    |
+| `npm run format:check` | Verify formatting without changing files.                            |

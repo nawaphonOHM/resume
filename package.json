@@ -1,15 +1,18 @@
 {
   "name": "resume",
-  "version": "0.0.2",
+  "version": "0.0.3",
+  "type": "module",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "npm run build:app && npm run pdf:generate && npm run build:app",
+    "build": "npm run pdf:generate && npm run build:app",
     "build:app": "ng build",
-    "pdf": "npm run build:app && npm run pdf:generate",
+    "pdf": "npm run pdf:generate",
     "pdf:generate": "node tools/generate-resume-pdf.mjs",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
+    "test": "npm run test:app -- --watch=false && npm run test:pdf",
+    "test:app": "ng test",
+    "test:pdf": "node --test tools/*.spec.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -33,8 +36,8 @@
     "@angular/compiler-cli": "^22.1.0",
     "@tailwindcss/postcss": "^4.3.3",
     "jsdom": "^28.0.0",
+    "pdfmake": "^0.3.11",
     "prettier": "^3.8.1",
-    "puppeteer": "^25.4.0",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
     "vitest": "^4.0.8"
