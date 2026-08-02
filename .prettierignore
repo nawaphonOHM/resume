@@ -1,0 +1,6 @@
+/.angular/
+/.junie/
+/coverage/
+/dist/
+/node_modules/
+/public/downloads/*.pdf

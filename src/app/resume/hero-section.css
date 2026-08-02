@@ -1,0 +1,234 @@
+:host {
+  display: block;
+}
+
+.hero-section {
+  position: relative;
+  display: grid;
+  min-height: min(40rem, calc(100vh - 7rem));
+  align-items: center;
+  gap: clamp(2rem, 6vw, 5rem);
+  overflow: hidden;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5.5rem);
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: clamp(1.5rem, 4vw, 2.5rem);
+  background:
+    radial-gradient(circle at 90% 10%, rgb(91 170 255 / 24%), transparent 34%),
+    linear-gradient(135deg, var(--resume-sidebar) 0%, #123f6b 58%, #0c3155 100%);
+  color: #f6f9ff;
+  box-shadow: var(--resume-shadow);
+}
+
+.hero-section::after {
+  position: absolute;
+  inset: auto -10% -42% 35%;
+  height: 70%;
+  border-radius: 50%;
+  background: rgb(92 174 255 / 10%);
+  content: '';
+  filter: blur(0.125rem);
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  max-width: 46rem;
+}
+
+.hero-kicker {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0 0 1.5rem;
+  color: #c9e2ff;
+  font-size: clamp(0.78rem, 1.6vw, 0.92rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.status-dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  border: 0.125rem solid rgb(255 255 255 / 45%);
+  border-radius: 50%;
+  background: #78d9b5;
+  box-shadow: 0 0 0 0.35rem rgb(120 217 181 / 14%);
+}
+
+h1 {
+  max-width: 100%;
+  margin: 0;
+  font-size: clamp(1.9rem, 9.5vw, 4.75rem);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  line-height: 0.94;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.hero-role {
+  margin: 1.4rem 0 0;
+  color: #a9d0ff;
+  font-size: clamp(1.2rem, 2.6vw, 1.7rem);
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+.hero-introduction {
+  max-width: 42rem;
+  margin: 1.25rem 0 2rem;
+  color: #dbe9f8;
+  font-size: clamp(1rem, 1.8vw, 1.13rem);
+  line-height: 1.75;
+}
+
+.hero-primary-action {
+  --mat-button-filled-container-color: #ffffff;
+  --mat-button-filled-label-text-color: #0b3158;
+}
+
+.hero-secondary-action {
+  --mat-button-outlined-label-text-color: #ffffff;
+  --mat-button-outlined-outline-color: rgb(255 255 255 / 48%);
+}
+
+.hero-visual {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(22vw, 15rem);
+  min-width: 11rem;
+  aspect-ratio: 1;
+  place-items: center;
+  justify-self: center;
+}
+
+.hero-orbit,
+.hero-monogram {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.hero-orbit {
+  border: 1px solid rgb(180 218 255 / 28%);
+}
+
+.hero-orbit-outer {
+  inset: 0;
+}
+
+.hero-orbit-inner {
+  inset: 13%;
+  border-style: dashed;
+}
+
+.hero-monogram {
+  display: grid;
+  width: 52%;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 30%);
+  background: rgb(255 255 255 / 11%);
+  font-size: clamp(2rem, 5vw, 4.2rem);
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  box-shadow: inset 0 0 2rem rgb(255 255 255 / 8%);
+  backdrop-filter: blur(0.5rem);
+}
+
+.hero-code {
+  position: absolute;
+  color: #a9d0ff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.hero-code-left {
+  top: 18%;
+  left: -3%;
+}
+
+.hero-code-right {
+  right: -2%;
+  bottom: 20%;
+}
+
+@media (min-width: 62rem) {
+  .hero-section {
+    grid-template-columns: minmax(0, 1fr) minmax(11rem, 15rem);
+  }
+}
+
+@media (max-width: 61.99rem) {
+  .hero-section {
+    min-height: auto;
+  }
+
+  .hero-visual {
+    display: none;
+  }
+}
+
+@media (max-width: 30rem) {
+  .hero-section {
+    padding-block: 3.25rem;
+  }
+}
+
+@media print {
+  .hero-section {
+    display: block;
+    min-height: 0;
+    padding: 8mm 9mm;
+    border-radius: 3mm;
+    background: #0b2847 !important;
+    color: #ffffff !important;
+    break-inside: avoid;
+  }
+
+  .hero-section::after,
+  .hero-visual,
+  .hero-copy > .flex {
+    display: none !important;
+  }
+
+  .hero-copy {
+    max-width: none;
+  }
+
+  .hero-kicker {
+    margin-bottom: 3mm;
+    color: #c9e2ff !important;
+    font-size: 7.5pt;
+  }
+
+  .status-dot {
+    width: 1.5mm;
+    height: 1.5mm;
+    border-width: 0.3mm;
+  }
+
+  h1 {
+    font-size: 26pt;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    overflow-wrap: normal;
+  }
+
+  .hero-role {
+    margin-top: 3mm;
+    color: #a9d0ff !important;
+    font-size: 12pt;
+  }
+
+  .hero-introduction {
+    max-width: none;
+    margin: 3mm 0 0;
+    color: #dbe9f8 !important;
+    font-size: 8.5pt;
+    line-height: 1.45;
+  }
+}

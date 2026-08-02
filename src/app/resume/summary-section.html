@@ -1,0 +1,32 @@
+<section
+  id="about"
+  class="scroll-mt-24 py-16 sm:py-20"
+  data-resume-section
+  aria-labelledby="summary-title"
+>
+  <div class="section-heading">
+    <div>
+      <p class="section-kicker">Professional summary</p>
+      <h2 id="summary-title">From interface to infrastructure</h2>
+    </div>
+    <p class="section-lead">
+      Practical experience across front-end delivery, APIs, data operations, automation, and
+      containerized systems.
+    </p>
+  </div>
+
+  <ol class="mt-10 grid gap-4 md:grid-cols-2">
+    @for (item of summary(); track item; let index = $index) {
+      <li>
+        <mat-card appearance="outlined" class="summary-card h-full">
+          <mat-card-content>
+            <span class="summary-number" aria-hidden="true">
+              {{ (index + 1).toString().padStart(2, '0') }}
+            </span>
+            <p>{{ item }}</p>
+          </mat-card-content>
+        </mat-card>
+      </li>
+    }
+  </ol>
+</section>

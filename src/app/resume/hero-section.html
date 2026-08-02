@@ -1,0 +1,34 @@
+<section class="hero-section" aria-labelledby="hero-title">
+  <div class="hero-copy">
+    <p class="hero-kicker">
+      <span class="status-dot" aria-hidden="true"></span>
+      Full Stack Developer · {{ profile().details.location }}
+    </p>
+
+    <h1 id="hero-title">{{ profile().name }}</h1>
+    <p class="hero-role">{{ profile().title }}</p>
+    <p class="hero-introduction">
+      Building responsive user interfaces, APIs, data integrations, automated pipelines, and
+      containerized applications across the full stack.
+    </p>
+
+    <div class="flex flex-wrap gap-3">
+      <a mat-flat-button class="hero-primary-action" [href]="emailHref()">
+        <mat-icon aria-hidden="true">mail</mat-icon>
+        Get in touch
+      </a>
+      <a mat-stroked-button class="hero-secondary-action" href="#experience">
+        View experience
+        <mat-icon aria-hidden="true">arrow_downward</mat-icon>
+      </a>
+    </div>
+  </div>
+
+  <div class="hero-visual" aria-hidden="true">
+    <div class="hero-orbit hero-orbit-outer"></div>
+    <div class="hero-orbit hero-orbit-inner"></div>
+    <div class="hero-monogram">NI</div>
+    <span class="hero-code hero-code-left">&lt;/&gt;</span>
+    <span class="hero-code hero-code-right">{{ '{ }' }}</span>
+  </div>
+</section>
