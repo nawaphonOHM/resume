@@ -1,6 +1,6 @@
 {
   "name": "resume",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -40,6 +40,6 @@
     "vitest": "^4.0.8"
   },
   "engines": {
-    "node": "^22.22.3"
+    "node": ">=22.22.3"
   }
 }
