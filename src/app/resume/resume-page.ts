@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { AfterViewInit, Component, OnDestroy, inject, signal } from '@angular/core';
+import { Component, DestroyRef, afterNextRender, inject, signal } from '@angular/core';
 
 import { ThemeService } from '../core/theme.service';
 import { ExperienceTimeline } from './experience-timeline';
@@ -15,16 +15,35 @@ import { SummarySection } from './summary-section';
   templateUrl: './resume-page.html',
   styleUrl: './resume-page.scss',
 })
-export class ResumePage implements AfterViewInit, OnDestroy {
+export class ResumePage {
   private readonly document = inject(DOCUMENT);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly themeService = inject(ThemeService);
-  private sectionObserver: IntersectionObserver | undefined;
 
   protected readonly resume = RESUME;
   protected readonly activeSection = signal<ResumeSectionId>('about');
   protected readonly theme = this.themeService.theme;
 
-  ngAfterViewInit(): void {
+  constructor() {
+    afterNextRender(() => {
+      this.restoreInitialSection();
+      this.observeSections();
+    });
+  }
+
+  protected selectSection(section: ResumeSectionId): void {
+    this.activeSection.set(section);
+  }
+
+  protected toggleTheme(): void {
+    this.themeService.toggle();
+  }
+
+  protected printResume(): void {
+    this.document.defaultView?.print();
+  }
+
+  private restoreInitialSection(): void {
     const view = this.document.defaultView;
     const initialSection = view?.location.hash.slice(1);
 
@@ -39,6 +58,10 @@ export class ResumePage implements AfterViewInit, OnDestroy {
       });
       root.style.scrollBehavior = previousScrollBehavior;
     }
+  }
+
+  private observeSections(): void {
+    const view = this.document.defaultView;
 
     const Observer = view?.IntersectionObserver;
 
@@ -46,7 +69,7 @@ export class ResumePage implements AfterViewInit, OnDestroy {
       return;
     }
 
-    this.sectionObserver = new Observer(
+    const sectionObserver = new Observer(
       (entries) => {
         const closestVisibleSection = entries
           .filter((entry) => entry.isIntersecting)
@@ -65,30 +88,15 @@ export class ResumePage implements AfterViewInit, OnDestroy {
         threshold: [0, 0.25, 0.5, 0.75],
       },
     );
+    this.destroyRef.onDestroy(() => sectionObserver.disconnect());
 
     for (const section of RESUME_SECTIONS) {
       const element = this.document.getElementById(section.id);
 
       if (element) {
-        this.sectionObserver.observe(element);
+        sectionObserver.observe(element);
       }
     }
-  }
-
-  ngOnDestroy(): void {
-    this.sectionObserver?.disconnect();
-  }
-
-  protected selectSection(section: ResumeSectionId): void {
-    this.activeSection.set(section);
-  }
-
-  protected toggleTheme(): void {
-    this.themeService.toggle();
-  }
-
-  protected printResume(): void {
-    this.document.defaultView?.print();
   }
 
   private isSectionId(value: string | undefined): value is ResumeSectionId {

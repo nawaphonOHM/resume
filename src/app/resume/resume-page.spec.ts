@@ -101,9 +101,10 @@ describe('ResumePage', () => {
     expect(download?.hasAttribute('download')).toBe(true);
   });
 
-  it('updates active navigation from observed sections and disconnects cleanly', () => {
+  it('updates active navigation from observed sections and disconnects cleanly', async () => {
     const fixture = TestBed.createComponent(ResumePage);
     fixture.detectChanges();
+    await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
     const experienceSection = element.querySelector<HTMLElement>('#experience');
 
@@ -118,20 +119,36 @@ describe('ResumePage', () => {
       ],
       {} as IntersectionObserver,
     );
-    fixture.detectChanges();
+    await fixture.whenStable();
 
     expect(element.querySelector('nav a[href="#experience"]')?.getAttribute('aria-current')).toBe(
       'location',
     );
 
+    expect(disconnect).not.toHaveBeenCalled();
     fixture.destroy();
     expect(disconnect).toHaveBeenCalledOnce();
   });
 
-  it('restores active navigation from a valid initial section hash', () => {
+  it('skips section observation when IntersectionObserver is unavailable', async () => {
+    Object.defineProperty(window, 'IntersectionObserver', {
+      configurable: true,
+      value: undefined,
+    });
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(observe).not.toHaveBeenCalled();
+    fixture.destroy();
+    expect(disconnect).not.toHaveBeenCalled();
+  });
+
+  it('restores active navigation from a valid initial section hash', async () => {
     history.replaceState(null, '', '#skills');
     const fixture = TestBed.createComponent(ResumePage);
     fixture.detectChanges();
+    await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
 
     expect(element.querySelector('nav a[href="#skills"]')?.getAttribute('aria-current')).toBe(
