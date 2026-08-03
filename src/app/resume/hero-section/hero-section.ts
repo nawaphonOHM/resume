@@ -2,7 +2,7 @@ import { Component, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 
-import type { ResumeProfile } from './resume.model';
+import type { ResumeProfile } from '../../model/resume/resume.model';
 
 @Component({
   selector: 'app-hero-section',

@@ -1,4 +1,4 @@
-import type { ResumeProfile } from './resume.model';
+import type { ResumeProfile } from '../../model/resume/resume.model';
 
 export const RESUME = {
   name: 'Nawaphon Isarathanachaikul',
