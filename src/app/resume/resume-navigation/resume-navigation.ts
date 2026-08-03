@@ -6,7 +6,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-import type { ResumeTheme } from '../core/theme.service';
+import type { ResumeTheme } from '../../core/theme.service';
 
 export type ResumeSectionId = 'about' | 'experience' | 'skills' | 'profile';
 

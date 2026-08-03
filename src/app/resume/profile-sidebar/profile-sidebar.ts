@@ -5,7 +5,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 
-import type { ResumeProfile } from './resume.model';
+import type { ResumeProfile } from '../../model/resume/resume.model';
 
 @Component({
   selector: 'app-profile-sidebar',

@@ -4,7 +4,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 
-import type { Experience } from './resume.model';
+import type { Experience } from '../../model/resume/resume.model';
 
 @Component({
   selector: 'app-experience-timeline',

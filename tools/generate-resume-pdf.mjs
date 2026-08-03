@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { RESUME } from '../src/app/resume/resume.data.ts';
+import { RESUME } from '../src/app/data/resume/resume.data.ts';
 import { createResumePdfBuffer } from './resume-pdf.mjs';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
