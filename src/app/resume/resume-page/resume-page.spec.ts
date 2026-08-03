@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
-import { RESUME_THEME_STORAGE_KEY } from '../core/theme.service';
+import { RESUME_THEME_STORAGE_KEY } from '../../core/theme.service';
 import { ResumePage } from './resume-page';
 
 describe('ResumePage', () => {

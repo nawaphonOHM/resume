@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { RESUME } from '../src/app/resume/resume.data.ts';
+import { RESUME } from '../src/app/data/resume/resume.data.ts';
 import {
   buildResumeDocumentDefinition,
   createResumePdfBuffer,

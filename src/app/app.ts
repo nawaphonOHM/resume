@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 
-import { ResumePage } from './resume/resume-page';
+import { ResumePage } from './resume/resume-page/resume-page';
 
 @Component({
   selector: 'app-root',
