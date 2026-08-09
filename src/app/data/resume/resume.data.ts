@@ -41,7 +41,7 @@ export const RESUME = {
         'Work in a hybrid outsourcing role at InnovestX.',
         'Complete wording-change tasks in each sprint.',
         'Use Claude Code as an agent to complete routine coding tasks that follow technical designs from the lead.',
-        'Use Claude Code as an agent for tasks without a lead-provided technical design, including clarifying requirements with the project manager and designing REST APIs and DBMS tables with recommendations from the lead.',
+        'Use Claude Code as an agent for tasks without a lead-provided technical design, including clarifying requirements with the project manager and designing REST APIs and RDBMS tables with recommendations from the lead.',
         'Fix bugs raised by QA using approaches including Elasticsearch and Kubernetes pod logs.',
         'Deploy completed tasks to SIT and UAT environments.',
         'Coordinate with DevOps on infrastructure needs, including API routing, API keys for new microservices, request-path permissions, HTTP-method allowlisting in the internal firewall, and public API gateway changes.',
@@ -52,7 +52,7 @@ export const RESUME = {
       technologies: [
         'Claude Code',
         'REST APIs',
-        'DBMS',
+        'RDBMS',
         'Elasticsearch',
         'Kubernetes',
         'Kafka',
