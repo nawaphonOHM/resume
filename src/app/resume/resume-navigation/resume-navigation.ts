@@ -8,7 +8,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 import type { ResumeTheme } from '../../core/theme.service';
 
-export type ResumeSectionId = 'about' | 'experience' | 'skills' | 'profile';
+export type ResumeSectionId = 'about' | 'experience' | 'education' | 'skills' | 'profile';
 
 export interface ResumeNavigationSection {
   readonly id: ResumeSectionId;
@@ -18,6 +18,7 @@ export interface ResumeNavigationSection {
 export const RESUME_SECTIONS = [
   { id: 'about', label: 'About' },
   { id: 'experience', label: 'Experience' },
+  { id: 'education', label: 'Education' },
   { id: 'skills', label: 'Skills' },
   { id: 'profile', label: 'Profile' },
 ] as const satisfies readonly ResumeNavigationSection[];

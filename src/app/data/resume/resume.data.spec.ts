@@ -58,6 +58,23 @@ describe('RESUME', () => {
     }
   });
 
+  it('contains the complete highest-education record and its secure project link', () => {
+    expect(RESUME.education).toEqual({
+      degree: 'Bachelor of Engineering (Computer Engineering)',
+      institution: 'Prince of Songkla University',
+      period: '2015–2019',
+      gpax: '2.55',
+      seniorProject: {
+        name: 'CoEChatBot',
+        url: 'https://github.com/nawaphonOHM/CoEChatBot',
+      },
+    });
+
+    const projectUrl = new URL(RESUME.education.seniorProject.url);
+    expect(projectUrl.protocol).toBe('https:');
+    expect(projectUrl.hostname).not.toBe('');
+  });
+
   it('publishes only safe HTTPS external links', () => {
     expect(RESUME.links).toHaveLength(2);
 

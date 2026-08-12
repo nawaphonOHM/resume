@@ -2,16 +2,28 @@ import { DOCUMENT } from '@angular/common';
 import { Component, DestroyRef, afterNextRender, inject, signal } from '@angular/core';
 
 import { ThemeService } from '../../core/theme.service';
+import { EducationSection } from '../education-section/education-section';
 import { ExperienceTimeline } from '../experience-timeline/experience-timeline';
 import { HeroSection } from '../hero-section/hero-section';
 import { ProfileSidebar } from '../profile-sidebar/profile-sidebar';
 import { RESUME } from '../../data/resume/resume.data';
-import { RESUME_SECTIONS, ResumeNavigation, type ResumeSectionId } from '../resume-navigation/resume-navigation';
+import {
+  RESUME_SECTIONS,
+  ResumeNavigation,
+  type ResumeSectionId,
+} from '../resume-navigation/resume-navigation';
 import { SummarySection } from '../summary-section/summary-section';
 
 @Component({
   selector: 'app-resume-page',
-  imports: [ExperienceTimeline, HeroSection, ProfileSidebar, ResumeNavigation, SummarySection],
+  imports: [
+    EducationSection,
+    ExperienceTimeline,
+    HeroSection,
+    ProfileSidebar,
+    ResumeNavigation,
+    SummarySection,
+  ],
   templateUrl: './resume-page.html',
   styleUrl: './resume-page.css',
 })

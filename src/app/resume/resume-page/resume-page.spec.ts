@@ -9,10 +9,17 @@ describe('ResumePage', () => {
   let observerCallback: IntersectionObserverCallback;
   let observe: ReturnType<typeof vi.fn>;
   let disconnect: ReturnType<typeof vi.fn>;
+  let scrollIntoView: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     observe = vi.fn();
     disconnect = vi.fn();
+    scrollIntoView = vi.fn();
+
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    });
 
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,
@@ -52,6 +59,7 @@ describe('ResumePage', () => {
   afterEach(() => {
     TestBed.resetTestingModule();
     vi.restoreAllMocks();
+    Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView');
     localStorage.clear();
     history.replaceState(null, '', location.pathname);
     document.documentElement.classList.remove('resume-theme-light', 'resume-theme-dark');
@@ -69,14 +77,38 @@ describe('ResumePage', () => {
       element.querySelectorAll<HTMLAnchorElement>('a[target="_blank"]'),
     );
 
-    expect(sectionIds).toEqual(['about', 'experience', 'skills', 'profile']);
+    const educationSection = element.querySelector<HTMLElement>('#education');
+    const projectLink = educationSection?.querySelector<HTMLAnchorElement>(
+      `a[href="${RESUME.education.seniorProject.url}"]`,
+    );
+    const educationText = educationSection?.textContent?.replace(/\s+/g, ' ').trim();
+    const gpaxValue = Array.from(educationSection?.querySelectorAll('dt') ?? [])
+      .find((term) => term.textContent?.trim() === 'GPAX')
+      ?.nextElementSibling?.textContent?.trim();
+
+    expect(sectionIds).toEqual(['about', 'experience', 'education', 'skills', 'profile']);
     expect(element.querySelector('h1')?.textContent).toContain('Nawaphon Isarathanachaikul');
     expect(element.querySelectorAll('.experience-card')).toHaveLength(5);
+    expect(educationSection?.getAttribute('aria-labelledby')).toBe('education-title');
+    expect(educationSection?.querySelector('#education-title')?.textContent?.trim()).toBe(
+      'Education',
+    );
+    expect(educationText).toContain(RESUME.education.degree);
+    expect(educationText).toContain(RESUME.education.institution);
+    expect(educationText).toContain(RESUME.education.period);
+    expect(gpaxValue).toBe(RESUME.education.gpax);
+    expect(educationText).toContain(`Senior project: ${RESUME.education.seniorProject.name}`);
+    expect(projectLink?.textContent).toContain('View source code');
+    expect(projectLink?.getAttribute('aria-label')).toBe(
+      `View source code for ${RESUME.education.seniorProject.name} (opens in a new tab)`,
+    );
+    expect(projectLink?.getAttribute('target')).toBe('_blank');
+    expect(projectLink?.getAttribute('rel')).toBe('noopener noreferrer');
     expect(element.querySelectorAll('.skills-panel mat-chip')).toHaveLength(6);
     expect(element.textContent).toContain('Available on request');
     expect(element.querySelector('a[href^="tel:"]')).toBeNull();
     expect(element.querySelector('a[href="mailto:nawaphon2539@gmail.com"]')).not.toBeNull();
-    expect(externalLinks).toHaveLength(2);
+    expect(externalLinks).toHaveLength(3);
     expect(externalLinks.every((link) => link.getAttribute('rel') === 'noopener noreferrer')).toBe(
       true,
     );
@@ -128,8 +160,9 @@ describe('ResumePage', () => {
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
     const experienceSection = element.querySelector<HTMLElement>('#experience');
+    const educationSection = element.querySelector<HTMLElement>('#education');
 
-    expect(observe).toHaveBeenCalledTimes(4);
+    expect(observe).toHaveBeenCalledTimes(5);
     observerCallback(
       [
         {
@@ -143,6 +176,22 @@ describe('ResumePage', () => {
     await fixture.whenStable();
 
     expect(element.querySelector('nav a[href="#experience"]')?.getAttribute('aria-current')).toBe(
+      'location',
+    );
+
+    observerCallback(
+      [
+        {
+          isIntersecting: true,
+          target: educationSection,
+          boundingClientRect: { top: 12 },
+        } as unknown as IntersectionObserverEntry,
+      ],
+      {} as IntersectionObserver,
+    );
+    await fixture.whenStable();
+
+    expect(element.querySelector('nav a[href="#education"]')?.getAttribute('aria-current')).toBe(
       'location',
     );
 
@@ -166,14 +215,15 @@ describe('ResumePage', () => {
   });
 
   it('restores active navigation from a valid initial section hash', async () => {
-    history.replaceState(null, '', '#skills');
+    history.replaceState(null, '', '#education');
     const fixture = TestBed.createComponent(ResumePage);
     fixture.detectChanges();
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
 
-    expect(element.querySelector('nav a[href="#skills"]')?.getAttribute('aria-current')).toBe(
+    expect(element.querySelector('nav a[href="#education"]')?.getAttribute('aria-current')).toBe(
       'location',
     );
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'start', behavior: 'auto' });
   });
 });

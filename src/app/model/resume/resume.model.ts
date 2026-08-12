@@ -11,6 +11,19 @@ export interface ResumeDetails {
   readonly birthDate: string;
 }
 
+export interface ResumeProject {
+  readonly name: string;
+  readonly url: `https://${string}`;
+}
+
+export interface ResumeEducation {
+  readonly degree: string;
+  readonly institution: string;
+  readonly period: string;
+  readonly gpax: string;
+  readonly seniorProject: ResumeProject;
+}
+
 export interface Experience {
   readonly role: string;
   readonly company: string;
@@ -28,4 +41,5 @@ export interface ResumeProfile {
   readonly links: readonly ResumeLink[];
   readonly skills: readonly string[];
   readonly experience: readonly Experience[];
+  readonly education: ResumeEducation;
 }

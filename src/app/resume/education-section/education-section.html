@@ -1,0 +1,69 @@
+<section
+  id="education"
+  class="scroll-mt-24 py-16 sm:py-20"
+  data-resume-section
+  aria-labelledby="education-title"
+>
+  <div class="section-heading">
+    <div>
+      <p class="section-kicker">Academic background</p>
+      <h2 id="education-title">Education</h2>
+    </div>
+    <p class="section-lead">
+      Computer engineering studies grounded in software development and completed with a senior
+      project.
+    </p>
+  </div>
+
+  <mat-card appearance="outlined" class="education-card mt-10">
+    <mat-card-content>
+      <div class="education-overview">
+        <span class="education-icon" aria-hidden="true">
+          <mat-icon>school</mat-icon>
+        </span>
+
+        <div class="degree-copy">
+          <h3>{{ education().degree }}</h3>
+          <p class="institution">{{ education().institution }}</p>
+        </div>
+
+        <dl class="education-metadata" aria-label="Degree details">
+          <div>
+            <dt>Study period</dt>
+            <dd>{{ education().period }}</dd>
+          </div>
+          <div>
+            <dt>GPAX</dt>
+            <dd>{{ education().gpax }}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="senior-project">
+        <div>
+          <p class="project-title">
+            <span>Senior project:</span>
+            {{ education().seniorProject.name }}
+          </p>
+          <p class="project-description">Academic capstone project repository</p>
+        </div>
+
+        <a
+          mat-stroked-button
+          class="project-link"
+          [href]="education().seniorProject.url"
+          target="_blank"
+          rel="noopener noreferrer"
+          [attr.aria-label]="
+            'View source code for ' + education().seniorProject.name + ' (opens in a new tab)'
+          "
+        >
+          <span>View source code</span>
+          <mat-icon aria-hidden="true">open_in_new</mat-icon>
+        </a>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</section>

@@ -1,0 +1,284 @@
+:host {
+  display: block;
+}
+
+.section-heading {
+  display: grid;
+  gap: 1.5rem;
+  align-items: end;
+}
+
+.section-kicker {
+  margin: 0 0 0.65rem;
+  color: var(--resume-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+h2 {
+  margin: 0;
+  color: var(--resume-text);
+  font-size: clamp(2rem, 4.8vw, 3.45rem);
+  font-weight: 780;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+}
+
+.section-lead {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--resume-muted);
+  font-size: 1.03rem;
+  line-height: 1.75;
+}
+
+.education-card {
+  --mat-card-outlined-container-color: var(--resume-surface);
+  --mat-card-outlined-outline-color: var(--resume-border);
+  overflow: hidden;
+  border-radius: 1.4rem;
+  color: var(--resume-text);
+  box-shadow: 0 0.75rem 2rem rgb(8 35 62 / 5%);
+}
+
+mat-card-content {
+  padding: 0;
+}
+
+.education-overview {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: clamp(1rem, 3vw, 1.5rem);
+  align-items: center;
+  padding: clamp(1.35rem, 3vw, 2rem);
+}
+
+.education-icon {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  place-items: center;
+  border-radius: 1rem;
+  background: var(--resume-brand-soft);
+  color: var(--resume-brand);
+}
+
+.education-icon mat-icon {
+  width: 1.65rem;
+  height: 1.65rem;
+  font-size: 1.65rem;
+}
+
+.degree-copy {
+  min-width: 0;
+}
+
+h3 {
+  margin: 0;
+  color: var(--resume-text);
+  font-size: clamp(1.25rem, 2.6vw, 1.75rem);
+  font-weight: 750;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.institution {
+  margin: 0.5rem 0 0;
+  color: var(--resume-accent);
+  font-weight: 700;
+}
+
+.education-metadata {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(6.5rem, auto));
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.education-metadata > div {
+  padding: 0.75rem 1rem;
+  border-radius: 0.9rem;
+  background: var(--resume-surface-raised);
+}
+
+dt {
+  color: var(--resume-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+dd {
+  margin: 0.2rem 0 0;
+  color: var(--resume-text);
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+mat-divider {
+  --mat-divider-color: var(--resume-border);
+}
+
+.senior-project {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem clamp(1.35rem, 3vw, 2rem);
+  background: color-mix(in srgb, var(--resume-brand-soft) 35%, var(--resume-surface));
+}
+
+.project-title,
+.project-description {
+  margin: 0;
+}
+
+.project-title {
+  color: var(--resume-text);
+  font-weight: 750;
+}
+
+.project-title span {
+  color: var(--resume-muted);
+  font-weight: 650;
+}
+
+.project-description {
+  margin-top: 0.25rem;
+  color: var(--resume-muted);
+  font-size: 0.86rem;
+}
+
+.project-link {
+  --mat-button-outlined-label-text-color: var(--resume-brand);
+  --mat-button-outlined-outline-color: color-mix(
+    in srgb,
+    var(--resume-brand) 45%,
+    var(--resume-border)
+  );
+  flex: 0 0 auto;
+}
+
+@media (min-width: 48rem) {
+  .section-heading {
+    grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.9fr);
+  }
+}
+
+@media (max-width: 40rem) {
+  .education-overview {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .education-metadata {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
+
+@media (max-width: 30rem) {
+  .education-icon {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .education-metadata {
+    grid-template-columns: 1fr;
+  }
+
+  .senior-project {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .project-link {
+    width: 100%;
+  }
+}
+
+@media print {
+  section {
+    padding: 5mm 0 !important;
+    break-inside: avoid;
+  }
+
+  .section-heading {
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 8mm;
+  }
+
+  .section-kicker {
+    margin-bottom: 1.5mm;
+    font-size: 6.5pt;
+  }
+
+  h2 {
+    font-size: 18pt;
+    letter-spacing: -0.035em;
+  }
+
+  .section-lead {
+    font-size: 8pt;
+    line-height: 1.4;
+  }
+
+  .education-card {
+    margin-top: 4mm !important;
+    border-radius: 3mm;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+
+  .education-overview {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 3mm;
+    padding: 4mm;
+  }
+
+  .education-icon {
+    width: 9mm;
+    height: 9mm;
+    border-radius: 2mm;
+  }
+
+  h3 {
+    font-size: 11pt;
+  }
+
+  .institution {
+    margin-top: 1mm;
+    font-size: 8pt;
+  }
+
+  .education-metadata {
+    grid-template-columns: repeat(2, minmax(20mm, auto));
+    gap: 2mm;
+  }
+
+  .education-metadata > div {
+    padding: 2mm 3mm;
+    border-radius: 2mm;
+  }
+
+  dt,
+  .project-description {
+    font-size: 6pt;
+  }
+
+  dd,
+  .project-title,
+  .project-link {
+    font-size: 7.5pt;
+  }
+
+  .senior-project {
+    flex-direction: row;
+    gap: 4mm;
+    align-items: center;
+    padding: 3mm 4mm;
+  }
+}

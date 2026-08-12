@@ -39,6 +39,11 @@ function expectedResumeText(profile) {
       ...experience.highlights,
       ...experience.technologies,
     ]),
+    profile.education.degree,
+    profile.education.institution,
+    profile.education.period,
+    profile.education.gpax,
+    profile.education.seniorProject.name,
   ];
 }
 
@@ -46,14 +51,33 @@ test('the document definition contains every résumé fact and only safe links',
   const definition = buildResumeDocumentDefinition(RESUME);
   const documentText = collectProperty(definition, 'text').join('\n');
   const documentLinks = collectProperty(definition, 'link');
+  const sectionHeadings = definition.content
+    .filter(({ headlineLevel }) => headlineLevel === 1)
+    .map(({ text }) => text);
 
   for (const expectedText of expectedResumeText(RESUME)) {
     assert.ok(documentText.includes(expectedText), `Missing PDF text: ${expectedText}`);
   }
 
+  for (const expectedText of ['Education', 'GPAX', 'Senior project:', 'View source code']) {
+    assert.ok(documentText.includes(expectedText), `Missing PDF education text: ${expectedText}`);
+  }
+
+  assert.deepEqual(sectionHeadings, [
+    'Professional summary',
+    'Experience',
+    'Education',
+    'Core skills',
+    'Profile details',
+    'Links',
+  ]);
   assert.deepEqual(
     new Set(documentLinks),
-    new Set([`mailto:${RESUME.details.email}`, ...RESUME.links.map(({ url }) => url)]),
+    new Set([
+      `mailto:${RESUME.details.email}`,
+      RESUME.education.seniorProject.url,
+      ...RESUME.links.map(({ url }) => url),
+    ]),
   );
   assert.doesNotMatch(documentLinks.join('\n'), /^tel:/im);
 });
@@ -68,7 +92,12 @@ test('PDF generation is deterministic and retains its link annotations', async (
   assert.deepEqual(firstPdf, secondPdf);
   assert.match(pdfSource, new RegExp(`mailto:${RESUME.details.email}`));
 
-  for (const { url } of RESUME.links) {
+  const expectedExternalLinks = [
+    RESUME.education.seniorProject.url,
+    ...RESUME.links.map(({ url }) => url),
+  ];
+
+  for (const url of expectedExternalLinks) {
     assert.ok(pdfSource.includes(url), `Missing PDF link annotation: ${url}`);
   }
 
@@ -102,6 +131,56 @@ test('validation rejects incomplete résumé content', () => {
   incompleteProfile.summary = [];
 
   assert.throws(() => validateResumeProfile(incompleteProfile), /summary/i);
+});
+
+test('validation requires every education and senior-project field', () => {
+  const missingEducationProfile = structuredClone(RESUME);
+  delete missingEducationProfile.education;
+
+  assert.throws(() => validateResumeProfile(missingEducationProfile), /education.*required/i);
+
+  for (const fieldName of ['degree', 'institution', 'period', 'gpax']) {
+    const incompleteEducationProfile = structuredClone(RESUME);
+    incompleteEducationProfile.education[fieldName] = ' ';
+
+    assert.throws(
+      () => validateResumeProfile(incompleteEducationProfile),
+      new RegExp(`education\\.${fieldName}`, 'i'),
+    );
+  }
+
+  const missingProjectProfile = structuredClone(RESUME);
+  delete missingProjectProfile.education.seniorProject;
+
+  assert.throws(
+    () => validateResumeProfile(missingProjectProfile),
+    /education.*seniorProject.*required/i,
+  );
+
+  for (const fieldName of ['name', 'url']) {
+    const incompleteProjectProfile = structuredClone(RESUME);
+    incompleteProjectProfile.education.seniorProject[fieldName] = '';
+
+    assert.throws(
+      () => validateResumeProfile(incompleteProjectProfile),
+      new RegExp(`education\\.seniorProject\\.${fieldName}`, 'i'),
+    );
+  }
+});
+
+test('validation rejects invalid or insecure senior-project URLs', () => {
+  const invalidProjectLinkProfile = structuredClone(RESUME);
+  invalidProjectLinkProfile.education.seniorProject.url = 'not a URL';
+
+  assert.throws(() => validateResumeProfile(invalidProjectLinkProfile), /project link is invalid/i);
+
+  const insecureProjectLinkProfile = structuredClone(RESUME);
+  insecureProjectLinkProfile.education.seniorProject.url = 'http://example.com/CoEChatBot';
+
+  assert.throws(
+    () => validateResumeProfile(insecureProjectLinkProfile),
+    /project link must use HTTPS/i,
+  );
 });
 
 test('PDF generation pads an incomplete final skills row', async () => {

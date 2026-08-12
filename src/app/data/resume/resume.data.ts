@@ -104,4 +104,14 @@ export const RESUME = {
       technologies: ['Angular 7.x', 'Spring Boot 2.7.x', 'Spring Batch', 'IBM Db2'],
     },
   ],
+  education: {
+    degree: 'Bachelor of Engineering (Computer Engineering)',
+    institution: 'Prince of Songkla University',
+    period: '2015–2019',
+    gpax: '2.55',
+    seniorProject: {
+      name: 'CoEChatBot',
+      url: 'https://github.com/nawaphonOHM/CoEChatBot',
+    },
+  },
 } as const satisfies ResumeProfile;
