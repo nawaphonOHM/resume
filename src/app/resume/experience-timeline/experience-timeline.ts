@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import { Component, input } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -8,7 +9,7 @@ import type { Experience } from '../../model/resume/resume.model';
 
 @Component({
   selector: 'app-experience-timeline',
-  imports: [MatCardModule, MatChipsModule, MatDividerModule, MatIconModule],
+  imports: [MatCardModule, MatChipsModule, MatDividerModule, MatIconModule, NgOptimizedImage],
   templateUrl: './experience-timeline.html',
   styleUrl: './experience-timeline.css',
 })

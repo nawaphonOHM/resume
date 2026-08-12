@@ -18,13 +18,32 @@
   <mat-card appearance="outlined" class="education-card mt-10">
     <mat-card-content>
       <div class="education-overview">
-        <span class="education-icon" aria-hidden="true">
-          <mat-icon>school</mat-icon>
-        </span>
+        <div
+          class="institution-identity flex min-w-0 items-center gap-[clamp(1rem,3vw,1.5rem)] max-[30rem]:flex-col max-[30rem]:items-start"
+        >
+          <span
+            class="institution-logo-frame grid h-14 w-32 shrink-0 place-items-center overflow-hidden rounded-2xl border border-solid border-[color:var(--resume-border)] p-2 max-[30rem]:h-12 max-[30rem]:w-[6.5rem]"
+            [class.institution-logo-frame--light]="education().institutionLogo.surface === 'light'"
+            [class.institution-logo-frame--dark]="education().institutionLogo.surface === 'dark'"
+            aria-hidden="true"
+          >
+            <img
+              class="institution-logo block h-full w-full object-contain"
+              [ngSrc]="education().institutionLogo.src"
+              [width]="education().institutionLogo.width"
+              [height]="education().institutionLogo.height"
+              alt=""
+            />
+          </span>
 
-        <div class="degree-copy">
-          <h3>{{ education().degree }}</h3>
-          <p class="institution">{{ education().institution }}</p>
+          <span class="education-icon education-icon--print" aria-hidden="true">
+            <mat-icon>school</mat-icon>
+          </span>
+
+          <div class="degree-copy">
+            <h3>{{ education().degree }}</h3>
+            <p class="institution">{{ education().institution }}</p>
+          </div>
         </div>
 
         <dl class="education-metadata" aria-label="Degree details">

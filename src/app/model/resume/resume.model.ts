@@ -16,9 +16,17 @@ export interface ResumeProject {
   readonly url: `https://${string}`;
 }
 
+export interface BrandLogo {
+  readonly src: string;
+  readonly width: number;
+  readonly height: number;
+  readonly surface: 'light' | 'dark';
+}
+
 export interface ResumeEducation {
   readonly degree: string;
   readonly institution: string;
+  readonly institutionLogo: BrandLogo;
   readonly period: string;
   readonly gpax: string;
   readonly seniorProject: ResumeProject;
@@ -26,9 +34,18 @@ export interface ResumeEducation {
 
 export type EmploymentType = 'Internship' | 'Permanent' | 'Contract';
 
+export interface CompanyLogo extends BrandLogo {}
+
+export interface ClientCompany {
+  readonly name: string;
+  readonly logo: CompanyLogo;
+}
+
 export interface Experience {
   readonly role: string;
   readonly company: string;
+  readonly companyLogo: CompanyLogo;
+  readonly client?: ClientCompany;
   readonly location: string;
   readonly period: string;
   readonly employmentTypes: readonly [EmploymentType, ...EmploymentType[]];

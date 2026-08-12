@@ -49,7 +49,7 @@ mat-card-content {
 
 .education-overview {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: clamp(1rem, 3vw, 1.5rem);
   align-items: center;
   padding: clamp(1.35rem, 3vw, 2rem);
@@ -69,6 +69,18 @@ mat-card-content {
   width: 1.65rem;
   height: 1.65rem;
   font-size: 1.65rem;
+}
+
+.education-icon--print {
+  display: none;
+}
+
+.institution-logo-frame--light {
+  background: #ffffff;
+}
+
+.institution-logo-frame--dark {
+  background: #071a2e;
 }
 
 .degree-copy {
@@ -171,7 +183,7 @@ mat-divider {
 
 @media (max-width: 40rem) {
   .education-overview {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .education-metadata {
@@ -234,9 +246,22 @@ mat-divider {
   }
 
   .education-overview {
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 3mm;
     padding: 4mm;
+  }
+
+  .institution-logo-frame {
+    display: none;
+  }
+
+  .institution-identity {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .education-icon--print {
+    display: grid;
   }
 
   .education-icon {

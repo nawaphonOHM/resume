@@ -58,6 +58,120 @@ describe('RESUME', () => {
     }
   });
 
+  it('models the confirmed employer and client relationships', () => {
+    expect(
+      RESUME.experience.map((experience) => ({
+        employer: experience.company,
+        employerLogo: experience.companyLogo.src,
+        ...('client' in experience
+          ? {
+              client: experience.client.name,
+              clientLogo: experience.client.logo.src,
+            }
+          : {}),
+      })),
+    ).toEqual([
+      {
+        employer: 'Accord Innovations',
+        employerLogo: '/images/company-logos/accord-innovations.png',
+        client: 'InnovestX',
+        clientLogo: '/images/company-logos/innovestx.png',
+      },
+      {
+        employer: 'Saitech Solution',
+        employerLogo: '/images/company-logos/saitech-solution.png',
+        client: 'Ayudhya Capital Services (AYCAP)',
+        clientLogo: '/images/company-logos/krungsri.png',
+      },
+      {
+        employer: 'Nityo Infotech',
+        employerLogo: '/images/company-logos/nityo-infotech.svg',
+        client: 'TISCO Bank',
+        clientLogo: '/images/company-logos/tisco.svg',
+      },
+      {
+        employer: 'LINE MAN Wongnai',
+        employerLogo: '/images/company-logos/line-man-wongnai.webp',
+      },
+      {
+        employer: 'WiseSoft',
+        employerLogo: '/images/company-logos/wisesoft.png',
+      },
+    ]);
+
+    const outsourcedExperiences = RESUME.experience.filter((experience) => 'client' in experience);
+    expect(outsourcedExperiences).toHaveLength(3);
+    expect(RESUME.experience.length - outsourcedExperiences.length).toBe(2);
+  });
+
+  it('provides eight validated local logo definitions', () => {
+    const logos = RESUME.experience.flatMap((experience) => [
+      experience.companyLogo,
+      ...('client' in experience ? [experience.client.logo] : []),
+    ]);
+
+    expect(logos).toEqual([
+      {
+        src: '/images/company-logos/accord-innovations.png',
+        width: 250,
+        height: 100,
+        surface: 'dark',
+      },
+      {
+        src: '/images/company-logos/innovestx.png',
+        width: 142,
+        height: 27,
+        surface: 'light',
+      },
+      {
+        src: '/images/company-logos/saitech-solution.png',
+        width: 200,
+        height: 200,
+        surface: 'light',
+      },
+      {
+        src: '/images/company-logos/krungsri.png',
+        width: 200,
+        height: 200,
+        surface: 'dark',
+      },
+      {
+        src: '/images/company-logos/nityo-infotech.svg',
+        width: 4096,
+        height: 1973,
+        surface: 'light',
+      },
+      {
+        src: '/images/company-logos/tisco.svg',
+        width: 297,
+        height: 119,
+        surface: 'light',
+      },
+      {
+        src: '/images/company-logos/line-man-wongnai.webp',
+        width: 555,
+        height: 83,
+        surface: 'light',
+      },
+      {
+        src: '/images/company-logos/wisesoft.png',
+        width: 203,
+        height: 203,
+        surface: 'light',
+      },
+    ]);
+    expect(new Set(logos.map(({ src }) => src)).size).toBe(8);
+
+    for (const logo of logos) {
+      expect(logo.src).toMatch(/^\/images\/company-logos\/[a-z0-9.-]+$/);
+      expect(Number.isInteger(logo.width)).toBe(true);
+      expect(Number.isInteger(logo.height)).toBe(true);
+      expect(logo.width).toBeGreaterThan(0);
+      expect(logo.height).toBeGreaterThan(0);
+      expect(['light', 'dark']).toContain(logo.surface);
+    }
+  });
+
   it('classifies every employment record and preserves the WiseSoft progression', () => {
     expect(
       Object.fromEntries(
@@ -81,6 +195,12 @@ describe('RESUME', () => {
     expect(RESUME.education).toEqual({
       degree: 'Bachelor of Engineering (Computer Engineering)',
       institution: 'Prince of Songkla University',
+      institutionLogo: {
+        src: '/images/university-logos/prince-of-songkla-university.webp',
+        width: 600,
+        height: 160,
+        surface: 'light',
+      },
       period: '2015–2019',
       gpax: '2.55',
       seniorProject: {
@@ -92,6 +212,14 @@ describe('RESUME', () => {
     const projectUrl = new URL(RESUME.education.seniorProject.url);
     expect(projectUrl.protocol).toBe('https:');
     expect(projectUrl.hostname).not.toBe('');
+
+    const logo = RESUME.education.institutionLogo;
+    expect(logo.src).toMatch(/^\/images\/university-logos\/[a-z0-9.-]+$/);
+    expect(Number.isInteger(logo.width)).toBe(true);
+    expect(Number.isInteger(logo.height)).toBe(true);
+    expect(logo.width).toBeGreaterThan(0);
+    expect(logo.height).toBeGreaterThan(0);
+    expect(['light', 'dark']).toContain(logo.surface);
   });
 
   it('publishes only safe HTTPS external links', () => {

@@ -31,6 +31,21 @@ export const RESUME = {
     {
       role: 'Back End Developer',
       company: 'Accord Innovations',
+      companyLogo: {
+        src: '/images/company-logos/accord-innovations.png',
+        width: 250,
+        height: 100,
+        surface: 'dark',
+      },
+      client: {
+        name: 'InnovestX',
+        logo: {
+          src: '/images/company-logos/innovestx.png',
+          width: 142,
+          height: 27,
+          surface: 'light',
+        },
+      },
       location: 'Bangkok',
       period: 'Apr 2026 — Present',
       employmentTypes: ['Contract'],
@@ -63,6 +78,21 @@ export const RESUME = {
     {
       role: 'Software Engineer',
       company: 'Saitech Solution',
+      companyLogo: {
+        src: '/images/company-logos/saitech-solution.png',
+        width: 200,
+        height: 200,
+        surface: 'light',
+      },
+      client: {
+        name: 'Ayudhya Capital Services (AYCAP)',
+        logo: {
+          src: '/images/company-logos/krungsri.png',
+          width: 200,
+          height: 200,
+          surface: 'dark',
+        },
+      },
       location: 'Bangkok',
       period: 'May 2024 — Jun 2025',
       employmentTypes: ['Contract'],
@@ -77,6 +107,21 @@ export const RESUME = {
     {
       role: 'Software Engineer',
       company: 'Nityo Infotech',
+      companyLogo: {
+        src: '/images/company-logos/nityo-infotech.svg',
+        width: 4096,
+        height: 1973,
+        surface: 'light',
+      },
+      client: {
+        name: 'TISCO Bank',
+        logo: {
+          src: '/images/company-logos/tisco.svg',
+          width: 297,
+          height: 119,
+          surface: 'light',
+        },
+      },
       location: 'Bangkok',
       period: 'Jan 2023 — Dec 2023',
       employmentTypes: ['Contract'],
@@ -89,6 +134,12 @@ export const RESUME = {
     {
       role: 'Software Engineer Backend',
       company: 'LINE MAN Wongnai',
+      companyLogo: {
+        src: '/images/company-logos/line-man-wongnai.webp',
+        width: 555,
+        height: 83,
+        surface: 'light',
+      },
       location: 'Bangkok',
       period: 'May 2022 — Jul 2022',
       employmentTypes: ['Permanent'],
@@ -100,6 +151,12 @@ export const RESUME = {
     {
       role: 'Full-Stack Software Developer',
       company: 'WiseSoft',
+      companyLogo: {
+        src: '/images/company-logos/wisesoft.png',
+        width: 203,
+        height: 203,
+        surface: 'light',
+      },
       location: 'Bangkok',
       period: 'Jan 2020 — Apr 2022',
       employmentTypes: ['Internship', 'Permanent'],
@@ -112,6 +169,12 @@ export const RESUME = {
   education: {
     degree: 'Bachelor of Engineering (Computer Engineering)',
     institution: 'Prince of Songkla University',
+    institutionLogo: {
+      src: '/images/university-logos/prince-of-songkla-university.webp',
+      width: 600,
+      height: 160,
+      surface: 'light',
+    },
     period: '2015–2019',
     gpax: '2.55',
     seniorProject: {
