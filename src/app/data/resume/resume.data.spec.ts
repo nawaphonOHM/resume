@@ -3,8 +3,13 @@ import { RESUME } from './resume.data';
 describe('RESUME', () => {
   it('contains the complete public profile and six unique skills', () => {
     expect(RESUME.name).toBe('Nawaphon Isarathanachaikul');
-    expect(RESUME.title).toBe('Full Stack Developer');
-    expect(RESUME.summary).toHaveLength(8);
+    expect(RESUME.title).toBe('Backend Software Engineer');
+    expect(RESUME.summary).toEqual([
+      'Backend-focused software engineer with experience across banking, fintech, food-tech, and tax platforms, backed by a full-stack development foundation.',
+      'Design and deliver APIs, CRUD services, database integrations, event-driven processing, and caching with Spring Boot, Go, Node.js, Kafka, Redis, Caffeine, and relational databases.',
+      'Build responsive Angular and React interfaces and data-driven features, including regulatory reporting, Excel exports, and secure cross-system integrations.',
+      'Support end-to-end delivery through AI-assisted development, automated pipelines and smoke tests, Elasticsearch and Kubernetes diagnostics, SIT/UAT deployments, documentation, and DevOps coordination.',
+    ]);
     expect(RESUME.details).toEqual({
       location: 'Bangkok, Bangkok, Thailand',
       phoneLabel: 'Available on request',
