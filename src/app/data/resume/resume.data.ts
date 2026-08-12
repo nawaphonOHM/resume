@@ -50,6 +50,7 @@ export const RESUME = {
         'Deliver CRUD features, process Kafka topic data to meet business requirements, use Caffeine and Redis caches, and send data to the notification system managed by InnovestX.',
       ],
       technologies: [
+        'Codex',
         'Claude Code',
         'REST APIs',
         'RDBMS',
