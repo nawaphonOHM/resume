@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+
 import pdfmake from 'pdfmake';
 
 const COLORS = {
@@ -14,6 +16,10 @@ const PHONE_PATTERN = /(?:\+?66|0[689])[\s().-]*(?:\d[\s().-]*){8}/;
 const PHONE_LABEL = 'Available on request';
 const MINIMUM_PDF_SIZE = 10_000;
 const METADATA_DATE = '2026-01-01T00:00:00.000Z';
+const EMPLOYMENT_FONT_PATH = fileURLToPath(
+  new URL('./fonts/DejaVuSansMono-Bold.ttf', import.meta.url),
+);
+const SUPPORTED_EMPLOYMENT_TYPES = new Set(['Internship', 'Permanent', 'Contract']);
 const STANDARD_FONT_NAMES = new Set([
   'Helvetica',
   'Helvetica-Bold',
@@ -28,9 +34,17 @@ pdfmake.addFonts({
     italics: 'Helvetica-Oblique',
     bolditalics: 'Helvetica-BoldOblique',
   },
+  EmploymentLabel: {
+    normal: EMPLOYMENT_FONT_PATH,
+    bold: EMPLOYMENT_FONT_PATH,
+    italics: EMPLOYMENT_FONT_PATH,
+    bolditalics: EMPLOYMENT_FONT_PATH,
+  },
 });
 pdfmake.setUrlAccessPolicy(() => false);
-pdfmake.setLocalAccessPolicy((path) => STANDARD_FONT_NAMES.has(path));
+pdfmake.setLocalAccessPolicy(
+  (path) => STANDARD_FONT_NAMES.has(path) || path === EMPLOYMENT_FONT_PATH,
+);
 
 function assertNonEmptyString(value, fieldName) {
   if (typeof value !== 'string' || value.trim() === '') {
@@ -45,6 +59,18 @@ function assertNonEmptyStringArray(value, fieldName) {
 
   for (const [index, item] of value.entries()) {
     assertNonEmptyString(item, `${fieldName}[${index}]`);
+  }
+}
+
+function assertEmploymentTypes(value, fieldName) {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new Error(`The résumé ${fieldName} must contain at least one item.`);
+  }
+
+  for (const [index, employmentType] of value.entries()) {
+    if (!SUPPORTED_EMPLOYMENT_TYPES.has(employmentType)) {
+      throw new Error(`The résumé ${fieldName}[${index}] must be a supported employment type.`);
+    }
   }
 }
 
@@ -63,6 +89,10 @@ function collectProperty(value, propertyName) {
   ]);
 }
 
+function employmentTypeLabel(experience) {
+  return experience.employmentTypes.join(' → ');
+}
+
 function expectedResumeText(profile) {
   return [
     profile.name,
@@ -76,6 +106,7 @@ function expectedResumeText(profile) {
       experience.company,
       experience.location,
       experience.period,
+      employmentTypeLabel(experience),
       ...experience.highlights,
       ...experience.technologies,
     ]),
@@ -120,6 +151,8 @@ function experienceBlock(experience) {
         text: [
           { text: experience.company, bold: true },
           { text: ` · ${experience.location}`, color: COLORS.muted },
+          { text: '  ·  ', color: COLORS.muted },
+          { text: employmentTypeLabel(experience), style: 'employmentType' },
         ],
         margin: [0, 2, 0, 7],
       },
@@ -316,6 +349,7 @@ export function validateResumeProfile(profile) {
       assertNonEmptyString(experience?.[fieldName], `experience[${index}].${fieldName}`);
     }
 
+    assertEmploymentTypes(experience.employmentTypes, `experience[${index}].employmentTypes`);
     assertNonEmptyStringArray(experience.highlights, `experience[${index}].highlights`);
     assertNonEmptyStringArray(experience.technologies, `experience[${index}].technologies`);
   }
@@ -371,6 +405,12 @@ export function buildResumeDocumentDefinition(profile) {
         color: COLORS.navy,
       },
       period: {
+        fontSize: 8.5,
+        bold: true,
+        color: COLORS.accent,
+      },
+      employmentType: {
+        font: 'EmploymentLabel',
         fontSize: 8.5,
         bold: true,
         color: COLORS.accent,

@@ -36,6 +36,7 @@ function expectedResumeText(profile) {
       experience.company,
       experience.location,
       experience.period,
+      experience.employmentTypes.join(' → '),
       ...experience.highlights,
       ...experience.technologies,
     ]),
@@ -51,6 +52,12 @@ test('the document definition contains every résumé fact and only safe links',
   const definition = buildResumeDocumentDefinition(RESUME);
   const documentText = collectProperty(definition, 'text').join('\n');
   const documentLinks = collectProperty(definition, 'link');
+  const expectedEmploymentLabels = RESUME.experience.map(({ employmentTypes }) =>
+    employmentTypes.join(' → '),
+  );
+  const renderedEmploymentLabels = collectProperty(definition, 'text').filter((text) =>
+    expectedEmploymentLabels.includes(text),
+  );
   const sectionHeadings = definition.content
     .filter(({ headlineLevel }) => headlineLevel === 1)
     .map(({ text }) => text);
@@ -63,6 +70,7 @@ test('the document definition contains every résumé fact and only safe links',
     assert.ok(documentText.includes(expectedText), `Missing PDF education text: ${expectedText}`);
   }
 
+  assert.deepEqual(renderedEmploymentLabels, expectedEmploymentLabels);
   assert.deepEqual(sectionHeadings, [
     'Professional summary',
     'Experience',
@@ -89,6 +97,7 @@ test('PDF generation is deterministic and retains its link annotations', async (
 
   assert.equal(firstPdf.subarray(0, 5).toString('ascii'), '%PDF-');
   assert.ok(firstPdf.byteLength > 10_000);
+  assert.ok(/\/ToUnicode\b/.test(pdfSource), 'Generated PDF must include a Unicode character map.');
   assert.deepEqual(firstPdf, secondPdf);
   assert.match(pdfSource, new RegExp(`mailto:${RESUME.details.email}`));
 
@@ -131,6 +140,32 @@ test('validation rejects incomplete résumé content', () => {
   incompleteProfile.summary = [];
 
   assert.throws(() => validateResumeProfile(incompleteProfile), /summary/i);
+});
+
+test('validation requires supported employment types for every experience', () => {
+  const missingEmploymentTypesProfile = structuredClone(RESUME);
+  delete missingEmploymentTypesProfile.experience[0].employmentTypes;
+
+  assert.throws(
+    () => validateResumeProfile(missingEmploymentTypesProfile),
+    /experience\[0\]\.employmentTypes.*at least one item/i,
+  );
+
+  const emptyEmploymentTypesProfile = structuredClone(RESUME);
+  emptyEmploymentTypesProfile.experience[1].employmentTypes = [];
+
+  assert.throws(
+    () => validateResumeProfile(emptyEmploymentTypesProfile),
+    /experience\[1\]\.employmentTypes.*at least one item/i,
+  );
+
+  const unsupportedEmploymentTypeProfile = structuredClone(RESUME);
+  unsupportedEmploymentTypeProfile.experience[2].employmentTypes = ['Contract', 'Freelance'];
+
+  assert.throws(
+    () => validateResumeProfile(unsupportedEmploymentTypeProfile),
+    /experience\[2\]\.employmentTypes\[1\].*supported/i,
+  );
 });
 
 test('validation requires every education and senior-project field', () => {

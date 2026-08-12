@@ -114,6 +114,30 @@ describe('ResumePage', () => {
     );
   });
 
+  it('renders one accessible employment type marker for every experience', () => {
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    const cards = Array.from(element.querySelectorAll<HTMLElement>('.experience-card'));
+    const expectedLabels = [
+      'Contract',
+      'Contract',
+      'Contract',
+      'Permanent',
+      'Internship → Permanent',
+    ];
+    const markersByCard = cards.map((card) =>
+      Array.from(card.querySelectorAll<HTMLElement>('.employment-type')),
+    );
+
+    expect(cards).toHaveLength(5);
+    expect(markersByCard.every((markers) => markers.length === 1)).toBe(true);
+    expect(markersByCard.map(([marker]) => marker.textContent?.trim())).toEqual(expectedLabels);
+    expect(markersByCard.map(([marker]) => marker.getAttribute('aria-label'))).toEqual(
+      expectedLabels.map((label) => `Employment type: ${label}`),
+    );
+  });
+
   it('renders the backend-first profile and four summary cards', () => {
     const fixture = TestBed.createComponent(ResumePage);
     fixture.detectChanges();

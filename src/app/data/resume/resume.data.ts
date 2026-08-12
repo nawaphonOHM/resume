@@ -33,6 +33,7 @@ export const RESUME = {
       company: 'Accord Innovations',
       location: 'Bangkok',
       period: 'Apr 2026 — Present',
+      employmentTypes: ['Contract'],
       highlights: [
         'Work in a hybrid outsourcing role at InnovestX.',
         'Complete wording-change tasks in each sprint.',
@@ -64,6 +65,7 @@ export const RESUME = {
       company: 'Saitech Solution',
       location: 'Bangkok',
       period: 'May 2024 — Jun 2025',
+      employmentTypes: ['Contract'],
       highlights: [
         'Worked as an outsourced onsite engineer at Aycap, a subsidiary of Bank of Ayudhya.',
         "Built a Regulatory Data Transformation (RDT) feature that shows the bank's client credit card usage by categories defined by the Bank of Thailand (BOT).",
@@ -77,6 +79,7 @@ export const RESUME = {
       company: 'Nityo Infotech',
       location: 'Bangkok',
       period: 'Jan 2023 — Dec 2023',
+      employmentTypes: ['Contract'],
       highlights: [
         'Worked as an outsourced onsite engineer at TISCO Bank.',
         'Maintained the source code and updated it in response to requirement changes.',
@@ -88,6 +91,7 @@ export const RESUME = {
       company: 'LINE MAN Wongnai',
       location: 'Bangkok',
       period: 'May 2022 — Jul 2022',
+      employmentTypes: ['Permanent'],
       highlights: [
         'Maintained the restaurant system to reflect changing requirements and technical concerns.',
       ],
@@ -98,6 +102,7 @@ export const RESUME = {
       company: 'WiseSoft',
       location: 'Bangkok',
       period: 'Jan 2020 — Apr 2022',
+      employmentTypes: ['Internship', 'Permanent'],
       highlights: [
         "Helped the team create a tax system that presents companies' paid-tax history according to Thailand's tax laws.",
       ],
