@@ -21,8 +21,16 @@ describe('ResumeNavigation', () => {
     expect(navigationLinks.map((link) => link.getAttribute('href'))).toEqual([
       '#about',
       '#experience',
+      '#education',
       '#skills',
       '#profile',
+    ]);
+    expect(navigationLinks.map((link) => link.textContent?.trim())).toEqual([
+      'About',
+      'Experience',
+      'Education',
+      'Skills',
+      'Profile',
     ]);
     expect(
       navigationLinks
@@ -63,10 +71,10 @@ describe('ResumeNavigation', () => {
     });
 
     const element = fixture.nativeElement as HTMLElement;
-    element.querySelector<HTMLAnchorElement>('a[href="#skills"]')?.click();
+    element.querySelector<HTMLAnchorElement>('a[href="#education"]')?.click();
     element.querySelector<HTMLButtonElement>('[aria-label="Switch to dark theme"]')?.click();
 
-    expect(selectedSection).toBe('skills');
+    expect(selectedSection).toBe('education');
     expect(themeToggled).toBe(true);
   });
 });

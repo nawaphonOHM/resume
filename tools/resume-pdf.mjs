@@ -79,6 +79,11 @@ function expectedResumeText(profile) {
       ...experience.highlights,
       ...experience.technologies,
     ]),
+    profile.education.degree,
+    profile.education.institution,
+    profile.education.period,
+    profile.education.gpax,
+    profile.education.seniorProject.name,
   ];
 }
 
@@ -135,6 +140,76 @@ function experienceBlock(experience) {
   };
 }
 
+function educationBlock(education) {
+  return {
+    table: {
+      widths: ['*'],
+      dontBreakRows: true,
+      body: [
+        [
+          {
+            stack: [
+              {
+                columns: [
+                  {
+                    width: '*',
+                    stack: [
+                      { text: education.degree, style: 'role' },
+                      {
+                        text: education.institution,
+                        bold: true,
+                        color: COLORS.accent,
+                        margin: [0, 3, 0, 0],
+                      },
+                    ],
+                  },
+                  {
+                    width: 'auto',
+                    stack: [
+                      { text: education.period, style: 'period', alignment: 'right' },
+                      {
+                        text: [
+                          { text: 'GPAX  ', bold: true, color: COLORS.navy },
+                          { text: education.gpax },
+                        ],
+                        alignment: 'right',
+                        margin: [0, 4, 0, 0],
+                      },
+                    ],
+                  },
+                ],
+                columnGap: 16,
+              },
+              {
+                text: [
+                  { text: 'Senior project: ', bold: true, color: COLORS.navy },
+                  { text: education.seniorProject.name },
+                  { text: '  ·  ', color: COLORS.muted },
+                  {
+                    text: 'View source code',
+                    link: education.seniorProject.url,
+                    color: COLORS.accent,
+                    decoration: 'underline',
+                  },
+                ],
+                margin: [0, 9, 0, 0],
+              },
+            ],
+            fillColor: COLORS.surface,
+            margin: [12, 10, 12, 10],
+          },
+        ],
+      ],
+    },
+    layout: {
+      hLineColor: () => COLORS.border,
+      vLineColor: () => COLORS.border,
+      hLineWidth: () => 0.6,
+      vLineWidth: () => 0.6,
+    },
+  };
+}
+
 function skillTableRows(skills) {
   const cells = skills.map((skill) => ({
     text: skill,
@@ -178,6 +253,34 @@ export function validateResumeProfile(profile) {
 
   if (profile.details.phoneLabel !== PHONE_LABEL) {
     throw new Error(`The résumé phone value must remain "${PHONE_LABEL}".`);
+  }
+
+  if (!profile.education || typeof profile.education !== 'object') {
+    throw new Error('The résumé education is required.');
+  }
+
+  for (const fieldName of ['degree', 'institution', 'period', 'gpax']) {
+    assertNonEmptyString(profile.education[fieldName], `education.${fieldName}`);
+  }
+
+  const seniorProject = profile.education.seniorProject;
+
+  if (!seniorProject || typeof seniorProject !== 'object') {
+    throw new Error('The résumé education seniorProject is required.');
+  }
+
+  assertNonEmptyString(seniorProject.name, 'education.seniorProject.name');
+  assertNonEmptyString(seniorProject.url, 'education.seniorProject.url');
+
+  let parsedProjectUrl;
+  try {
+    parsedProjectUrl = new URL(seniorProject.url);
+  } catch {
+    throw new Error(`The résumé education project link is invalid: ${seniorProject.url}`);
+  }
+
+  if (parsedProjectUrl.protocol !== 'https:') {
+    throw new Error(`The résumé education project link must use HTTPS: ${seniorProject.url}`);
   }
 
   if (!Array.isArray(profile.links) || profile.links.length === 0) {
@@ -364,6 +467,8 @@ export function buildResumeDocumentDefinition(profile) {
       },
       sectionHeading('Experience'),
       ...profile.experience.map(experienceBlock),
+      sectionHeading('Education'),
+      educationBlock(profile.education),
       sectionHeading('Core skills'),
       {
         table: {
@@ -431,7 +536,11 @@ function validatePdfBuffer(pdf, profile) {
   }
 
   const pdfSource = pdf.toString('latin1');
-  const requiredLinks = [`mailto:${profile.details.email}`, ...profile.links.map(({ url }) => url)];
+  const requiredLinks = [
+    `mailto:${profile.details.email}`,
+    profile.education.seniorProject.url,
+    ...profile.links.map(({ url }) => url),
+  ];
 
   for (const requiredLink of requiredLinks) {
     if (!pdfSource.includes(requiredLink)) {
