@@ -17,6 +17,7 @@
 
   <ol class="timeline mt-12">
     @for (job of experience(); track job.company + job.period; let index = $index) {
+      @let employmentLabel = job.employmentTypes.join(' → ');
       <li class="timeline-item">
         <div class="timeline-marker" aria-hidden="true">
           <span>{{ index + 1 }}</span>
@@ -26,7 +27,15 @@
           <mat-card-header class="experience-header">
             <div class="min-w-0 flex-1">
               <p class="company">{{ job.company }}</p>
-              <h3>{{ job.role }}</h3>
+              <div class="role-heading">
+                <h3>{{ job.role }}</h3>
+                <span
+                  class="employment-type"
+                  [attr.aria-label]="'Employment type: ' + employmentLabel"
+                >
+                  {{ employmentLabel }}
+                </span>
+              </div>
               <p class="location">
                 <mat-icon aria-hidden="true">location_on</mat-icon>
                 {{ job.location }}

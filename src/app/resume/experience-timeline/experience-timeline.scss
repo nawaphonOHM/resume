@@ -105,6 +105,13 @@ h2 {
   text-transform: uppercase;
 }
 
+.role-heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+}
+
 h3 {
   margin: 0;
   color: var(--resume-text);
@@ -112,6 +119,22 @@ h3 {
   font-weight: 750;
   letter-spacing: -0.025em;
   line-height: 1.2;
+}
+
+.employment-type {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  max-width: 100%;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--resume-border);
+  border-radius: 999px;
+  background: var(--resume-brand-soft);
+  color: var(--resume-brand);
+  font-size: 0.72rem;
+  font-weight: 750;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .location {

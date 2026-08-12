@@ -269,6 +269,16 @@ a {
     font-size: 12pt !important;
   }
 
+  app-experience-timeline .role-heading {
+    gap: 1mm 1.5mm !important;
+  }
+
+  app-experience-timeline .employment-type {
+    padding: 0.7mm 1.5mm !important;
+    border-width: 0.2mm !important;
+    font-size: 6pt !important;
+  }
+
   app-experience-timeline .location {
     margin-top: 1mm !important;
     font-size: 7pt !important;

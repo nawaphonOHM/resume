@@ -24,11 +24,14 @@ export interface ResumeEducation {
   readonly seniorProject: ResumeProject;
 }
 
+export type EmploymentType = 'Internship' | 'Permanent' | 'Contract';
+
 export interface Experience {
   readonly role: string;
   readonly company: string;
   readonly location: string;
   readonly period: string;
+  readonly employmentTypes: readonly [EmploymentType, ...EmploymentType[]];
   readonly highlights: readonly string[];
   readonly technologies: readonly string[];
 }

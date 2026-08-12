@@ -58,6 +58,25 @@ describe('RESUME', () => {
     }
   });
 
+  it('classifies every employment record and preserves the WiseSoft progression', () => {
+    expect(
+      Object.fromEntries(
+        RESUME.experience.map(({ company, employmentTypes }) => [company, employmentTypes]),
+      ),
+    ).toEqual({
+      'Accord Innovations': ['Contract'],
+      'Saitech Solution': ['Contract'],
+      'Nityo Infotech': ['Contract'],
+      'LINE MAN Wongnai': ['Permanent'],
+      WiseSoft: ['Internship', 'Permanent'],
+    });
+
+    expect(RESUME.experience.find(({ company }) => company === 'WiseSoft')).toMatchObject({
+      period: 'Jan 2020 — Apr 2022',
+      employmentTypes: ['Internship', 'Permanent'],
+    });
+  });
+
   it('contains the complete highest-education record and its secure project link', () => {
     expect(RESUME.education).toEqual({
       degree: 'Bachelor of Engineering (Computer Engineering)',
