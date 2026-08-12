@@ -114,6 +114,33 @@ describe('ResumePage', () => {
     );
   });
 
+  it('renders the official university logo beside the accessible institution identity', () => {
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    const identity = element.querySelector<HTMLElement>('#education .institution-identity');
+    const logoFrame = identity?.querySelector<HTMLElement>('.institution-logo-frame');
+    const logo = logoFrame?.querySelector<HTMLImageElement>('.institution-logo');
+    const printIcon = identity?.querySelector<HTMLElement>('.education-icon--print');
+
+    expect(identity?.querySelector('.institution')?.textContent?.trim()).toBe(
+      RESUME.education.institution,
+    );
+    expect(logo?.getAttribute('src')).toBe(RESUME.education.institutionLogo.src);
+    expect(logo?.getAttribute('width')).toBe(String(RESUME.education.institutionLogo.width));
+    expect(logo?.getAttribute('height')).toBe(String(RESUME.education.institutionLogo.height));
+    expect(logo?.getAttribute('alt')).toBe('');
+    expect(logo?.getAttribute('loading')).toBe('lazy');
+    expect(
+      logoFrame?.classList.contains(
+        `institution-logo-frame--${RESUME.education.institutionLogo.surface}`,
+      ),
+    ).toBe(true);
+    expect(identity?.querySelectorAll('a')).toHaveLength(0);
+    expect(printIcon?.getAttribute('aria-hidden')).toBe('true');
+    expect(getComputedStyle(printIcon!).display).toBe('none');
+  });
+
   it('renders one accessible employment type marker for every experience', () => {
     const fixture = TestBed.createComponent(ResumePage);
     fixture.detectChanges();
@@ -136,6 +163,95 @@ describe('ResumePage', () => {
     expect(markersByCard.map(([marker]) => marker.getAttribute('aria-label'))).toEqual(
       expectedLabels.map((label) => `Employment type: ${label}`),
     );
+  });
+
+  it('renders outsourced employer-to-client relationships and direct company identities', () => {
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    const cards = Array.from(element.querySelectorAll<HTMLElement>('.experience-card'));
+
+    expect(cards).toHaveLength(RESUME.experience.length);
+
+    cards.forEach((card, index) => {
+      const job = RESUME.experience[index];
+      const client = 'client' in job ? job.client : undefined;
+      const identities = Array.from(card.querySelectorAll<HTMLElement>('.company-identity'));
+      const expectedIdentities = [
+        {
+          label: client ? 'Employer' : 'Company',
+          name: job.company,
+          logo: job.companyLogo,
+        },
+        ...(client
+          ? [
+              {
+                label: 'Client',
+                name: client.name,
+                logo: client.logo,
+              },
+            ]
+          : []),
+      ];
+      const printCompany = card.querySelector<HTMLElement>('.company');
+
+      expect(identities).toHaveLength(expectedIdentities.length);
+
+      identities.forEach((identity, identityIndex) => {
+        const expected = expectedIdentities[identityIndex];
+        const logo = identity.querySelector<HTMLImageElement>('.company-logo');
+        const logoFrame = identity.querySelector<HTMLElement>('.company-logo-frame');
+
+        expect(identity.querySelector('.company-label')?.textContent?.trim()).toBe(expected.label);
+        expect(identity.querySelector('.company-name')?.textContent?.trim()).toBe(expected.name);
+        expect(logo?.getAttribute('src')).toBe(expected.logo.src);
+        expect(logo?.getAttribute('width')).toBe(String(expected.logo.width));
+        expect(logo?.getAttribute('height')).toBe(String(expected.logo.height));
+        expect(logo?.getAttribute('alt')).toBe('');
+        expect(logo?.getAttribute('loading')).toBe('lazy');
+        expect(logoFrame?.classList.contains(`company-logo-frame--${expected.logo.surface}`)).toBe(
+          true,
+        );
+      });
+
+      const arrows = card.querySelectorAll<HTMLElement>('.company-relationship-arrow');
+      expect(arrows).toHaveLength(client ? 1 : 0);
+      if (client) {
+        expect(arrows.item(0).textContent?.trim()).toBe('→');
+        expect(arrows.item(0).getAttribute('aria-hidden')).toBe('true');
+      }
+
+      expect(printCompany?.textContent?.trim()).toBe(job.company);
+      expect(getComputedStyle(printCompany!).display).toBe('none');
+    });
+
+    const logos = Array.from(element.querySelectorAll<HTMLImageElement>('.company-logo'));
+    const clientIdentities = Array.from(
+      element.querySelectorAll<HTMLElement>('.company-identity--client'),
+    );
+
+    expect(logos).toHaveLength(8);
+    expect(logos.every((logo) => logo.getAttribute('alt') === '')).toBe(true);
+    expect(
+      logos.every((logo) => logo.getAttribute('src')?.startsWith('/images/company-logos/')),
+    ).toBe(true);
+    expect(
+      clientIdentities.map((identity) =>
+        identity.querySelector('.company-name')?.textContent?.trim(),
+      ),
+    ).toEqual(['InnovestX', 'Ayudhya Capital Services (AYCAP)', 'TISCO Bank']);
+    expect(
+      clientIdentities.map((identity) =>
+        identity.querySelector<HTMLImageElement>('.company-logo')?.getAttribute('src'),
+      ),
+    ).toEqual([
+      '/images/company-logos/innovestx.png',
+      '/images/company-logos/krungsri.png',
+      '/images/company-logos/tisco.svg',
+    ]);
+    expect(element.querySelectorAll('.company-identity--client .company-label')).toHaveLength(3);
+    expect(element.querySelectorAll('.company-relationship-arrow')).toHaveLength(3);
+    expect(element.querySelectorAll('.company-identities a')).toHaveLength(0);
   });
 
   it('renders the backend-first profile and four summary cards', () => {

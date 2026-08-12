@@ -26,6 +26,65 @@
         <mat-card appearance="outlined" class="experience-card">
           <mat-card-header class="experience-header">
             <div class="min-w-0 flex-1">
+              <div
+                class="company-identities mb-[0.85rem] flex flex-wrap items-start gap-x-5 gap-y-3 max-sm:flex-col max-sm:flex-nowrap"
+              >
+                <div class="company-identity min-w-0 max-w-full max-sm:w-full">
+                  <span class="company-label mb-1 block leading-tight">
+                    {{ job.client ? 'Employer' : 'Company' }}
+                  </span>
+                  <div class="company-identity-content flex min-w-0 max-w-full items-center gap-3">
+                    <span
+                      class="company-logo-frame grid shrink-0 place-items-center overflow-hidden"
+                      [class.company-logo-frame--light]="job.companyLogo.surface === 'light'"
+                      [class.company-logo-frame--dark]="job.companyLogo.surface === 'dark'"
+                    >
+                      <img
+                        class="company-logo block h-full w-full object-contain"
+                        [ngSrc]="job.companyLogo.src"
+                        [width]="job.companyLogo.width"
+                        [height]="job.companyLogo.height"
+                        alt=""
+                      />
+                    </span>
+                    <span class="company-name min-w-0">{{ job.company }}</span>
+                  </div>
+                </div>
+                @if (job.client; as client) {
+                  <div
+                    class="company-client-relationship flex min-w-0 max-w-full items-start gap-5 max-sm:w-full max-sm:flex-col max-sm:gap-2"
+                  >
+                    <span
+                      class="company-relationship-arrow mt-[1.15rem] grid h-12 w-5 shrink-0 place-items-center text-xl leading-none font-extrabold text-[var(--resume-accent)] max-sm:mt-0 max-sm:h-6 max-sm:w-[5.25rem] max-sm:rotate-90"
+                      aria-hidden="true"
+                      >→</span
+                    >
+                    <div
+                      class="company-identity company-identity--client min-w-0 max-w-full max-sm:w-full"
+                    >
+                      <span class="company-label mb-1 block leading-tight">Client</span>
+                      <div
+                        class="company-identity-content flex min-w-0 max-w-full items-center gap-3"
+                      >
+                        <span
+                          class="company-logo-frame grid shrink-0 place-items-center overflow-hidden"
+                          [class.company-logo-frame--light]="client.logo.surface === 'light'"
+                          [class.company-logo-frame--dark]="client.logo.surface === 'dark'"
+                        >
+                          <img
+                            class="company-logo block h-full w-full object-contain"
+                            [ngSrc]="client.logo.src"
+                            [width]="client.logo.width"
+                            [height]="client.logo.height"
+                            alt=""
+                          />
+                        </span>
+                        <span class="company-name min-w-0">{{ client.name }}</span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
               <p class="company">{{ job.company }}</p>
               <div class="role-heading">
                 <h3>{{ job.role }}</h3>
