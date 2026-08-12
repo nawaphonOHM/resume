@@ -2,16 +2,12 @@ import type { ResumeProfile } from '../../model/resume/resume.model';
 
 export const RESUME = {
   name: 'Nawaphon Isarathanachaikul',
-  title: 'Full Stack Developer',
+  title: 'Backend Software Engineer',
   summary: [
-    'Use front-end libraries and frameworks to build user interfaces that meet user requirements.',
-    'Integrate application programming interfaces (APIs) to fetch data and present it clearly on screen.',
-    'Build and refine responsive user interfaces.',
-    'Build APIs that integrate with databases and return required results as JSON or SOAP.',
-    'Perform create, read, update, and delete (CRUD) operations to manage user data across industries.',
-    'Build pipelines that automate recurring development cycles.',
-    'Use containerization to reduce development time.',
-    'Use container orchestration systems to coordinate distributed applications.',
+    'Backend-focused software engineer with experience across banking, fintech, food-tech, and tax platforms, backed by a full-stack development foundation.',
+    'Design and deliver APIs, CRUD services, database integrations, event-driven processing, and caching with Spring Boot, Go, Node.js, Kafka, Redis, Caffeine, and relational databases.',
+    'Build responsive Angular and React interfaces and data-driven features, including regulatory reporting, Excel exports, and secure cross-system integrations.',
+    'Support end-to-end delivery through AI-assisted development, automated pipelines and smoke tests, Elasticsearch and Kubernetes diagnostics, SIT/UAT deployments, documentation, and DevOps coordination.',
   ],
   details: {
     location: 'Bangkok, Bangkok, Thailand',

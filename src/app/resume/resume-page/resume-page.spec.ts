@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
 import { RESUME_THEME_STORAGE_KEY } from '../../core/theme.service';
+import { RESUME } from '../../data/resume/resume.data';
 import { ResumePage } from './resume-page';
 
 describe('ResumePage', () => {
@@ -79,6 +80,26 @@ describe('ResumePage', () => {
     expect(externalLinks.every((link) => link.getAttribute('rel') === 'noopener noreferrer')).toBe(
       true,
     );
+  });
+
+  it('renders the backend-first profile and four summary cards', () => {
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    const text = (selector: string) =>
+      element.querySelector(selector)?.textContent?.replace(/\s+/g, ' ').trim();
+    const summaries = Array.from(
+      element.querySelectorAll('.summary-card mat-card-content > p'),
+    ).map((item) => item.textContent?.trim());
+
+    expect(text('.hero-kicker')).toBe(`${RESUME.title} · ${RESUME.details.location}`);
+    expect(text('.hero-role')).toBe(RESUME.title);
+    expect(text('.hero-introduction')).toBe(
+      'Building reliable APIs, data integrations, event-driven workflows, and responsive interfaces for financial and business systems.',
+    );
+    expect(summaries).toEqual(RESUME.summary);
+    expect(summaries).toHaveLength(4);
+    expect(text('footer p')).toBe(`${RESUME.name} · ${RESUME.title}`);
   });
 
   it('provides keyboard-named controls for theme, print, and PDF download', () => {
