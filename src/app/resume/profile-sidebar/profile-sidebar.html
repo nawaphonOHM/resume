@@ -82,11 +82,38 @@
         </mat-card-header>
         <mat-divider></mat-divider>
         <mat-card-content>
-          <div class="links-list">
+          <div class="links-list grid gap-[0.8rem]">
             @for (link of profile().links; track link.url) {
-              <a mat-stroked-button [href]="link.url" target="_blank" rel="noopener noreferrer">
-                <span>{{ link.label }}</span>
-                <mat-icon aria-hidden="true">open_in_new</mat-icon>
+              <a
+                mat-stroked-button
+                class="min-w-0 gap-3"
+                [href]="link.url"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span class="link-identity flex min-w-0 flex-1 items-center gap-2.5 text-left">
+                  @if (link.logo; as logo) {
+                    <span
+                      class="link-logo-frame grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-lg border border-solid border-[color:var(--resume-border)] p-1.5"
+                      [class.link-logo-frame--light]="logo.surface === 'light'"
+                      [class.link-logo-frame--dark]="logo.surface === 'dark'"
+                      aria-hidden="true"
+                    >
+                      <img
+                        class="link-logo block h-full w-full object-contain"
+                        [ngSrc]="logo.src"
+                        [width]="logo.width"
+                        [height]="logo.height"
+                        alt=""
+                      />
+                    </span>
+                  }
+                  <span
+                    class="link-label min-w-0 leading-tight whitespace-normal [overflow-wrap:anywhere]"
+                    >{{ link.label }}</span
+                  >
+                </span>
+                <mat-icon iconPositionEnd aria-hidden="true">open_in_new</mat-icon>
               </a>
             }
           </div>

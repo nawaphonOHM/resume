@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import { Component, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -9,7 +10,14 @@ import type { ResumeProfile } from '../../model/resume/resume.model';
 
 @Component({
   selector: 'app-profile-sidebar',
-  imports: [MatButtonModule, MatCardModule, MatChipsModule, MatDividerModule, MatIconModule],
+  imports: [
+    MatButtonModule,
+    MatCardModule,
+    MatChipsModule,
+    MatDividerModule,
+    MatIconModule,
+    NgOptimizedImage,
+  ],
   templateUrl: './profile-sidebar.html',
   styleUrl: './profile-sidebar.scss',
 })

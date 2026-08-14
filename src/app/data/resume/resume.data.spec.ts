@@ -1,3 +1,4 @@
+import type { ResumeLink } from '../../model/resume/resume.model';
 import { RESUME } from './resume.data';
 
 describe('RESUME', () => {
@@ -220,6 +221,34 @@ describe('RESUME', () => {
     expect(logo.width).toBeGreaterThan(0);
     expect(logo.height).toBeGreaterThan(0);
     expect(['light', 'dark']).toContain(logo.surface);
+  });
+
+  it('brands only the GitHub link with validated local logo metadata', () => {
+    const links: readonly ResumeLink[] = RESUME.links;
+    const githubLink = links.find(({ label }) => label === 'GitHub');
+    const githubLogo = githubLink?.logo;
+
+    expect(githubLink).toMatchObject({
+      label: 'GitHub',
+      url: 'https://github.com/nawaphonOHM',
+      logo: {
+        src: '/images/link-logos/github.svg',
+        width: 98,
+        height: 96,
+        surface: 'light',
+      },
+    });
+    expect(Number.isInteger(githubLogo?.width ?? Number.NaN)).toBe(true);
+    expect(Number.isInteger(githubLogo?.height ?? Number.NaN)).toBe(true);
+    expect(githubLogo?.width ?? 0).toBeGreaterThan(0);
+    expect(githubLogo?.height ?? 0).toBeGreaterThan(0);
+    expect(links.filter(({ logo }) => logo !== undefined).map(({ label }) => label)).toEqual([
+      'GitHub',
+    ]);
+    expect(links.find(({ label }) => label === 'Personal website')).toEqual({
+      label: 'Personal website',
+      url: 'https://leader-board.ohm-mho.space/',
+    });
   });
 
   it('publishes only safe HTTPS external links', () => {

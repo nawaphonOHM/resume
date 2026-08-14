@@ -122,6 +122,64 @@ describe('ResumePage', () => {
     );
   });
 
+  it('renders the GitHub logo before its label and keeps the personal website text-only', () => {
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    const [github, personalWebsite] = RESUME.links;
+    const linksCard = element.querySelector<HTMLElement>('.links-card');
+    const githubLink = linksCard?.querySelector<HTMLAnchorElement>(`a[href="${github.url}"]`);
+    const personalWebsiteLink = linksCard?.querySelector<HTMLAnchorElement>(
+      `a[href="${personalWebsite.url}"]`,
+    );
+    const githubIdentity = githubLink?.querySelector<HTMLElement>('.link-identity');
+    const githubLogoFrame = githubIdentity?.querySelector<HTMLElement>('.link-logo-frame');
+    const githubLogo = githubLogoFrame?.querySelector<HTMLImageElement>('.link-logo');
+    const githubLabel = githubIdentity?.querySelector<HTMLElement>('.link-label');
+    const githubExternalIcon = githubLink?.querySelector<HTMLElement>('mat-icon');
+
+    expect(githubLabel?.textContent?.trim()).toBe(github.label);
+    expect(githubLogo?.getAttribute('src')).toBe(github.logo.src);
+    expect(githubLogo?.getAttribute('width')).toBe(String(github.logo.width));
+    expect(githubLogo?.getAttribute('height')).toBe(String(github.logo.height));
+    expect(githubLogo?.getAttribute('alt')).toBe('');
+    expect(githubLogo?.getAttribute('loading')).toBe('lazy');
+    expect(githubLogoFrame?.classList.contains(`link-logo-frame--${github.logo.surface}`)).toBe(
+      true,
+    );
+    expect(getComputedStyle(githubLogoFrame!).backgroundColor).toBe('rgb(255, 255, 255)');
+    document.documentElement.classList.add('resume-theme-dark');
+    expect(getComputedStyle(githubLogoFrame!).backgroundColor).toBe('rgb(255, 255, 255)');
+    expect(githubIdentity?.firstElementChild).toBe(githubLogoFrame);
+    expect(githubLogoFrame?.nextElementSibling).toBe(githubLabel);
+    expect(
+      githubIdentity && githubExternalIcon
+        ? githubIdentity.compareDocumentPosition(githubExternalIcon) &
+            Node.DOCUMENT_POSITION_FOLLOWING
+        : 0,
+    ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+
+    expect(personalWebsiteLink?.querySelector('.link-label')?.textContent?.trim()).toBe(
+      personalWebsite.label,
+    );
+    expect(personalWebsiteLink?.querySelector('.link-logo-frame')).toBeNull();
+    expect(personalWebsiteLink?.querySelector('img')).toBeNull();
+
+    [
+      { element: githubLink, url: github.url },
+      { element: personalWebsiteLink, url: personalWebsite.url },
+    ].forEach(({ element: link, url }) => {
+      const externalIcon = link?.querySelector<HTMLElement>('mat-icon');
+
+      expect(link?.getAttribute('href')).toBe(url);
+      expect(link?.getAttribute('target')).toBe('_blank');
+      expect(link?.getAttribute('rel')).toBe('noopener noreferrer');
+      expect(externalIcon?.textContent?.trim()).toBe('open_in_new');
+      expect(externalIcon?.hasAttribute('iconPositionEnd')).toBe(true);
+      expect(externalIcon?.getAttribute('aria-hidden')).toBe('true');
+    });
+  });
+
   it('renders the official university logo beside the accessible institution identity', () => {
     const fixture = TestBed.createComponent(ResumePage);
     fixture.detectChanges();

@@ -1,6 +1,7 @@
 export interface ResumeLink {
   readonly label: string;
   readonly url: `https://${string}`;
+  readonly logo?: BrandLogo;
 }
 
 export interface ResumeDetails {

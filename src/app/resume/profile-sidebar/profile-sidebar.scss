@@ -155,16 +155,19 @@ dd a {
   text-underline-offset: 0.2em;
 }
 
-.links-list {
-  display: grid;
-  gap: 0.8rem;
-}
-
 .links-list a {
   --mat-button-outlined-label-text-color: var(--resume-text);
   --mat-button-outlined-outline-color: var(--resume-border);
   justify-content: space-between;
   min-height: 3.35rem;
+}
+
+.link-logo-frame--light {
+  background: #ffffff;
+}
+
+.link-logo-frame--dark {
+  background: #071a2e;
 }
 
 @media (min-width: 48rem) {

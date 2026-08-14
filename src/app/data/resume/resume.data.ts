@@ -20,6 +20,12 @@ export const RESUME = {
     {
       label: 'GitHub',
       url: 'https://github.com/nawaphonOHM',
+      logo: {
+        src: '/images/link-logos/github.svg',
+        width: 98,
+        height: 96,
+        surface: 'light',
+      },
     },
     {
       label: 'Personal website',
