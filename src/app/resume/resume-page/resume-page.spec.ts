@@ -325,6 +325,28 @@ describe('ResumePage', () => {
     expect(download?.hasAttribute('download')).toBe(true);
   });
 
+  it('transfers the active navigation presentation immediately when a section link is clicked', () => {
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    const aboutLink = element.querySelector<HTMLAnchorElement>('nav a[href="#about"]');
+    const experienceLink = element.querySelector<HTMLAnchorElement>('nav a[href="#experience"]');
+
+    expect(aboutLink?.classList.contains('navigation-link-active')).toBe(true);
+    expect(aboutLink?.getAttribute('aria-current')).toBe('location');
+    expect(experienceLink?.classList.contains('navigation-link-active')).toBe(false);
+    expect(experienceLink?.getAttribute('aria-current')).toBeNull();
+
+    experienceLink?.click();
+    fixture.detectChanges();
+
+    expect(aboutLink?.classList.contains('navigation-link-active')).toBe(false);
+    expect(aboutLink?.getAttribute('aria-current')).toBeNull();
+    expect(experienceLink?.classList.contains('navigation-link-active')).toBe(true);
+    expect(experienceLink?.getAttribute('aria-current')).toBe('location');
+    expect(experienceLink?.getAttribute('href')).toBe('#experience');
+  });
+
   it('updates active navigation from observed sections and disconnects cleanly', async () => {
     const fixture = TestBed.createComponent(ResumePage);
     fixture.detectChanges();
@@ -349,6 +371,11 @@ describe('ResumePage', () => {
     expect(element.querySelector('nav a[href="#experience"]')?.getAttribute('aria-current')).toBe(
       'location',
     );
+    expect(
+      element
+        .querySelector('nav a[href="#experience"]')
+        ?.classList.contains('navigation-link-active'),
+    ).toBe(true);
 
     observerCallback(
       [
@@ -365,6 +392,19 @@ describe('ResumePage', () => {
     expect(element.querySelector('nav a[href="#education"]')?.getAttribute('aria-current')).toBe(
       'location',
     );
+    expect(
+      element
+        .querySelector('nav a[href="#education"]')
+        ?.classList.contains('navigation-link-active'),
+    ).toBe(true);
+    expect(
+      element
+        .querySelector('nav a[href="#experience"]')
+        ?.classList.contains('navigation-link-active'),
+    ).toBe(false);
+    expect(
+      element.querySelector('nav a[href="#experience"]')?.getAttribute('aria-current'),
+    ).toBeNull();
 
     expect(disconnect).not.toHaveBeenCalled();
     fixture.destroy();

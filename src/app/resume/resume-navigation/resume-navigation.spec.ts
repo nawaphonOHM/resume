@@ -39,6 +39,41 @@ describe('ResumeNavigation', () => {
     ).toBe('location');
   });
 
+  it('transfers the active presentation immediately without changing stable section anchors', () => {
+    const fixture = TestBed.createComponent(ResumeNavigation);
+    fixture.componentRef.setInput('activeSection', 'about');
+    fixture.componentRef.setInput('theme', 'light');
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const navigationLinks = Array.from(element.querySelectorAll<HTMLAnchorElement>('nav a'));
+    const aboutLink = navigationLinks.find((link) => link.getAttribute('href') === '#about');
+    const experienceLink = navigationLinks.find(
+      (link) => link.getAttribute('href') === '#experience',
+    );
+    const stableHrefs = navigationLinks.map((link) => link.getAttribute('href'));
+
+    expect(aboutLink?.classList.contains('navigation-link-active')).toBe(true);
+    expect(aboutLink?.getAttribute('aria-current')).toBe('location');
+    expect(experienceLink?.classList.contains('navigation-link-active')).toBe(false);
+    expect(experienceLink?.getAttribute('aria-current')).toBeNull();
+
+    fixture.componentRef.setInput('activeSection', 'experience');
+    fixture.detectChanges();
+
+    const updatedLinks = Array.from(element.querySelectorAll<HTMLAnchorElement>('nav a'));
+
+    expect(updatedLinks.map((link) => link.getAttribute('href'))).toEqual(stableHrefs);
+    updatedLinks.forEach((link, index) => expect(link).toBe(navigationLinks[index]));
+    expect(aboutLink?.classList.contains('navigation-link-active')).toBe(false);
+    expect(aboutLink?.getAttribute('aria-current')).toBeNull();
+    expect(experienceLink?.classList.contains('navigation-link-active')).toBe(true);
+    expect(experienceLink?.getAttribute('aria-current')).toBe('location');
+    expect(
+      updatedLinks.filter((link) => link.classList.contains('navigation-link-active')),
+    ).toHaveLength(1);
+  });
+
   it('provides accessible labels for theme, print, menu, and download controls', () => {
     const fixture = TestBed.createComponent(ResumeNavigation);
     fixture.componentRef.setInput('activeSection', 'about');

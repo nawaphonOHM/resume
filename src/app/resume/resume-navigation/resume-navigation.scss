@@ -42,13 +42,22 @@
 .navigation-link {
   --mat-button-text-label-text-color: var(--resume-muted);
   --mat-button-text-hover-state-layer-color: var(--resume-brand);
+  background-color: transparent;
+  color: var(--resume-muted);
   letter-spacing: 0.01em;
+  transform: scale(0.98);
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
 }
 
 .navigation-link-active {
   --mat-button-text-label-text-color: var(--resume-brand);
-  background: var(--resume-brand-soft);
+  background-color: var(--resume-brand-soft);
+  color: var(--resume-brand);
   font-weight: 700;
+  transform: scale(1);
 }
 
 .desktop-control {
@@ -73,5 +82,12 @@
   .navigation-toolbar {
     min-height: 4rem;
     gap: 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navigation-link {
+    transform: none;
+    transition: none;
   }
 }
