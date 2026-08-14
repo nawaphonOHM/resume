@@ -49,7 +49,11 @@ describe('ResumePage', () => {
     });
 
     localStorage.clear();
-    document.documentElement.classList.remove('resume-theme-light', 'resume-theme-dark');
+    document.documentElement.classList.remove(
+      'resume-theme-light',
+      'resume-theme-dark',
+      'resume-theme-transitioning',
+    );
 
     await TestBed.configureTestingModule({
       imports: [ResumePage],
@@ -62,7 +66,11 @@ describe('ResumePage', () => {
     Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView');
     localStorage.clear();
     history.replaceState(null, '', location.pathname);
-    document.documentElement.classList.remove('resume-theme-light', 'resume-theme-dark');
+    document.documentElement.classList.remove(
+      'resume-theme-light',
+      'resume-theme-dark',
+      'resume-theme-transitioning',
+    );
   });
 
   it('renders every résumé section and keeps public links safe', () => {
@@ -274,22 +282,45 @@ describe('ResumePage', () => {
     expect(text('footer p')).toBe(`${RESUME.name} · ${RESUME.title}`);
   });
 
-  it('provides keyboard-named controls for theme, print, and PDF download', () => {
+  it('fades both theme directions and provides keyboard-named controls', () => {
     const print = vi.fn();
     Object.defineProperty(window, 'print', { configurable: true, value: print });
     const fixture = TestBed.createComponent(ResumePage);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
+    const root = document.documentElement;
+    const switchToDark = element.querySelector<HTMLButtonElement>(
+      '[aria-label="Switch to dark theme"]',
+    );
 
-    element.querySelector<HTMLButtonElement>('[aria-label="Switch to dark theme"]')?.click();
+    expect(switchToDark?.textContent?.trim()).toBe('dark_mode');
+    switchToDark?.click();
     fixture.detectChanges();
+
+    expect(root.classList.contains('resume-theme-dark')).toBe(true);
+    expect(root.classList.contains('resume-theme-transitioning')).toBe(true);
+    expect(localStorage.getItem(RESUME_THEME_STORAGE_KEY)).toBe('dark');
+
+    const switchToLight = element.querySelector<HTMLButtonElement>(
+      '[aria-label="Switch to light theme"]',
+    );
+    expect(switchToLight?.textContent?.trim()).toBe('light_mode');
+    switchToLight?.click();
+    fixture.detectChanges();
+
+    expect(root.classList.contains('resume-theme-light')).toBe(true);
+    expect(root.classList.contains('resume-theme-dark')).toBe(false);
+    expect(root.classList.contains('resume-theme-transitioning')).toBe(true);
+    expect(localStorage.getItem(RESUME_THEME_STORAGE_KEY)).toBe('light');
+    expect(
+      element.querySelector<HTMLButtonElement>('[aria-label="Switch to dark theme"]')?.textContent,
+    ).toContain('dark_mode');
+
     element.querySelector<HTMLButtonElement>('[aria-label="Print résumé"]')?.click();
 
     const download = element.querySelector<HTMLAnchorElement>(
       'a[aria-label="Download résumé as PDF"]',
     );
-    expect(document.documentElement.classList.contains('resume-theme-dark')).toBe(true);
-    expect(localStorage.getItem(RESUME_THEME_STORAGE_KEY)).toBe('dark');
     expect(print).toHaveBeenCalledOnce();
     expect(download?.hasAttribute('download')).toBe(true);
   });

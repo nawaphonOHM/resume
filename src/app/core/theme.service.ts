@@ -6,6 +6,8 @@ export type ResumeTheme = 'light' | 'dark';
 export const RESUME_THEME_STORAGE_KEY = 'resume-theme';
 
 const THEME_CLASSES = ['resume-theme-light', 'resume-theme-dark'] as const;
+const THEME_TRANSITION_CLASS = 'resume-theme-transitioning';
+const THEME_TRANSITION_DURATION_MS = 250;
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
@@ -16,6 +18,7 @@ export class ThemeService {
   private readonly mediaQuery = this.view?.matchMedia?.('(prefers-color-scheme: dark)') ?? null;
   private hasExplicitChoice = false;
   private isPrinting = false;
+  private transitionCleanupTimer: number | null = null;
 
   readonly theme = signal<ResumeTheme>('light');
   readonly isDark = computed(() => this.theme() === 'dark');
@@ -34,6 +37,7 @@ export class ThemeService {
       this.mediaQuery?.removeEventListener('change', this.handleSystemThemeChange);
       this.view?.removeEventListener('beforeprint', this.handleBeforePrint);
       this.view?.removeEventListener('afterprint', this.handleAfterPrint);
+      this.cancelThemeTransition();
     });
   }
 
@@ -42,6 +46,10 @@ export class ThemeService {
   }
 
   setTheme(theme: ResumeTheme): void {
+    if (theme !== this.theme()) {
+      this.startThemeTransition();
+    }
+
     this.hasExplicitChoice = true;
     this.theme.set(theme);
     this.applyTheme(theme);
@@ -63,6 +71,7 @@ export class ThemeService {
 
   private readonly handleBeforePrint = (): void => {
     this.isPrinting = true;
+    this.cancelThemeTransition();
     this.applyTheme('light');
   };
 
@@ -74,6 +83,31 @@ export class ThemeService {
   private applyTheme(theme: ResumeTheme): void {
     this.document.documentElement.classList.remove(...THEME_CLASSES);
     this.document.documentElement.classList.add(`resume-theme-${theme}`);
+  }
+
+  private startThemeTransition(): void {
+    if (!this.view) {
+      return;
+    }
+
+    if (this.transitionCleanupTimer !== null) {
+      this.view.clearTimeout(this.transitionCleanupTimer);
+    }
+
+    this.document.documentElement.classList.add(THEME_TRANSITION_CLASS);
+    this.transitionCleanupTimer = this.view.setTimeout(() => {
+      this.transitionCleanupTimer = null;
+      this.document.documentElement.classList.remove(THEME_TRANSITION_CLASS);
+    }, THEME_TRANSITION_DURATION_MS);
+  }
+
+  private cancelThemeTransition(): void {
+    if (this.transitionCleanupTimer !== null) {
+      this.view?.clearTimeout(this.transitionCleanupTimer);
+      this.transitionCleanupTimer = null;
+    }
+
+    this.document.documentElement.classList.remove(THEME_TRANSITION_CLASS);
   }
 
   private readStoredTheme(): ResumeTheme | null {

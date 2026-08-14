@@ -21,6 +21,90 @@
   --shadow-soft: var(--resume-shadow);
 }
 
+@property --resume-page {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #f4f7fb;
+}
+
+@property --resume-surface {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #ffffff;
+}
+
+@property --resume-surface-raised {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #e8eef6;
+}
+
+@property --resume-text {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #172033;
+}
+
+@property --resume-muted {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #526078;
+}
+
+@property --resume-brand {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #123b67;
+}
+
+@property --resume-brand-strong {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #0a284a;
+}
+
+@property --resume-brand-soft {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #dbeafd;
+}
+
+@property --resume-accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #1769aa;
+}
+
+@property --resume-border {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #c7d3e1;
+}
+
+@property --resume-sidebar {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #0b2847;
+}
+
+@property --resume-sidebar-text {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #f5f9ff;
+}
+
+@property --resume-focus {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #005fcc;
+}
+
+@property --resume-shadow-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgb(13 39 70 / 12%);
+}
+
 :root,
 .resume-theme-light {
   color-scheme: light;
@@ -37,7 +121,8 @@
   --resume-sidebar: #0b2847;
   --resume-sidebar-text: #f5f9ff;
   --resume-focus: #005fcc;
-  --resume-shadow: 0 1.25rem 3.75rem rgb(13 39 70 / 12%);
+  --resume-shadow-color: rgb(13 39 70 / 12%);
+  --resume-shadow: 0 1.25rem 3.75rem var(--resume-shadow-color);
 }
 
 .resume-theme-dark {
@@ -55,7 +140,8 @@
   --resume-sidebar: #06182b;
   --resume-sidebar-text: #f5f9ff;
   --resume-focus: #8dc5ff;
-  --resume-shadow: 0 1.25rem 3.75rem rgb(0 0 0 / 34%);
+  --resume-shadow-color: rgb(0 0 0 / 34%);
+  --resume-shadow: 0 1.25rem 3.75rem var(--resume-shadow-color);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -74,8 +160,18 @@
     --resume-sidebar: #06182b;
     --resume-sidebar-text: #f5f9ff;
     --resume-focus: #8dc5ff;
-    --resume-shadow: 0 1.25rem 3.75rem rgb(0 0 0 / 34%);
+    --resume-shadow-color: rgb(0 0 0 / 34%);
+    --resume-shadow: 0 1.25rem 3.75rem var(--resume-shadow-color);
   }
+}
+
+html.resume-theme-transitioning {
+  transition-property:
+    --resume-page, --resume-surface, --resume-surface-raised, --resume-text, --resume-muted,
+    --resume-brand, --resume-brand-strong, --resume-brand-soft, --resume-accent, --resume-border,
+    --resume-sidebar, --resume-sidebar-text, --resume-focus, --resume-shadow-color;
+  transition-duration: 250ms;
+  transition-timing-function: ease;
 }
 
 *,
@@ -161,6 +257,7 @@ a {
     --resume-sidebar: #0b2847 !important;
     --resume-sidebar-text: #f5f9ff !important;
     --resume-focus: #005fcc !important;
+    --resume-shadow-color: transparent !important;
     --resume-shadow: none !important;
   }
 
