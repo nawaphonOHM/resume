@@ -11,7 +11,7 @@ describe('RESUME', () => {
       'Support end-to-end delivery through AI-assisted development, automated pipelines and smoke tests, Elasticsearch and Kubernetes diagnostics, SIT/UAT deployments, documentation, and DevOps coordination.',
     ]);
     expect(RESUME.details).toEqual({
-      location: 'Bangkok, Bangkok, Thailand',
+      location: 'Bangkok, Thailand',
       phoneLabel: 'Available on request',
       email: 'nawaphon2539@gmail.com',
       nationality: 'Thai',
