@@ -125,23 +125,51 @@
   --resume-shadow: 0 1.25rem 3.75rem var(--resume-shadow-color);
 }
 
+$resume-dark-colors: (
+  page: #07111f,
+  surface: #0d1b2d,
+  surface-raised: #14253a,
+  text: #eef5ff,
+  muted: #b1bed0,
+  border: #30455f,
+);
+
+$resume-dark-brand-colors: (
+  brand: #9bc7ff,
+  brand-strong: #d7e9ff,
+  brand-soft: #17355a,
+  accent: #7cb8ff,
+  focus: #8dc5ff,
+);
+
+$resume-dark-layout-colors: (
+  sidebar: #06182b,
+  sidebar-text: #f5f9ff,
+);
+
+$resume-dark-effects: (
+  shadow-color: rgb(0 0 0 / 34%),
+  shadow: 0 1.25rem 3.75rem var(--resume-shadow-color),
+);
+
 .resume-theme-dark {
   color-scheme: dark;
-  --resume-page: #07111f;
-  --resume-surface: #0d1b2d;
-  --resume-surface-raised: #14253a;
-  --resume-text: #eef5ff;
-  --resume-muted: #b1bed0;
-  --resume-brand: #9bc7ff;
-  --resume-brand-strong: #d7e9ff;
-  --resume-brand-soft: #17355a;
-  --resume-accent: #7cb8ff;
-  --resume-border: #30455f;
-  --resume-sidebar: #06182b;
-  --resume-sidebar-text: #f5f9ff;
-  --resume-focus: #8dc5ff;
-  --resume-shadow-color: rgb(0 0 0 / 34%);
-  --resume-shadow: 0 1.25rem 3.75rem var(--resume-shadow-color);
+
+  @each $name, $value in $resume-dark-colors {
+    --resume-#{$name}: #{$value};
+  }
+
+  @each $name, $value in $resume-dark-brand-colors {
+    --resume-#{$name}: #{$value};
+  }
+
+  @each $name, $value in $resume-dark-layout-colors {
+    --resume-#{$name}: #{$value};
+  }
+
+  @each $name, $value in $resume-dark-effects {
+    --resume-#{$name}: #{$value};
+  }
 }
 
 @media (prefers-color-scheme: dark) {
