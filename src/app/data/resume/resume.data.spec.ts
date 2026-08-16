@@ -1,8 +1,15 @@
 /** Guards the canonical résumé content, ordering, privacy, and asset metadata. */
 import type { ResumeLink } from '../../model/resume/resume.model';
+import { IMAGE_ASSET_ORIGIN, imageAssetUrl } from '../image-assets';
 import { RESUME } from './resume.data';
 
 describe('RESUME', () => {
+  it('builds image URLs from the fixed HTTPS Space origin', () => {
+    expect(IMAGE_ASSET_ORIGIN).toBe('https://resume-images.ohm-mho.space');
+    expect(imageAssetUrl('/images/company-logos/accord-innovations.png')).toBe(
+      'https://resume-images.ohm-mho.space/images/company-logos/accord-innovations.png',
+    );
+  });
   it('contains the complete public profile and six unique skills', () => {
     expect(RESUME.name).toBe('Nawaphon Isarathanachaikul');
     expect(RESUME.title).toBe('Backend Software Engineer');
@@ -75,29 +82,32 @@ describe('RESUME', () => {
     ).toEqual([
       {
         employer: 'Accord Innovations',
-        employerLogo: '/images/company-logos/accord-innovations.png',
+        employerLogo:
+          'https://resume-images.ohm-mho.space/images/company-logos/accord-innovations.png',
         client: 'InnovestX',
-        clientLogo: '/images/company-logos/innovestx.png',
+        clientLogo: 'https://resume-images.ohm-mho.space/images/company-logos/innovestx.png',
       },
       {
         employer: 'Saitech Solution',
-        employerLogo: '/images/company-logos/saitech-solution.png',
+        employerLogo:
+          'https://resume-images.ohm-mho.space/images/company-logos/saitech-solution.png',
         client: 'Ayudhya Capital Services (AYCAP)',
-        clientLogo: '/images/company-logos/krungsri.png',
+        clientLogo: 'https://resume-images.ohm-mho.space/images/company-logos/krungsri.png',
       },
       {
         employer: 'Nityo Infotech',
-        employerLogo: '/images/company-logos/nityo-infotech.svg',
+        employerLogo: 'https://resume-images.ohm-mho.space/images/company-logos/nityo-infotech.svg',
         client: 'TISCO Bank',
-        clientLogo: '/images/company-logos/tisco.svg',
+        clientLogo: 'https://resume-images.ohm-mho.space/images/company-logos/tisco.svg',
       },
       {
         employer: 'LINE MAN Wongnai',
-        employerLogo: '/images/company-logos/line-man-wongnai.webp',
+        employerLogo:
+          'https://resume-images.ohm-mho.space/images/company-logos/line-man-wongnai.webp',
       },
       {
         employer: 'WiseSoft',
-        employerLogo: '/images/company-logos/wisesoft.png',
+        employerLogo: 'https://resume-images.ohm-mho.space/images/company-logos/wisesoft.png',
       },
     ]);
 
@@ -106,7 +116,7 @@ describe('RESUME', () => {
     expect(RESUME.experience.length - outsourcedExperiences.length).toBe(2);
   });
 
-  it('provides eight validated local logo definitions', () => {
+  it('provides eight validated remote logo definitions', () => {
     const logos = RESUME.experience.flatMap((experience) => [
       experience.companyLogo,
       ...('client' in experience ? [experience.client.logo] : []),
@@ -114,49 +124,49 @@ describe('RESUME', () => {
 
     expect(logos).toEqual([
       {
-        src: '/images/company-logos/accord-innovations.png',
+        src: 'https://resume-images.ohm-mho.space/images/company-logos/accord-innovations.png',
         width: 250,
         height: 100,
         surface: 'dark',
       },
       {
-        src: '/images/company-logos/innovestx.png',
+        src: 'https://resume-images.ohm-mho.space/images/company-logos/innovestx.png',
         width: 142,
         height: 27,
         surface: 'light',
       },
       {
-        src: '/images/company-logos/saitech-solution.png',
+        src: 'https://resume-images.ohm-mho.space/images/company-logos/saitech-solution.png',
         width: 200,
         height: 200,
         surface: 'light',
       },
       {
-        src: '/images/company-logos/krungsri.png',
+        src: 'https://resume-images.ohm-mho.space/images/company-logos/krungsri.png',
         width: 200,
         height: 200,
         surface: 'dark',
       },
       {
-        src: '/images/company-logos/nityo-infotech.svg',
+        src: 'https://resume-images.ohm-mho.space/images/company-logos/nityo-infotech.svg',
         width: 4096,
         height: 1973,
         surface: 'light',
       },
       {
-        src: '/images/company-logos/tisco.svg',
+        src: 'https://resume-images.ohm-mho.space/images/company-logos/tisco.svg',
         width: 297,
         height: 119,
         surface: 'light',
       },
       {
-        src: '/images/company-logos/line-man-wongnai.webp',
+        src: 'https://resume-images.ohm-mho.space/images/company-logos/line-man-wongnai.webp',
         width: 555,
         height: 83,
         surface: 'light',
       },
       {
-        src: '/images/company-logos/wisesoft.png',
+        src: 'https://resume-images.ohm-mho.space/images/company-logos/wisesoft.png',
         width: 203,
         height: 203,
         surface: 'light',
@@ -165,7 +175,9 @@ describe('RESUME', () => {
     expect(new Set(logos.map(({ src }) => src)).size).toBe(8);
 
     for (const logo of logos) {
-      expect(logo.src).toMatch(/^\/images\/company-logos\/[a-z0-9.-]+$/);
+      const url = new URL(logo.src);
+      expect(url.origin).toBe(IMAGE_ASSET_ORIGIN);
+      expect(url.pathname).toMatch(/^\/images\/company-logos\/[a-z0-9.-]+$/);
       expect(Number.isInteger(logo.width)).toBe(true);
       expect(Number.isInteger(logo.height)).toBe(true);
       expect(logo.width).toBeGreaterThan(0);
@@ -198,7 +210,7 @@ describe('RESUME', () => {
       degree: 'Bachelor of Engineering (Computer Engineering)',
       institution: 'Prince of Songkla University',
       institutionLogo: {
-        src: '/images/university-logos/prince-of-songkla-university.webp',
+        src: 'https://resume-images.ohm-mho.space/images/university-logos/prince-of-songkla-university.webp',
         width: 600,
         height: 160,
         surface: 'light',
@@ -216,7 +228,9 @@ describe('RESUME', () => {
     expect(projectUrl.hostname).not.toBe('');
 
     const logo = RESUME.education.institutionLogo;
-    expect(logo.src).toMatch(/^\/images\/university-logos\/[a-z0-9.-]+$/);
+    const logoUrl = new URL(logo.src);
+    expect(logoUrl.origin).toBe(IMAGE_ASSET_ORIGIN);
+    expect(logoUrl.pathname).toMatch(/^\/images\/university-logos\/[a-z0-9.-]+$/);
     expect(Number.isInteger(logo.width)).toBe(true);
     expect(Number.isInteger(logo.height)).toBe(true);
     expect(logo.width).toBeGreaterThan(0);
@@ -224,7 +238,7 @@ describe('RESUME', () => {
     expect(['light', 'dark']).toContain(logo.surface);
   });
 
-  it('brands only the GitHub link with validated local logo metadata', () => {
+  it('brands only the GitHub link with validated remote logo metadata', () => {
     const links: readonly ResumeLink[] = RESUME.links;
     const githubLink = links.find(({ label }) => label === 'GitHub');
     const githubLogo = githubLink?.logo;
@@ -233,7 +247,7 @@ describe('RESUME', () => {
       label: 'GitHub',
       url: 'https://github.com/nawaphonOHM',
       logo: {
-        src: '/images/link-logos/github.svg',
+        src: 'https://resume-images.ohm-mho.space/images/link-logos/github.svg',
         width: 98,
         height: 96,
         surface: 'light',

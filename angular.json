@@ -28,8 +28,9 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               {
-                "glob": "**/*",
-                "input": "public"
+                "glob": "**/*.pdf",
+                "input": "public/downloads",
+                "output": "/downloads/"
               }
             ],
             "styles": ["src/material-theme.scss", "src/styles.scss"]

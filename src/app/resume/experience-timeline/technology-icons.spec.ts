@@ -1,4 +1,5 @@
-/** Verifies exact technology-label coverage, local assets, and fallback policy. */
+/** Verifies exact technology-label coverage, remote assets, and fallback policy. */
+import { IMAGE_ASSET_ORIGIN } from '../../data/image-assets';
 import { RESUME } from '../../data/resume/resume.data';
 import {
   TECHNOLOGY_ICON_FALLBACK_LABELS,
@@ -9,34 +10,35 @@ import {
 describe('technology icons', () => {
   /** Independent label-to-asset contract for every branded technology. */
   const expectedIconPaths = {
-    Codex: '/images/technology-icons/openai.svg',
-    'Claude Code': '/images/technology-icons/claude-code.svg',
-    MySQL: '/images/technology-icons/mysql.svg',
-    PostgreSQL: '/images/technology-icons/postgresql.svg',
-    Elasticsearch: '/images/technology-icons/elasticsearch.svg',
-    Kubernetes: '/images/technology-icons/kubernetes.svg',
-    Kafka: '/images/technology-icons/apache-kafka.svg',
-    Redis: '/images/technology-icons/redis.svg',
-    Bash: '/images/technology-icons/bash.svg',
-    Confluence: '/images/technology-icons/confluence.svg',
-    React: '/images/technology-icons/react.svg',
-    Go: '/images/technology-icons/go.svg',
-    Gin: '/images/technology-icons/gin.svg',
-    Oracle: '/images/technology-icons/oracle.svg',
-    'Node.js': '/images/technology-icons/nodejs.svg',
-    'MongoDB via internal API': '/images/technology-icons/mongodb.svg',
-    Scala: '/images/technology-icons/scala.svg',
-    'Apache Spark': '/images/technology-icons/apache-spark.svg',
-    AWS: '/images/technology-icons/aws.svg',
-    'Spring Boot 2.7.x': '/images/technology-icons/spring.svg',
-    gRPC: '/images/technology-icons/grpc.svg',
-    GraphQL: '/images/technology-icons/graphql.svg',
-    'Angular 7.x': '/images/technology-icons/angular.svg',
-    'Spring Batch': '/images/technology-icons/spring.svg',
-    'IBM Db2': '/images/technology-icons/ibm-db2.svg',
+    Codex: 'https://resume-images.ohm-mho.space/images/technology-icons/openai.svg',
+    'Claude Code': 'https://resume-images.ohm-mho.space/images/technology-icons/claude-code.svg',
+    MySQL: 'https://resume-images.ohm-mho.space/images/technology-icons/mysql.svg',
+    PostgreSQL: 'https://resume-images.ohm-mho.space/images/technology-icons/postgresql.svg',
+    Elasticsearch: 'https://resume-images.ohm-mho.space/images/technology-icons/elasticsearch.svg',
+    Kubernetes: 'https://resume-images.ohm-mho.space/images/technology-icons/kubernetes.svg',
+    Kafka: 'https://resume-images.ohm-mho.space/images/technology-icons/apache-kafka.svg',
+    Redis: 'https://resume-images.ohm-mho.space/images/technology-icons/redis.svg',
+    Bash: 'https://resume-images.ohm-mho.space/images/technology-icons/bash.svg',
+    Confluence: 'https://resume-images.ohm-mho.space/images/technology-icons/confluence.svg',
+    React: 'https://resume-images.ohm-mho.space/images/technology-icons/react.svg',
+    Go: 'https://resume-images.ohm-mho.space/images/technology-icons/go.svg',
+    Gin: 'https://resume-images.ohm-mho.space/images/technology-icons/gin.svg',
+    Oracle: 'https://resume-images.ohm-mho.space/images/technology-icons/oracle.svg',
+    'Node.js': 'https://resume-images.ohm-mho.space/images/technology-icons/nodejs.svg',
+    'MongoDB via internal API':
+      'https://resume-images.ohm-mho.space/images/technology-icons/mongodb.svg',
+    Scala: 'https://resume-images.ohm-mho.space/images/technology-icons/scala.svg',
+    'Apache Spark': 'https://resume-images.ohm-mho.space/images/technology-icons/apache-spark.svg',
+    AWS: 'https://resume-images.ohm-mho.space/images/technology-icons/aws.svg',
+    'Spring Boot 2.7.x': 'https://resume-images.ohm-mho.space/images/technology-icons/spring.svg',
+    gRPC: 'https://resume-images.ohm-mho.space/images/technology-icons/grpc.svg',
+    GraphQL: 'https://resume-images.ohm-mho.space/images/technology-icons/graphql.svg',
+    'Angular 7.x': 'https://resume-images.ohm-mho.space/images/technology-icons/angular.svg',
+    'Spring Batch': 'https://resume-images.ohm-mho.space/images/technology-icons/spring.svg',
+    'IBM Db2': 'https://resume-images.ohm-mho.space/images/technology-icons/ibm-db2.svg',
   } as const;
 
-  it('maps every branded résumé technology to validated local metadata', () => {
+  it('maps every branded résumé technology to validated remote metadata', () => {
     expect(
       Object.fromEntries(
         Object.entries(TECHNOLOGY_ICONS).map(([label, icon]) => [label, icon.src]),
@@ -44,7 +46,9 @@ describe('technology icons', () => {
     ).toEqual(expectedIconPaths);
 
     for (const icon of Object.values(TECHNOLOGY_ICONS)) {
-      expect(icon.src).toMatch(/^\/images\/technology-icons\/[a-z0-9-]+\.svg$/);
+      const url = new URL(icon.src);
+      expect(url.origin).toBe(IMAGE_ASSET_ORIGIN);
+      expect(url.pathname).toMatch(/^\/images\/technology-icons\/[a-z0-9-]+\.svg$/);
       expect(Number.isInteger(icon.width)).toBe(true);
       expect(Number.isInteger(icon.height)).toBe(true);
       expect(icon.width).toBeGreaterThan(0);

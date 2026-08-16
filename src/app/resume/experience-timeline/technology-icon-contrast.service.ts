@@ -322,7 +322,7 @@ export class TechnologyIconContrastService {
     };
   }
 
-  /** Loads the local SVG and retains its untouched alpha mask as RGBA pixels. */
+  /** Loads the remote SVG and retains its untouched alpha mask as RGBA pixels. */
   private async rasterize(icon: TechnologyIconMetadata): Promise<RasterizedIcon> {
     if (!this.view) {
       throw new Error('Technology icon rasterization requires a browser');
@@ -330,6 +330,7 @@ export class TechnologyIconContrastService {
 
     const image = new this.view.Image();
     image.decoding = 'async';
+    image.crossOrigin = 'anonymous';
     await new Promise<void>((resolve, reject) => {
       image.onload = () => resolve();
       image.onerror = () => reject(new Error('Technology icon could not be loaded'));

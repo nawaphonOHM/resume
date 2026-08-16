@@ -8,8 +8,11 @@ import {
   TechnologyIconContrastService,
 } from './technology-icon-contrast.service';
 
+const REMOTE_ICON_URL = 'https://resume-images.ohm-mho.space/images/technology-icons/test.svg';
+const SECOND_REMOTE_ICON_URL =
+  'https://resume-images.ohm-mho.space/images/technology-icons/second.svg';
 const ICON: TechnologyIconMetadata = {
-  src: '/images/technology-icons/test.svg',
+  src: REMOTE_ICON_URL,
   width: 24,
   height: 24,
   surface: 'light',
@@ -204,16 +207,20 @@ describe('TechnologyIconContrastService', () => {
   let sourcePixels: Uint8ClampedArray;
   let serializedPixels: Uint8ClampedArray[];
   let imageLoadCount: number;
+  let imageRequests: Array<{ readonly crossOrigin: string | null; readonly src: string }>;
   let failImageLoading: boolean;
   let canvasAvailable: boolean;
+  let failCanvasReading: boolean;
 
   beforeEach(() => {
     idleCallbacks = [];
     sourcePixels = createSourcePixels();
     serializedPixels = [];
     imageLoadCount = 0;
+    imageRequests = [];
     failImageLoading = false;
     canvasAvailable = true;
+    failCanvasReading = false;
 
     vi.stubGlobal(
       'requestIdleCallback',
@@ -228,9 +235,11 @@ describe('TechnologyIconContrastService', () => {
       onload: ((event: Event) => void) | null = null;
       onerror: ((event: Event | string) => void) | null = null;
       decoding = '';
+      crossOrigin: string | null = null;
 
-      set src(_value: string) {
+      set src(value: string) {
         imageLoadCount++;
+        imageRequests.push({ crossOrigin: this.crossOrigin, src: value });
         queueMicrotask(() => {
           if (failImageLoading) {
             this.onerror?.(new Event('error'));
@@ -244,10 +253,12 @@ describe('TechnologyIconContrastService', () => {
 
     const context = {
       drawImage: vi.fn(),
-      getImageData: vi.fn(
-        (_x: number, _y: number, width: number, height: number): ImageData =>
-          ({ data: sourcePixels, width, height, colorSpace: 'srgb' }) as ImageData,
-      ),
+      getImageData: vi.fn((_x: number, _y: number, width: number, height: number): ImageData => {
+        if (failCanvasReading) {
+          throw new DOMException('Synthetic cross-origin canvas failure', 'SecurityError');
+        }
+        return { data: sourcePixels, width, height, colorSpace: 'srgb' } as ImageData;
+      }),
       createImageData: vi.fn(
         (width: number, height: number): ImageData =>
           ({
@@ -291,7 +302,7 @@ describe('TechnologyIconContrastService', () => {
     }
   }
 
-  it('defers loading, evaluates both surfaces, and applies CLAHE only to luminance', async () => {
+  it('requests anonymous CORS, evaluates both surfaces, and applies CLAHE only to luminance', async () => {
     const fake = createFakeOpenCv({ enhanceLuminance: () => 255 });
     const loader = vi.fn(async () => ({ default: fake.cv }));
     const service = createService(loader);
@@ -306,6 +317,7 @@ describe('TechnologyIconContrastService', () => {
     const presentation = await pending;
 
     expect(loader).toHaveBeenCalledOnce();
+    expect(imageRequests).toEqual([{ crossOrigin: 'anonymous', src: REMOTE_ICON_URL }]);
     expect(fake.claheCalls).toHaveLength(2);
     expect(fake.claheCalls).toEqual(
       expect.arrayContaining([
@@ -346,7 +358,7 @@ describe('TechnologyIconContrastService', () => {
       const service = createService(loader);
 
       const first = service.optimize(ICON);
-      const second = service.optimize({ ...ICON, src: '/images/technology-icons/second.svg' });
+      const second = service.optimize({ ...ICON, src: SECOND_REMOTE_ICON_URL });
       runIdleTasks();
 
       await expect(Promise.all([first, second])).resolves.toHaveLength(2);
@@ -441,7 +453,7 @@ describe('TechnologyIconContrastService', () => {
     expect(imageLoadCount).toBe(2);
   });
 
-  it.each(['opencv', 'image', 'canvas'] as const)(
+  it.each(['opencv', 'image', 'canvas', 'cross-origin canvas access'] as const)(
     'resolves to the original light presentation after a %s failure',
     async (failure) => {
       const fake = createFakeOpenCv();
@@ -453,15 +465,19 @@ describe('TechnologyIconContrastService', () => {
       });
       failImageLoading = failure === 'image';
       canvasAvailable = failure !== 'canvas';
+      failCanvasReading = failure === 'cross-origin canvas access';
       const service = createService(loader);
 
       const pending = service.optimize(ICON);
       runIdleTasks();
 
-      await expect(pending).resolves.toEqual({
+      const presentation = await pending;
+
+      expect(presentation).toEqual({
         logo: ICON,
         backgroundColor: '#ffffff',
       });
+      expect(presentation.logo.src).toBe(REMOTE_ICON_URL);
     },
   );
 

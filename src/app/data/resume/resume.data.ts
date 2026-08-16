@@ -1,4 +1,5 @@
 import type { ResumeProfile } from '../../model/resume/resume.model';
+import { imageAssetUrl } from '../image-assets.ts';
 
 /**
  * Canonical, deeply immutable content source rendered by the résumé.
@@ -27,7 +28,7 @@ export const RESUME = {
       label: 'GitHub',
       url: 'https://github.com/nawaphonOHM',
       logo: {
-        src: '/images/link-logos/github.svg',
+        src: imageAssetUrl('/images/link-logos/github.svg'),
         width: 98,
         height: 96,
         surface: 'light',
@@ -44,7 +45,7 @@ export const RESUME = {
       role: 'Back End Developer',
       company: 'Accord Innovations',
       companyLogo: {
-        src: '/images/company-logos/accord-innovations.png',
+        src: imageAssetUrl('/images/company-logos/accord-innovations.png'),
         width: 250,
         height: 100,
         surface: 'dark',
@@ -52,7 +53,7 @@ export const RESUME = {
       client: {
         name: 'InnovestX',
         logo: {
-          src: '/images/company-logos/innovestx.png',
+          src: imageAssetUrl('/images/company-logos/innovestx.png'),
           width: 142,
           height: 27,
           surface: 'light',
@@ -92,7 +93,7 @@ export const RESUME = {
       role: 'Software Engineer',
       company: 'Saitech Solution',
       companyLogo: {
-        src: '/images/company-logos/saitech-solution.png',
+        src: imageAssetUrl('/images/company-logos/saitech-solution.png'),
         width: 200,
         height: 200,
         surface: 'light',
@@ -100,7 +101,7 @@ export const RESUME = {
       client: {
         name: 'Ayudhya Capital Services (AYCAP)',
         logo: {
-          src: '/images/company-logos/krungsri.png',
+          src: imageAssetUrl('/images/company-logos/krungsri.png'),
           width: 200,
           height: 200,
           surface: 'dark',
@@ -121,7 +122,7 @@ export const RESUME = {
       role: 'Software Engineer',
       company: 'Nityo Infotech',
       companyLogo: {
-        src: '/images/company-logos/nityo-infotech.svg',
+        src: imageAssetUrl('/images/company-logos/nityo-infotech.svg'),
         width: 4096,
         height: 1973,
         surface: 'light',
@@ -129,7 +130,7 @@ export const RESUME = {
       client: {
         name: 'TISCO Bank',
         logo: {
-          src: '/images/company-logos/tisco.svg',
+          src: imageAssetUrl('/images/company-logos/tisco.svg'),
           width: 297,
           height: 119,
           surface: 'light',
@@ -148,7 +149,7 @@ export const RESUME = {
       role: 'Software Engineer Backend',
       company: 'LINE MAN Wongnai',
       companyLogo: {
-        src: '/images/company-logos/line-man-wongnai.webp',
+        src: imageAssetUrl('/images/company-logos/line-man-wongnai.webp'),
         width: 555,
         height: 83,
         surface: 'light',
@@ -165,7 +166,7 @@ export const RESUME = {
       role: 'Full-Stack Software Developer',
       company: 'WiseSoft',
       companyLogo: {
-        src: '/images/company-logos/wisesoft.png',
+        src: imageAssetUrl('/images/company-logos/wisesoft.png'),
         width: 203,
         height: 203,
         surface: 'light',
@@ -183,7 +184,7 @@ export const RESUME = {
     degree: 'Bachelor of Engineering (Computer Engineering)',
     institution: 'Prince of Songkla University',
     institutionLogo: {
-      src: '/images/university-logos/prince-of-songkla-university.webp',
+      src: imageAssetUrl('/images/university-logos/prince-of-songkla-university.webp'),
       width: 600,
       height: 160,
       surface: 'light',

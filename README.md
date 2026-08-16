@@ -25,6 +25,14 @@ All publishable résumé facts live in `src/app/data/resume/resume.data.ts` and 
 
 The phone value must remain `Available on request`. Do not add a phone number, a `tel:` link, or the private source PDF anywhere under the project.
 
+## Static assets
+
+All project-owned images are served from the DigitalOcean Space origin `https://resume-images.ohm-mho.space`. Résumé image URLs preserve their `/images/...` web paths beneath that origin, and the favicon is served from `/favicon.svg`; object URLs must not include `/public`.
+
+The Space must allow unauthenticated public `GET` requests. It must also return an appropriate `Access-Control-Allow-Origin` header for canvas-based technology-icon contrast optimization. If an image or CORS access fails, the application does not use a local fallback or custom placeholder.
+
+The generated résumé PDF is the only local static-asset exception. It remains available from `/downloads/nawaphon-isarathanachaikul-resume.pdf`; Angular copies PDFs from `public/downloads` into the production artifact while project-owned images remain remote.
+
 ## Formatting and tests
 
 ```bash

@@ -7,6 +7,7 @@ import { By } from '@angular/platform-browser';
 import { vi } from 'vitest';
 
 import { RESUME_THEME_STORAGE_KEY } from '../../core/theme.service';
+import { IMAGE_ASSET_ORIGIN } from '../../data/image-assets';
 import { RESUME } from '../../data/resume/resume.data';
 import type { BrandLogo } from '../../model/resume/resume.model';
 import {
@@ -409,7 +410,9 @@ describe('ResumePage', () => {
           expect(fallbackIcons).toHaveLength(0);
           expect(iconContainer?.tagName.toLowerCase()).toBe('app-technology-icon');
           expect(iconFrame).toBe(iconContainer);
-          expect(expectedIcon.src).toMatch(/^\/images\/technology-icons\/[a-z0-9-]+\.svg$/);
+          const expectedIconUrl = new URL(expectedIcon.src);
+          expect(expectedIconUrl.origin).toBe(IMAGE_ASSET_ORIGIN);
+          expect(expectedIconUrl.pathname).toMatch(/^\/images\/technology-icons\/[a-z0-9-]+\.svg$/);
           expect(brandIcon?.getAttribute('src')).toBe(expectedPresentation.logo.src);
           expect(brandIcon?.getAttribute('width')).toBe(String(expectedIcon.width));
           expect(brandIcon?.getAttribute('height')).toBe(String(expectedIcon.height));
@@ -513,7 +516,9 @@ describe('ResumePage', () => {
     expect(logos).toHaveLength(8);
     expect(logos.every((logo) => logo.getAttribute('alt') === '')).toBe(true);
     expect(
-      logos.every((logo) => logo.getAttribute('src')?.startsWith('/images/company-logos/')),
+      logos.every((logo) =>
+        logo.getAttribute('src')?.startsWith(`${IMAGE_ASSET_ORIGIN}/images/company-logos/`),
+      ),
     ).toBe(true);
     expect(
       clientIdentities.map((identity) =>
@@ -525,9 +530,9 @@ describe('ResumePage', () => {
         identity.querySelector<HTMLImageElement>('.company-logo')?.getAttribute('src'),
       ),
     ).toEqual([
-      '/images/company-logos/innovestx.png',
-      '/images/company-logos/krungsri.png',
-      '/images/company-logos/tisco.svg',
+      'https://resume-images.ohm-mho.space/images/company-logos/innovestx.png',
+      'https://resume-images.ohm-mho.space/images/company-logos/krungsri.png',
+      'https://resume-images.ohm-mho.space/images/company-logos/tisco.svg',
     ]);
     expect(element.querySelectorAll('.company-identity--client .company-label')).toHaveLength(3);
     expect(element.querySelectorAll('.company-relationship-arrow')).toHaveLength(3);
