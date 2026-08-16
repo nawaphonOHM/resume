@@ -269,8 +269,9 @@ mat-chip {
 }
 
 @media print {
-  .company-identities {
-    display: none;
+  .company-identities,
+  .technology-icon-container {
+    display: none !important;
   }
 
   .company {

@@ -3,6 +3,10 @@ import { vi } from 'vitest';
 
 import { RESUME_THEME_STORAGE_KEY } from '../../core/theme.service';
 import { RESUME } from '../../data/resume/resume.data';
+import {
+  TECHNOLOGY_ICON_FALLBACK_LABELS,
+  resolveTechnologyIcon,
+} from '../experience-timeline/technology-icons';
 import { ResumePage } from './resume-page';
 
 describe('ResumePage', () => {
@@ -229,6 +233,72 @@ describe('ResumePage', () => {
     expect(markersByCard.map(([marker]) => marker.getAttribute('aria-label'))).toEqual(
       expectedLabels.map((label) => `Employment type: ${label}`),
     );
+  });
+
+  it('renders every experience technology with one decorative leading icon', () => {
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    const cards = Array.from(element.querySelectorAll<HTMLElement>('.experience-card'));
+    const renderedLabels: string[] = [];
+    const renderedFallbackLabels: string[] = [];
+
+    expect(cards).toHaveLength(RESUME.experience.length);
+
+    cards.forEach((card, experienceIndex) => {
+      const technologies = RESUME.experience[experienceIndex].technologies;
+      const chips = Array.from(card.querySelectorAll<HTMLElement>('mat-chip'));
+
+      expect(chips).toHaveLength(technologies.length);
+
+      chips.forEach((chip, technologyIndex) => {
+        const technology = technologies[technologyIndex];
+        const expectedIcon = resolveTechnologyIcon(technology);
+        const content = chip.querySelector<HTMLElement>('.technology-chip-content');
+        const iconContainer = content?.querySelector<HTMLElement>('.technology-icon-container');
+        const label = content?.querySelector<HTMLElement>('.technology-label');
+        const brandIcons = content?.querySelectorAll<HTMLImageElement>('.technology-brand-icon');
+        const fallbackIcons = content?.querySelectorAll<HTMLElement>('.technology-fallback-icon');
+
+        expect(label?.textContent?.trim()).toBe(technology);
+        expect(content?.firstElementChild).toBe(iconContainer);
+        expect(iconContainer?.getAttribute('aria-hidden')).toBe('true');
+        expect((brandIcons?.length ?? 0) + (fallbackIcons?.length ?? 0)).toBe(1);
+
+        renderedLabels.push(label!.textContent!.trim());
+
+        if (expectedIcon) {
+          const brandIcon = brandIcons?.item(0);
+          const iconFrame = brandIcon?.closest('.technology-icon-frame');
+
+          expect(brandIcons).toHaveLength(1);
+          expect(fallbackIcons).toHaveLength(0);
+          expect(brandIcon?.getAttribute('src')).toBe(expectedIcon.src);
+          expect(brandIcon?.getAttribute('src')).toMatch(
+            /^\/images\/technology-icons\/[a-z0-9-]+\.svg$/,
+          );
+          expect(brandIcon?.getAttribute('width')).toBe(String(expectedIcon.width));
+          expect(brandIcon?.getAttribute('height')).toBe(String(expectedIcon.height));
+          expect(brandIcon?.getAttribute('alt')).toBe('');
+          expect(brandIcon?.getAttribute('aria-hidden')).toBe('true');
+          expect(brandIcon?.getAttribute('loading')).toBe('lazy');
+          expect(
+            iconFrame?.classList.contains(`technology-icon-frame--${expectedIcon.surface}`),
+          ).toBe(true);
+        } else {
+          const fallbackIcon = fallbackIcons?.item(0);
+
+          expect(brandIcons).toHaveLength(0);
+          expect(fallbackIcons).toHaveLength(1);
+          expect(fallbackIcon?.textContent?.trim()).toBe('code');
+          expect(fallbackIcon?.getAttribute('aria-hidden')).toBe('true');
+          renderedFallbackLabels.push(technology);
+        }
+      });
+    });
+
+    expect(renderedLabels).toEqual(RESUME.experience.flatMap(({ technologies }) => technologies));
+    expect([...new Set(renderedFallbackLabels)]).toEqual(TECHNOLOGY_ICON_FALLBACK_LABELS);
   });
 
   it('renders outsourced employer-to-client relationships and direct company identities', () => {

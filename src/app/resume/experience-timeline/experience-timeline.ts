@@ -6,6 +6,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 
 import type { Experience } from '../../model/resume/resume.model';
+import { resolveTechnologyIcon } from './technology-icons';
 
 @Component({
   selector: 'app-experience-timeline',
@@ -15,4 +16,5 @@ import type { Experience } from '../../model/resume/resume.model';
 })
 export class ExperienceTimeline {
   readonly experience = input.required<readonly Experience[]>();
+  protected readonly resolveTechnologyIcon = resolveTechnologyIcon;
 }
