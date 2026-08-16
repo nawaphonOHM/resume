@@ -1,3 +1,10 @@
+////
+/// Presents employment records as a themed, responsive timeline of Angular Material cards.
+///
+/// Card, divider, and chip tokens follow global résumé colors; narrow layouts compress markers
+/// and stack headers, while print substitutes text for logos and delegates pagination globally.
+////
+
 :host {
   display: block;
 }
@@ -41,6 +48,7 @@ h2 {
   list-style: none;
 }
 
+// Draw one continuous guide behind independently flowable employment cards and their markers.
 .timeline::before {
   position: absolute;
   top: 1.25rem;
@@ -239,6 +247,7 @@ mat-chip {
   --mat-chip-outline-color: var(--resume-border);
 }
 
+// Retain readable card widths by shrinking the timeline rail and stacking header metadata.
 @media (min-width: 48rem) {
   .section-heading {
     grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.9fr);
@@ -268,6 +277,7 @@ mat-chip {
   }
 }
 
+// Printed records use deterministic company text instead of theme-sensitive image identities.
 @media print {
   .company-identities,
   .technology-icon-container {

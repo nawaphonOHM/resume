@@ -15,20 +15,37 @@ import {
   type ImageZoomPreviewData,
 } from './image-zoom-preview';
 
+/** Interaction mode that owns an open preview and controls its pointer behavior. */
 export type ImageZoomActivation = 'hover' | 'touch';
 
+/** Complete request for opening a logo preview beside its rendered image. */
 export interface ImageZoomRequest {
+  /** Rendered image that owns and anchors the overlay. */
   readonly origin: HTMLImageElement;
+
+  /** Intrinsic asset and surface metadata rendered by the preview. */
   readonly logo: BrandLogo;
+
+  /** Descriptive alternative text copied to the enlarged image. */
   readonly label: string;
+
+  /** Interaction mode used for ownership checks and pane pointer behavior. */
   readonly activation: ImageZoomActivation;
 }
 
+/** Minimum space retained between the overlay pane and each viewport edge. */
 const VIEWPORT_MARGIN = 16;
+
+/** Maximum share of either viewport dimension occupied by the preview image itself. */
 const IMAGE_MAX_VIEWPORT_RATIO = 0.2;
+
+/** Preferred visual separation between an origin and its connected preview. */
 const ORIGIN_GAP = 12;
+
 /** Panel padding (0.75rem * 2) + border (1px * 2), matching `image-zoom-preview.scss`. */
 const PANEL_CHROME_PX = 26;
+
+/** Connected placement fallbacks tried in right, left, below, then above order. */
 const IMAGE_ZOOM_POSITIONS: readonly ConnectedPosition[] = [
   {
     originX: 'end',
@@ -60,6 +77,15 @@ const IMAGE_ZOOM_POSITIONS: readonly ConnectedPosition[] = [
   },
 ];
 
+/**
+ * Owns the application's single connected logo-preview overlay.
+ *
+ * @remarks Opening another origin replaces the current overlay. Reopening the same attached
+ * origin only repositions it and preserves its original activation owner. Hover panes ignore
+ * pointer input, while touch panes support inside interaction; outside interaction and Escape
+ * dismiss either mode. Optional origin and activation guards prevent unrelated directives from
+ * closing a preview they do not own.
+ */
 @Injectable({ providedIn: 'root' })
 export class ImageZoomService {
   private readonly overlay = inject(Overlay);
@@ -71,10 +97,19 @@ export class ImageZoomService {
   private dismissalSubscriptions: Subscription | null = null;
   private paneResizeObserver: ResizeObserver | null = null;
 
+  /** Ensures an attached overlay and all tracking resources are released with the service. */
   constructor() {
     this.destroyRef.onDestroy(() => this.close());
   }
 
+  /**
+   * Opens a viewport-bounded preview, replacing any other origin's overlay.
+   *
+   * @param request - Origin, preview metadata, and activation ownership for the overlay.
+   * @remarks A currently attached overlay for the same origin is repositioned without replacing
+   * its component data or activation owner. Attachment failures tear down partial state before
+   * being rethrown.
+   */
   open(request: ImageZoomRequest): void {
     if (this.currentRequest?.origin === request.origin && this.overlayRef?.hasAttached()) {
       this.overlayRef.updatePosition();
@@ -150,6 +185,7 @@ export class ImageZoomService {
     }
   }
 
+  /** Opens a request unless its origin already owns the attached preview, in which case it closes. */
   toggle(request: ImageZoomRequest): void {
     if (this.isOpenFor(request.origin)) {
       this.close(request.origin);
@@ -158,6 +194,12 @@ export class ImageZoomService {
     }
   }
 
+  /**
+   * Disposes the active preview when all supplied ownership guards match.
+   *
+   * @param origin - Optional image owner; omitting it permits closing any active origin.
+   * @param activation - Optional activation owner; omitting it permits either interaction mode.
+   */
   close(origin?: HTMLImageElement, activation?: ImageZoomActivation): void {
     if (
       !this.overlayRef ||
@@ -176,6 +218,13 @@ export class ImageZoomService {
     overlayRef.dispose();
   }
 
+  /**
+   * Checks attached preview ownership.
+   *
+   * @param origin - Image expected to own the active overlay.
+   * @param activation - Optional interaction owner that must also match.
+   * @returns Whether an attached overlay satisfies the requested ownership.
+   */
   isOpenFor(origin: HTMLImageElement, activation?: ImageZoomActivation): boolean {
     return (
       this.overlayRef?.hasAttached() === true &&
@@ -184,6 +233,7 @@ export class ImageZoomService {
     );
   }
 
+  /** Clears service state when CDK detaches the currently owned overlay externally. */
   private handleExternalDisposal(overlayRef: OverlayRef): void {
     if (this.overlayRef !== overlayRef) {
       return;
@@ -194,6 +244,7 @@ export class ImageZoomService {
     subscriptions?.unsubscribe();
   }
 
+  /** Wraps every CDK position pass with current size limits and a corrective viewport clamp. */
   private installViewportBoundedPositioning(overlayRef: OverlayRef): void {
     const updatePosition = overlayRef.updatePosition.bind(overlayRef);
 
@@ -209,6 +260,7 @@ export class ImageZoomService {
     };
   }
 
+  /** Publishes pane and image limits derived from the current viewport and panel chrome. */
   private applyViewportSizeLimits(overlayRef: OverlayRef): void {
     const viewport = this.viewportRuler.getViewportSize();
     const maxWidth = Math.max(viewport.width - VIEWPORT_MARGIN * 2, 0);
@@ -231,6 +283,10 @@ export class ImageZoomService {
     pane.style.setProperty('--image-zoom-image-max-height', `${imageMaxHeight}px`);
   }
 
+  /**
+   * Corrects any residual viewport overflow after CDK positioning, including wide panes that CDK
+   * cannot push because scrollbar-aware client dimensions differ from viewport sizing.
+   */
   private clampOverlayToViewport(overlayRef: OverlayRef): void {
     const pane = overlayRef.overlayElement;
     const rect = pane.getBoundingClientRect();
@@ -273,6 +329,7 @@ export class ImageZoomService {
     pane.style.bottom = 'auto';
   }
 
+  /** Repositions after initial rendering and whenever decoded preview content changes pane size. */
   private watchOverlayPaneSize(overlayRef: OverlayRef): void {
     this.disconnectPaneResizeObserver();
 
@@ -300,6 +357,7 @@ export class ImageZoomService {
     this.paneResizeObserver = null;
   }
 
+  /** Clears active ownership and pane-size observation without disposing the pane itself. */
   private teardownOverlayTracking(): void {
     this.disconnectPaneResizeObserver();
     this.overlayRef = null;

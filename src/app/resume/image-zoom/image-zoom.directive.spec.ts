@@ -1,3 +1,7 @@
+/**
+ * Verifies image-zoom eligibility, pointer modes, dimension fallbacks, failure recovery, and
+ * lifecycle cleanup against deterministic DOM geometry.
+ */
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
@@ -6,6 +10,7 @@ import type { BrandLogo } from '../../model/resume/resume.model';
 import { ImageZoomDirective } from './image-zoom.directive';
 import { ImageZoomService, type ImageZoomRequest } from './image-zoom.service';
 
+/** Intrinsic logo fixture shared by host input and expected service requests. */
 const LOGO: BrandLogo = {
   src: '/images/test-logo.svg',
   width: 400,
@@ -13,6 +18,7 @@ const LOGO: BrandLogo = {
   surface: 'light',
 };
 
+/** Signal-driven host that exposes every directive input for per-test mutation. */
 @Component({
   imports: [ImageZoomDirective],
   template: `
@@ -32,14 +38,22 @@ class ImageZoomHost {
 
 describe('ImageZoomDirective', () => {
   let fixture: ComponentFixture<ImageZoomHost> | undefined;
+
+  /** Signature-preserving service double used to inspect preview ownership requests. */
   let imageZoomService: {
     readonly open: ReturnType<typeof vi.fn<ImageZoomService['open']>>;
     readonly toggle: ReturnType<typeof vi.fn<ImageZoomService['toggle']>>;
     readonly close: ReturnType<typeof vi.fn<ImageZoomService['close']>>;
     readonly isOpenFor: ReturnType<typeof vi.fn<ImageZoomService['isOpenFor']>>;
   };
+
+  /** Callback captured from the active resize-observer double to simulate geometry changes. */
   let resizeCallback: ResizeObserverCallback;
+
+  /** Spy recording which image element enters resize observation. */
   let observe: ReturnType<typeof vi.fn<ResizeObserver['observe']>>;
+
+  /** Spy recording release of resize-observer resources. */
   let disconnect: ReturnType<typeof vi.fn<ResizeObserver['disconnect']>>;
 
   beforeEach(async () => {
@@ -47,6 +61,7 @@ describe('ImageZoomDirective', () => {
     disconnect = vi.fn<ResizeObserver['disconnect']>();
     resizeCallback = vi.fn();
 
+    /** Minimal observer double that captures its callback and delegates lifecycle calls to spies. */
     class ResizeObserverMock implements ResizeObserver {
       constructor(callback: ResizeObserverCallback) {
         resizeCallback = callback;
@@ -297,6 +312,7 @@ describe('ImageZoomDirective', () => {
     expect(imageZoomService.close).toHaveBeenLastCalledWith(image);
   });
 
+  /** Creates a stable host and returns the image enhanced by the directive. */
   async function createImage(): Promise<HTMLImageElement> {
     fixture = TestBed.createComponent(ImageZoomHost);
     await fixture.whenStable();
@@ -304,11 +320,22 @@ describe('ImageZoomDirective', () => {
   }
 });
 
+/** Mutable controls for the intrinsic and rendered metrics installed on a test image. */
 interface ImageGeometry {
+  /** Changes the rendered border-box dimensions returned by DOM measurement. */
   resize(width: number, height: number): void;
+
+  /** Changes the image's reported natural dimensions. */
   setIntrinsicSize(width: number, height: number): void;
 }
 
+/**
+ * Installs mutable natural dimensions and bounding-box geometry on an image.
+ *
+ * @param image - DOM image whose readonly browser metrics are replaced for the test.
+ * @param initial - Initial intrinsic and rendered dimensions.
+ * @returns Controls for changing either dimension source after setup.
+ */
 function setImageGeometry(
   image: HTMLImageElement,
   initial: {
@@ -356,6 +383,7 @@ function setImageGeometry(
   };
 }
 
+/** Dispatches a bubbling pointer-shaped event through the directive's host listeners. */
 function dispatchPointerEvent(
   target: Element,
   type: string,
@@ -364,6 +392,10 @@ function dispatchPointerEvent(
   target.dispatchEvent(pointerEvent(type, pointerType));
 }
 
+/**
+ * Creates a mouse-backed event with an explicit pointer type for DOM environments where
+ * `PointerEvent` construction is unavailable.
+ */
 function pointerEvent(
   type: string,
   pointerType: 'mouse' | 'pen' | 'touch',
@@ -374,6 +406,7 @@ function pointerEvent(
   return event;
 }
 
+/** Builds the exact ownership payload expected to reach the service double. */
 function request(
   origin: HTMLImageElement,
   logo: BrandLogo,

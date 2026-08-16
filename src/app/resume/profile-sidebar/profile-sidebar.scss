@@ -1,3 +1,10 @@
+////
+/// Styles the skills banner, profile details, and external-link cards.
+///
+/// Angular Material card, chip, divider, and button tokens bridge global theme semantics into
+/// encapsulated components; responsive and print layouts preserve contrast and readable metadata.
+////
+
 :host,
 aside {
   display: block;
@@ -53,6 +60,7 @@ h2 {
   line-height: 1.7;
 }
 
+// Override Material chips for legibility against the permanently dark skills surface.
 .skills-panel mat-chip-set {
   display: block;
 }
@@ -112,6 +120,7 @@ mat-divider {
   padding: clamp(1.35rem, 3vw, 2rem);
 }
 
+// Definition rows reserve label width on larger screens but permit long values to wrap safely.
 dl {
   display: grid;
   gap: 0;
@@ -184,6 +193,7 @@ dd a {
   }
 }
 
+// Print the skills banner as a compact contrast panel and profile/link cards as a two-column grid.
 @media print {
   #skills {
     padding: 0 !important;

@@ -1,3 +1,10 @@
+////
+/// Defines the themed résumé page shell, accessibility skip link, content canvas, and footer.
+///
+/// The page contains decorative backgrounds on screen, suppresses navigation during print, and
+/// removes constrained containers so child sections can control their own A4 presentation.
+////
+
 :host {
   display: block;
   min-height: 100vh;
@@ -5,6 +12,7 @@
   color: var(--resume-text);
 }
 
+// Keep the keyboard skip target available without occupying layout space until focused.
 .skip-link {
   position: fixed;
   top: 0.75rem;
@@ -55,6 +63,7 @@ footer p {
   }
 }
 
+// Flatten the application chrome for print while preserving section-level pagination rules.
 @media print {
   :host {
     min-height: 0;

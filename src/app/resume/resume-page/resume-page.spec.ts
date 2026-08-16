@@ -1,3 +1,7 @@
+/**
+ * Exercises the composed résumé, section accessibility, navigation orchestration, theme and print
+ * controls, image-zoom bindings, and browser observer lifecycle.
+ */
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { vi } from 'vitest';
@@ -13,9 +17,16 @@ import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
 import { ResumePage } from './resume-page';
 
 describe('ResumePage', () => {
+  /** Callback captured from the page's observer so tests can publish synthetic intersections. */
   let observerCallback: IntersectionObserverCallback;
+
+  /** Spy recording sections registered with the observer fixture. */
   let observe: ReturnType<typeof vi.fn>;
+
+  /** Spy recording observer cleanup when the page is destroyed. */
   let disconnect: ReturnType<typeof vi.fn>;
+
+  /** Spy recording initial-fragment restoration without moving the test viewport. */
   let scrollIntoView: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
@@ -28,6 +39,7 @@ describe('ResumePage', () => {
       value: scrollIntoView,
     });
 
+    /** Stable light-system preference fixture required by the page's theme service. */
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,
       value: vi.fn(() => ({
@@ -39,6 +51,8 @@ describe('ResumePage', () => {
         removeListener: vi.fn(),
       })),
     });
+
+    /** Deterministic observer fixture that exposes registration, callback, and cleanup behavior. */
     Object.defineProperty(window, 'IntersectionObserver', {
       configurable: true,
       value: function (callback: IntersectionObserverCallback) {

@@ -1,3 +1,7 @@
+/**
+ * Verifies that overlay preview data produces non-interactive, accessibility-hidden artwork with
+ * intrinsic sizing and the requested contrast surface.
+ */
 import { TestBed } from '@angular/core/testing';
 
 import type { BrandLogo } from '../../model/resume/resume.model';

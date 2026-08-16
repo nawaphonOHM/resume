@@ -1,3 +1,4 @@
+/** Verifies exact technology-label coverage, local assets, and fallback policy. */
 import { RESUME } from '../../data/resume/resume.data';
 import {
   TECHNOLOGY_ICON_FALLBACK_LABELS,
@@ -6,6 +7,7 @@ import {
 } from './technology-icons';
 
 describe('technology icons', () => {
+  /** Independent label-to-asset contract for every branded technology. */
   const expectedIconPaths = {
     Codex: '/images/technology-icons/openai.svg',
     'Claude Code': '/images/technology-icons/claude-code.svg',

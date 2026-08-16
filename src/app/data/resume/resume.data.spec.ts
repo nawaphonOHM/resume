@@ -1,3 +1,4 @@
+/** Guards the canonical résumé content, ordering, privacy, and asset metadata. */
 import type { ResumeLink } from '../../model/resume/resume.model';
 import { RESUME } from './resume.data';
 

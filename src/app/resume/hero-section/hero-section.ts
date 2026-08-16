@@ -4,6 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 
 import type { ResumeProfile } from '../../model/resume/resume.model';
 
+/** Introduces the candidate and exposes the primary email contact action. */
 @Component({
   selector: 'app-hero-section',
   imports: [MatButtonModule, MatIconModule],
@@ -11,8 +12,10 @@ import type { ResumeProfile } from '../../model/resume/resume.model';
   styleUrl: './hero-section.scss',
 })
 export class HeroSection {
+  /** Complete profile supplying the candidate identity and public contact details. */
   readonly profile = input.required<ResumeProfile>();
 
+  /** @returns A direct email URI for the profile's public address. */
   protected emailHref(): string {
     return `mailto:${this.profile().details.email}`;
   }

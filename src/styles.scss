@@ -1,11 +1,21 @@
+////
+/// Defines the résumé's global design-token, theme, accessibility, and print foundation.
+///
+/// Tailwind tokens and application styles consume the semantic `--resume-*` properties.
+/// Explicit theme classes take precedence over system color preference, while reduced-motion
+/// and A4 print rules normalize interactions and presentation outside the screen experience.
+////
+
 @import '../node_modules/tailwindcss/index.css';
 @import '@angular/cdk/overlay-prebuilt.css';
 @import 'material-icons/iconfont/material-icons.css';
 
+// Pointer-following previews must not intercept subsequent events intended for their source image.
 .image-zoom-overlay-pane.image-zoom-overlay-pane--pointer-transparent {
   pointer-events: none;
 }
 
+// Expose application semantics to Tailwind utilities without duplicating theme values.
 @theme inline {
   --color-page: var(--resume-page);
   --color-surface: var(--resume-surface);
@@ -26,6 +36,7 @@
   --shadow-soft: var(--resume-shadow);
 }
 
+// Register color tokens so ThemeService's temporary transition class can interpolate them safely.
 @property --resume-page {
   syntax: '<color>';
   inherits: true;
@@ -110,6 +121,7 @@
   initial-value: rgb(13 39 70 / 12%);
 }
 
+// Light values are the default and are also restored by an explicit light-theme selection.
 :root,
 .resume-theme-light {
   color-scheme: light;
@@ -130,6 +142,18 @@
   --resume-shadow: 0 1.25rem 3.75rem var(--resume-shadow-color);
 }
 
+/// Core surfaces and text colors for an explicitly selected dark theme.
+///
+/// Every key is emitted as a `--resume-*` custom property by `.resume-theme-dark`.
+///
+/// @type Map
+/// @prop {Color} page - Browser canvas behind the résumé.
+/// @prop {Color} surface - Primary panel and card background.
+/// @prop {Color} surface-raised - Contrasting background for nested content.
+/// @prop {Color} text - Primary readable foreground.
+/// @prop {Color} muted - Secondary-copy foreground with sufficient contrast.
+/// @prop {Color} border - Structural outlines and separators.
+/// @access private
 $resume-dark-colors: (
   page: #07111f,
   surface: #0d1b2d,
@@ -139,6 +163,17 @@ $resume-dark-colors: (
   border: #30455f,
 );
 
+/// Brand and interaction colors for an explicitly selected dark theme.
+///
+/// Every key is emitted as a `--resume-*` custom property by `.resume-theme-dark`.
+///
+/// @type Map
+/// @prop {Color} brand - Primary branded foreground.
+/// @prop {Color} brand-strong - High-emphasis branded foreground.
+/// @prop {Color} brand-soft - Subtle branded surface.
+/// @prop {Color} accent - Links, labels, and timeline accents.
+/// @prop {Color} focus - Keyboard focus indicator.
+/// @access private
 $resume-dark-brand-colors: (
   brand: #9bc7ff,
   brand-strong: #d7e9ff,
@@ -147,16 +182,33 @@ $resume-dark-brand-colors: (
   focus: #8dc5ff,
 );
 
+/// Dark-theme colors reserved for the persistent sidebar-style regions.
+///
+/// Every key is emitted as a `--resume-*` custom property by `.resume-theme-dark`.
+///
+/// @type Map
+/// @prop {Color} sidebar - High-contrast panel background.
+/// @prop {Color} sidebar-text - Foreground displayed on the sidebar surface.
+/// @access private
 $resume-dark-layout-colors: (
   sidebar: #06182b,
   sidebar-text: #f5f9ff,
 );
 
+/// Dark-theme elevation values shared by raised résumé panels.
+///
+/// Every key is emitted as a `--resume-*` custom property by `.resume-theme-dark`.
+///
+/// @type Map
+/// @prop {Color} shadow-color - Tint used to compose elevation shadows.
+/// @prop {List} shadow - Complete reusable panel-shadow value.
+/// @access private
 $resume-dark-effects: (
   shadow-color: rgb(0 0 0 / 34%),
   shadow: 0 1.25rem 3.75rem var(--resume-shadow-color),
 );
 
+// Generate explicit-dark variables from the maps so related token families remain maintainable.
 .resume-theme-dark {
   color-scheme: dark;
 
@@ -177,6 +229,7 @@ $resume-dark-effects: (
   }
 }
 
+// Follow system dark mode only when the user has not chosen the explicit light class.
 @media (prefers-color-scheme: dark) {
   :root:not(.resume-theme-light) {
     color-scheme: dark;
@@ -198,6 +251,7 @@ $resume-dark-effects: (
   }
 }
 
+// ThemeService adds this class briefly; registered color properties provide the interpolation.
 html.resume-theme-transitioning {
   transition-property:
     --resume-page, --resume-surface, --resume-surface-raised, --resume-text, --resume-muted,
@@ -252,6 +306,7 @@ a {
   color: var(--resume-text);
 }
 
+// Preserve navigation and readability while removing non-essential motion globally.
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -272,7 +327,9 @@ a {
   margin: 11mm 12mm 13mm;
 }
 
+// Force deterministic light A4 output and remove transient overlays, motion, and screen elevation.
 @media print {
+  // Zoom previews are interaction-only and must never be captured in the résumé document.
   .cdk-overlay-container {
     display: none !important;
   }
@@ -325,6 +382,7 @@ a {
     text-decoration: none;
   }
 
+  // Dedicate a page to employment history and compact its timeline without splitting entries.
   app-experience-timeline section {
     padding: 0 !important;
     break-before: page;

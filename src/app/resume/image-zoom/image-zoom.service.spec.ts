@@ -1,3 +1,7 @@
+/**
+ * Verifies connected-overlay configuration, viewport correction, ownership, dismissal, and
+ * cleanup for image previews rendered through the real CDK overlay container.
+ */
 import {
   Overlay,
   OverlayContainer,
@@ -11,28 +15,45 @@ import { vi } from 'vitest';
 import type { BrandLogo } from '../../model/resume/resume.model';
 import { ImageZoomService, type ImageZoomRequest } from './image-zoom.service';
 
+/** Runtime CDK strategy state inspected to verify fluent positioning configuration. */
 interface PositionStrategyState {
+  /** Element used as the connected overlay origin. */
   readonly _origin: Element;
+
+  /** Ordered placement fallbacks retained by the strategy. */
   readonly _preferredPositions: readonly ConnectedPosition[];
+
+  /** Configured minimum distance from viewport edges. */
   readonly _viewportMargin: number;
+
+  /** Whether CDK may resize the overlay to fit available space. */
   readonly _hasFlexibleDimensions: boolean;
+
+  /** Whether an attached overlay may expand after its first layout. */
   readonly _growAfterOpen: boolean;
+
+  /** Whether CDK may push a connected overlay back into the viewport. */
   readonly _canPush: boolean;
 }
 
 describe('ImageZoomService', () => {
+  /** Light-surface asset used for initial and hover-owned previews. */
   const lightLogo: BrandLogo = {
     src: '/images/light-logo.svg',
     width: 480,
     height: 240,
     surface: 'light',
   };
+
+  /** Dark-surface asset used to verify replacement content and touch-owned previews. */
   const darkLogo: BrandLogo = {
     src: '/images/dark-logo.svg',
     width: 360,
     height: 360,
     surface: 'dark',
   };
+
+  /** Body-mounted origins tracked so each test can remove only the elements it created. */
   const origins: HTMLImageElement[] = [];
 
   beforeEach(() => TestBed.configureTestingModule({}));
@@ -240,6 +261,7 @@ describe('ImageZoomService', () => {
     expect(overlayContainer().querySelector('app-image-zoom-preview')).toBeNull();
   });
 
+  /** Creates, mounts, and tracks an image suitable for CDK connected positioning. */
   function createOrigin(id: string): HTMLImageElement {
     const origin = document.createElement('img');
     origin.id = id;
@@ -248,6 +270,7 @@ describe('ImageZoomService', () => {
     return origin;
   }
 
+  /** Builds a complete preview request while keeping ownership inputs explicit at call sites. */
   function request(
     origin: HTMLImageElement,
     logo: BrandLogo,
@@ -257,10 +280,12 @@ describe('ImageZoomService', () => {
     return { origin, logo, label, activation };
   }
 
+  /** @returns The real CDK container that receives overlay panes during the current test. */
   function overlayContainer(): HTMLElement {
     return TestBed.inject(OverlayContainer).getContainerElement();
   }
 
+  /** Emits the pointer-down/click sequence used by CDK outside-pointer detection. */
   function dispatchPointerClick(target: Element): void {
     target.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
     target.dispatchEvent(new MouseEvent('click', { bubbles: true }));

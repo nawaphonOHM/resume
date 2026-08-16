@@ -1,3 +1,10 @@
+////
+/// Styles the education section's responsive credential card and senior-project callout.
+///
+/// Angular Material card, divider, and button tokens inherit résumé theme semantics; compact
+/// layouts stack metadata and actions, while print replaces the logo with a stable icon treatment.
+////
+
 :host {
   display: block;
 }
@@ -34,6 +41,7 @@ h2 {
   line-height: 1.75;
 }
 
+// Keep credential content and metadata grouped while adapting from a single to two-column card.
 .education-card {
   --mat-card-outlined-container-color: var(--resume-surface);
   --mat-card-outlined-outline-color: var(--resume-border);
@@ -175,6 +183,7 @@ mat-divider {
   flex: 0 0 auto;
 }
 
+// Promote headings to two columns on wide screens, then progressively stack card internals.
 @media (min-width: 48rem) {
   .section-heading {
     grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.9fr);
@@ -212,6 +221,7 @@ mat-divider {
   }
 }
 
+// Preserve the credential as one printable unit and remove the theme-dependent institution logo.
 @media print {
   section {
     padding: 5mm 0 !important;

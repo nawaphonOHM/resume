@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import type { ResumeProfile } from '../../model/resume/resume.model';
 import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
 
+/** Presents the candidate's skills, public details, and external profile links. */
 @Component({
   selector: 'app-profile-sidebar',
   imports: [
@@ -24,8 +25,10 @@ import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
   styleUrl: './profile-sidebar.scss',
 })
 export class ProfileSidebar {
+  /** Complete profile supplying both sidebar sections and their link metadata. */
   readonly profile = input.required<ResumeProfile>();
 
+  /** @returns A direct email URI for the profile's public address. */
   protected emailHref(): string {
     return `mailto:${this.profile().details.email}`;
   }

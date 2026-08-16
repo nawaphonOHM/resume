@@ -1,5 +1,11 @@
 import type { ResumeProfile } from '../../model/resume/resume.model';
 
+/**
+ * Canonical, deeply immutable content source rendered by the résumé.
+ *
+ * `satisfies ResumeProfile` validates the domain contract while `as const`
+ * preserves exact labels and ordering for presentation and icon lookup.
+ */
 export const RESUME = {
   name: 'Nawaphon Isarathanachaikul',
   title: 'Backend Software Engineer',

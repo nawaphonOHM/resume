@@ -1,3 +1,10 @@
+////
+/// Styles the numbered professional-summary cards and their responsive section heading.
+///
+/// Angular Material card tokens blend brand and surface colors, global motion preferences govern
+/// hover transitions, and print compacts cards into a balanced two-column résumé section.
+////
+
 :host {
   display: block;
 }
@@ -42,6 +49,7 @@ ol {
   list-style: none;
 }
 
+// Use Material tokens for theme-aware cards while retaining a restrained screen-only hover cue.
 .summary-card {
   --mat-card-outlined-container-color: color-mix(
     in srgb,
@@ -102,6 +110,7 @@ mat-card-content {
   }
 }
 
+// Fit concise summary points into two columns while preventing an individual card from splitting.
 @media print {
   section {
     padding: 7mm 0 5mm !important;

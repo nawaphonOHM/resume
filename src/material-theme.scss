@@ -1,3 +1,10 @@
+////
+/// Provides the global Angular Material theme used by the résumé application.
+///
+/// Color tokens follow the document's `color-scheme`, while typography uses the
+/// same system-font weights as the surrounding résumé and retains default density.
+////
+
 @use '@angular/material' as mat;
 
 html {

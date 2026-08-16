@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import type { ResumeEducation } from '../../model/resume/resume.model';
 import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
 
+/** Presents the academic record, institution branding, and capstone link. */
 @Component({
   selector: 'app-education-section',
   imports: [
@@ -22,5 +23,6 @@ import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
   styleUrl: './education-section.scss',
 })
 export class EducationSection {
+  /** Academic record required to render the complete education section. */
   readonly education = input.required<ResumeEducation>();
 }

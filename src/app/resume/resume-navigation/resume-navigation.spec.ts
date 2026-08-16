@@ -1,3 +1,7 @@
+/**
+ * Verifies stable section fragments, responsive active presentation, accessible control names,
+ * and parent-facing navigation interactions.
+ */
 import { TestBed } from '@angular/core/testing';
 
 import { ResumeNavigation } from './resume-navigation';

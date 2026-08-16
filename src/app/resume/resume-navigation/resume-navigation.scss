@@ -1,3 +1,10 @@
+////
+/// Styles the sticky résumé navigation and its desktop/mobile control variants.
+///
+/// A translucent themed shell preserves section context while scrolling, Material button tokens
+/// expose active state, responsive controls swap at tablet width, and reduced motion is respected.
+////
+
 :host {
   position: sticky;
   top: 0;
@@ -39,6 +46,7 @@
   box-shadow: 0 0.5rem 1.25rem rgb(10 40 74 / 20%);
 }
 
+// Pair Material's semantic button tokens with a persistent visual selected-section state.
 .navigation-link {
   --mat-button-text-label-text-color: var(--resume-muted);
   --mat-button-text-hover-state-layer-color: var(--resume-brand);
@@ -68,6 +76,7 @@
   display: inline-flex;
 }
 
+// Desktop and mobile controls remain mutually exclusive across the shared breakpoint.
 @media (min-width: 48rem) {
   .desktop-control {
     display: inline-flex;
@@ -85,6 +94,7 @@
   }
 }
 
+// Disable selected-link scaling as well as transition timing for reduced-motion users.
 @media (prefers-reduced-motion: reduce) {
   .navigation-link {
     transform: none;

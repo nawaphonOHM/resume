@@ -1,3 +1,4 @@
+/** Verifies the root shell's bootstrap contract and primary page landmark. */
 import { TestBed } from '@angular/core/testing';
 import { App } from './app';
 

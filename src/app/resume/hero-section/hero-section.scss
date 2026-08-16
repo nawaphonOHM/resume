@@ -1,3 +1,10 @@
+////
+/// Styles the résumé's introductory hero, calls to action, and decorative identity graphic.
+///
+/// Material button tokens preserve contrast on the branded panel; the visual is removed below
+/// desktop width, and print keeps only the compact, high-value identity and introduction content.
+////
+
 :host {
   display: block;
 }
@@ -94,6 +101,7 @@ h1 {
   --mat-button-outlined-outline-color: rgb(255 255 255 / 48%);
 }
 
+// The orbital monogram is decorative and yields entirely when space cannot support two columns.
 .hero-visual {
   position: relative;
   z-index: 1;
@@ -178,6 +186,7 @@ h1 {
   }
 }
 
+// Reduce the hero to essential résumé content and retain its branded high-contrast identity.
 @media print {
   .hero-section {
     display: block;

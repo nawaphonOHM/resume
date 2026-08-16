@@ -1,9 +1,12 @@
 import type { BrandLogo } from '../../model/resume/resume.model';
 
+/** Local SVG metadata used to decorate a technology label. */
 export interface TechnologyIconMetadata extends BrandLogo {
+  /** Compile-time constrained path to a bundled technology icon. */
   readonly src: `/images/technology-icons/${string}.svg`;
 }
 
+/** Shared artwork metadata for Spring products that use the same brand mark. */
 const SPRING_ICON = {
   src: '/images/technology-icons/spring.svg',
   width: 24,
@@ -11,6 +14,11 @@ const SPRING_ICON = {
   surface: 'light',
 } as const satisfies TechnologyIconMetadata;
 
+/**
+ * Validated local icon registry keyed by exact résumé technology labels.
+ * Dimensions and surface metadata keep each brand mark legible and correctly
+ * proportioned in chips and zoom previews.
+ */
 export const TECHNOLOGY_ICONS = {
   Codex: {
     src: '/images/technology-icons/openai.svg',
@@ -154,11 +162,19 @@ export const TECHNOLOGY_ICONS = {
   },
 } as const satisfies Readonly<Record<string, TechnologyIconMetadata>>;
 
+/** Known résumé labels intentionally rendered without a suitable brand mark. */
 export const TECHNOLOGY_ICON_FALLBACK_LABELS = ['REST APIs', 'Caffeine'] as const;
 
 const technologyIconsByLabel: Readonly<Record<string, TechnologyIconMetadata | undefined>> =
   TECHNOLOGY_ICONS;
 
+/**
+ * Finds icon metadata for an exact, case-sensitive technology label.
+ *
+ * @param label - Display label to look up without normalization.
+ * @returns Metadata for an own registry entry, or `undefined` for unknown and
+ * intentionally unbranded labels so callers can render a text-only fallback.
+ */
 export function resolveTechnologyIcon(label: string): TechnologyIconMetadata | undefined {
   return Object.hasOwn(technologyIconsByLabel, label) ? technologyIconsByLabel[label] : undefined;
 }

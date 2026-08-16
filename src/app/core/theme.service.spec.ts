@@ -1,3 +1,7 @@
+/**
+ * Verifies theme precedence, browser side effects, print handling, and cleanup
+ * across both browser and non-browser platforms.
+ */
 import { PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
@@ -6,13 +10,18 @@ import { RESUME_THEME_STORAGE_KEY, ThemeService } from './theme.service';
 
 describe('ThemeService', () => {
   const transitionClass = 'resume-theme-transitioning';
+
+  /** Mutable backing state for the deterministic `matchMedia` test double. */
   let prefersDark: boolean;
+
+  /** Captured callback used to emit synthetic system preference changes. */
   let systemThemeListener: ((event: MediaQueryListEvent) => void) | undefined;
 
   beforeEach(() => {
     prefersDark = false;
     systemThemeListener = undefined;
 
+    /** `matchMedia` fixture whose `matches` value follows `prefersDark`. */
     const mediaQuery = {
       get matches() {
         return prefersDark;

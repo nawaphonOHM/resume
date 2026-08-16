@@ -1,9 +1,17 @@
+////
+/// Styles the non-interactive image preview rendered inside the CDK overlay.
+///
+/// Service-provided custom properties bound both panel and image to the available viewport;
+/// surface variants honor source-logo contrast, motion preferences, and print exclusion.
+////
+
 :host {
   display: block;
   max-width: var(--image-zoom-viewport-max-width, calc(100vw - 2rem));
   max-height: var(--image-zoom-viewport-max-height, calc(100vh - 2rem));
 }
 
+// The panel animates independently of overlay positioning but never exceeds its host bounds.
 .image-zoom-preview {
   box-sizing: border-box;
   display: grid;
@@ -33,6 +41,7 @@
   background: #071a2e;
 }
 
+// Intrinsic containment prevents the preview's natural size from destabilizing overlay measurement.
 .image-zoom-preview__image {
   display: block;
   contain: size;
@@ -52,6 +61,7 @@
   }
 }
 
+// Respect motion preferences without changing the overlay's open or close lifecycle.
 @media (prefers-reduced-motion: reduce) {
   .image-zoom-preview {
     transition: none;

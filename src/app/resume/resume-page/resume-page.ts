@@ -14,6 +14,15 @@ import {
 } from '../resume-navigation/resume-navigation';
 import { SummarySection } from '../summary-section/summary-section';
 
+/**
+ * Composes the canonical résumé and coordinates document-level navigation, theme, and printing.
+ *
+ * @remarks After the first browser render, a valid initial fragment is restored without smooth
+ * scrolling and observable sections begin driving the active navigation state. Direct link
+ * selection updates that state immediately; native anchors remain responsible for URL and scroll
+ * behavior. A missing document view or intersection observer suppresses only its corresponding
+ * browser side effect.
+ */
 @Component({
   selector: 'app-resume-page',
   imports: [
@@ -32,10 +41,16 @@ export class ResumePage {
   private readonly destroyRef = inject(DestroyRef);
   private readonly themeService = inject(ThemeService);
 
+  /** Canonical profile distributed to the presentational section components. */
   protected readonly resume = RESUME;
+
+  /** Section currently represented as active in responsive navigation. */
   protected readonly activeSection = signal<ResumeSectionId>('about');
+
+  /** Template-facing reference to the theme service's selected preference. */
   protected readonly theme = this.themeService.theme;
 
+  /** Defers hash restoration and DOM observation until section elements have rendered. */
   constructor() {
     afterNextRender(() => {
       this.restoreInitialSection();
@@ -43,18 +58,29 @@ export class ResumePage {
     });
   }
 
+  /**
+   * Transfers active navigation presentation as soon as a native section link is selected.
+   *
+   * @param section - Fragment-backed section selected by the reader.
+   */
   protected selectSection(section: ResumeSectionId): void {
     this.activeSection.set(section);
   }
 
+  /** Delegates explicit theme switching and persistence to the theme service. */
   protected toggleTheme(): void {
     this.themeService.toggle();
   }
 
+  /** Opens the browser print dialog when a document view is available. */
   protected printResume(): void {
     this.document.defaultView?.print();
   }
 
+  /**
+   * Restores a recognized initial fragment and scrolls it into view without inheriting global
+   * smooth scrolling, then restores the root element's previous inline scroll behavior.
+   */
   private restoreInitialSection(): void {
     const view = this.document.defaultView;
     const initialSection = view?.location.hash.slice(1);
@@ -72,6 +98,11 @@ export class ResumePage {
     }
   }
 
+  /**
+   * Tracks registered sections in a narrow viewport band and selects the intersecting entry
+   * nearest the viewport top. The observer is omitted when unsupported and disconnected with the
+   * component lifecycle.
+   */
   private observeSections(): void {
     const view = this.document.defaultView;
 
@@ -111,6 +142,7 @@ export class ResumePage {
     }
   }
 
+  /** @returns Whether a fragment value belongs to the shared section registry. */
   private isSectionId(value: string | undefined): value is ResumeSectionId {
     return RESUME_SECTIONS.some((section) => section.id === value);
   }
