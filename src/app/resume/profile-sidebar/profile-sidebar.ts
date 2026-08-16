@@ -7,10 +7,12 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 
 import type { ResumeProfile } from '../../model/resume/resume.model';
+import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
 
 @Component({
   selector: 'app-profile-sidebar',
   imports: [
+    ImageZoomDirective,
     MatButtonModule,
     MatCardModule,
     MatChipsModule,

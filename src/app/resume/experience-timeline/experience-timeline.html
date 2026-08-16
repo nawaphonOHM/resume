@@ -44,6 +44,8 @@
                         [ngSrc]="job.companyLogo.src"
                         [width]="job.companyLogo.width"
                         [height]="job.companyLogo.height"
+                        [appImageZoom]="job.companyLogo"
+                        [imageZoomLabel]="job.company"
                         alt=""
                       />
                     </span>
@@ -76,6 +78,8 @@
                             [ngSrc]="client.logo.src"
                             [width]="client.logo.width"
                             [height]="client.logo.height"
+                            [appImageZoom]="client.logo"
+                            [imageZoomLabel]="client.name"
                             alt=""
                           />
                         </span>
@@ -131,6 +135,8 @@
                           [ngSrc]="icon.src"
                           [width]="icon.width"
                           [height]="icon.height"
+                          [appImageZoom]="icon"
+                          [imageZoomLabel]="technology"
                           alt=""
                           aria-hidden="true"
                         />

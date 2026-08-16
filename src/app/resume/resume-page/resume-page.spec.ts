@@ -1,12 +1,15 @@
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { vi } from 'vitest';
 
 import { RESUME_THEME_STORAGE_KEY } from '../../core/theme.service';
 import { RESUME } from '../../data/resume/resume.data';
+import type { BrandLogo } from '../../model/resume/resume.model';
 import {
   TECHNOLOGY_ICON_FALLBACK_LABELS,
   resolveTechnologyIcon,
 } from '../experience-timeline/technology-icons';
+import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
 import { ResumePage } from './resume-page';
 
 describe('ResumePage', () => {
@@ -182,6 +185,68 @@ describe('ResumePage', () => {
       expect(externalIcon?.hasAttribute('iconPositionEnd')).toBe(true);
       expect(externalIcon?.getAttribute('aria-hidden')).toBe('true');
     });
+  });
+
+  it('wires every rendered image for zoom with GitHub as the only touch exception', async () => {
+    const fixture = TestBed.createComponent(ResumePage);
+    await fixture.whenStable();
+    const renderedImages = fixture.debugElement.queryAll(By.css('img'));
+    const zoomImages = fixture.debugElement.queryAll(By.directive(ImageZoomDirective));
+    const expectedBindings: Array<{
+      readonly logo: BrandLogo;
+      readonly label: string;
+      readonly touch: boolean;
+    }> = [];
+
+    for (const job of RESUME.experience) {
+      expectedBindings.push({ logo: job.companyLogo, label: job.company, touch: true });
+
+      if ('client' in job) {
+        expectedBindings.push({ logo: job.client.logo, label: job.client.name, touch: true });
+      }
+
+      for (const technology of job.technologies) {
+        const logo = resolveTechnologyIcon(technology);
+
+        if (logo) {
+          expectedBindings.push({ logo, label: technology, touch: true });
+        }
+      }
+    }
+
+    expectedBindings.push({
+      logo: RESUME.education.institutionLogo,
+      label: RESUME.education.institution,
+      touch: true,
+    });
+
+    for (const link of RESUME.links) {
+      if ('logo' in link) {
+        expectedBindings.push({
+          logo: link.logo,
+          label: link.label,
+          touch: link.label !== 'GitHub',
+        });
+      }
+    }
+
+    const actualBindings = zoomImages.map((image) => {
+      const directive = image.injector.get(ImageZoomDirective);
+
+      return {
+        logo: directive.appImageZoom(),
+        label: directive.imageZoomLabel(),
+        touch: directive.imageZoomTouch(),
+      };
+    });
+
+    expect(zoomImages.map(({ nativeElement }) => nativeElement)).toEqual(
+      renderedImages.map(({ nativeElement }) => nativeElement),
+    );
+    expect(actualBindings).toEqual(expectedBindings);
+    expect(actualBindings.filter(({ touch }) => !touch)).toEqual([
+      { logo: RESUME.links[0].logo, label: 'GitHub', touch: false },
+    ]);
   });
 
   it('renders the official university logo beside the accessible institution identity', () => {

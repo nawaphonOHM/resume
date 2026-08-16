@@ -1,0 +1,17 @@
+<div
+  class="image-zoom-preview"
+  [class.image-zoom-preview--light]="data.logo.surface === 'light'"
+  [class.image-zoom-preview--dark]="data.logo.surface === 'dark'"
+  [attr.data-image-zoom-surface]="data.logo.surface"
+  [style.--image-zoom-intrinsic-width]="data.logo.width + 'px'"
+  [style.--image-zoom-intrinsic-height]="data.logo.height + 'px'"
+>
+  <img
+    class="image-zoom-preview__image"
+    [src]="data.logo.src"
+    [width]="data.logo.width"
+    [height]="data.logo.height"
+    [alt]="data.label"
+    draggable="false"
+  />
+</div>

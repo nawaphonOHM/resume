@@ -6,10 +6,18 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 
 import type { ResumeEducation } from '../../model/resume/resume.model';
+import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
 
 @Component({
   selector: 'app-education-section',
-  imports: [MatButtonModule, MatCardModule, MatDividerModule, MatIconModule, NgOptimizedImage],
+  imports: [
+    ImageZoomDirective,
+    MatButtonModule,
+    MatCardModule,
+    MatDividerModule,
+    MatIconModule,
+    NgOptimizedImage,
+  ],
   templateUrl: './education-section.html',
   styleUrl: './education-section.scss',
 })

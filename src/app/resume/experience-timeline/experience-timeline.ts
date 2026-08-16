@@ -6,11 +6,19 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 
 import type { Experience } from '../../model/resume/resume.model';
+import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
 import { resolveTechnologyIcon } from './technology-icons';
 
 @Component({
   selector: 'app-experience-timeline',
-  imports: [MatCardModule, MatChipsModule, MatDividerModule, MatIconModule, NgOptimizedImage],
+  imports: [
+    ImageZoomDirective,
+    MatCardModule,
+    MatChipsModule,
+    MatDividerModule,
+    MatIconModule,
+    NgOptimizedImage,
+  ],
   templateUrl: './experience-timeline.html',
   styleUrl: './experience-timeline.scss',
 })
