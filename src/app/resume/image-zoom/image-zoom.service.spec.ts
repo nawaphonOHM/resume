@@ -66,7 +66,7 @@ describe('ImageZoomService', () => {
       disposeOnNavigation: true,
       maxWidth: 'calc(100vw - 32px)',
       maxHeight: 'calc(100vh - 32px)',
-      panelClass: 'image-zoom-overlay-pane',
+      panelClass: ['image-zoom-overlay-pane', 'image-zoom-overlay-pane--pointer-transparent'],
     });
     expect(position._origin).toBe(origin);
     expect(position._viewportMargin).toBe(16);
@@ -118,6 +118,33 @@ describe('ImageZoomService', () => {
     expect(image?.getAttribute('src')).toBe(lightLogo.src);
     expect(image?.getAttribute('alt')).toBe('Light brand');
     expect(service.isOpenFor(origin, 'hover')).toBe(true);
+  });
+
+  it('marks only hover overlay panes as pointer-transparent', () => {
+    const hoverOrigin = createOrigin('hover');
+    const touchOrigin = createOrigin('touch');
+    const overlay = TestBed.inject(Overlay);
+    const create = vi.spyOn(overlay, 'create');
+    const service = TestBed.inject(ImageZoomService);
+
+    service.open(request(hoverOrigin, lightLogo, 'Hover brand', 'hover'));
+
+    const hoverPane = overlayContainer().querySelector<HTMLElement>('.image-zoom-overlay-pane');
+    expect(create.mock.calls[0]?.[0]?.panelClass).toEqual([
+      'image-zoom-overlay-pane',
+      'image-zoom-overlay-pane--pointer-transparent',
+    ]);
+    expect(hoverPane?.classList.contains('image-zoom-overlay-pane--pointer-transparent')).toBe(
+      true,
+    );
+
+    service.open(request(touchOrigin, darkLogo, 'Touch brand', 'touch'));
+
+    const touchPane = overlayContainer().querySelector<HTMLElement>('.image-zoom-overlay-pane');
+    expect(create.mock.calls[1]?.[0]?.panelClass).toEqual(['image-zoom-overlay-pane']);
+    expect(touchPane?.classList.contains('image-zoom-overlay-pane--pointer-transparent')).toBe(
+      false,
+    );
   });
 
   it('replaces the active preview and disposes the previous overlay', () => {

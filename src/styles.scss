@@ -2,6 +2,10 @@
 @import '@angular/cdk/overlay-prebuilt.css';
 @import 'material-icons/iconfont/material-icons.css';
 
+.image-zoom-overlay-pane.image-zoom-overlay-pane--pointer-transparent {
+  pointer-events: none;
+}
+
 @theme inline {
   --color-page: var(--resume-page);
   --color-surface: var(--resume-surface);

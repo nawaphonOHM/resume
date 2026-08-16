@@ -95,7 +95,10 @@ export class ImageZoomService {
     const overlayRef = this.overlay.create({
       positionStrategy,
       scrollStrategy: this.overlay.scrollStrategies.reposition({ scrollThrottle: 0 }),
-      panelClass: 'image-zoom-overlay-pane',
+      panelClass:
+        request.activation === 'hover'
+          ? ['image-zoom-overlay-pane', 'image-zoom-overlay-pane--pointer-transparent']
+          : ['image-zoom-overlay-pane'],
       maxWidth: `calc(100vw - ${VIEWPORT_MARGIN * 2}px)`,
       maxHeight: `calc(100vh - ${VIEWPORT_MARGIN * 2}px)`,
       disposeOnNavigation: true,
