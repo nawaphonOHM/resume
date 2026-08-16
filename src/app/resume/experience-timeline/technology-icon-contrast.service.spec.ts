@@ -8,9 +8,8 @@ import {
   TechnologyIconContrastService,
 } from './technology-icon-contrast.service';
 
-const REMOTE_ICON_URL = 'https://resume-images.ohm-mho.space/images/technology-icons/test.svg';
-const SECOND_REMOTE_ICON_URL =
-  'https://resume-images.ohm-mho.space/images/technology-icons/second.svg';
+const REMOTE_ICON_URL = 'https://resume-images.ohm-mho.space/technology-icons/test.svg';
+const SECOND_REMOTE_ICON_URL = 'https://resume-images.ohm-mho.space/technology-icons/second.svg';
 const ICON: TechnologyIconMetadata = {
   src: REMOTE_ICON_URL,
   width: 24,

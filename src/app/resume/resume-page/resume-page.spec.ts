@@ -412,7 +412,7 @@ describe('ResumePage', () => {
           expect(iconFrame).toBe(iconContainer);
           const expectedIconUrl = new URL(expectedIcon.src);
           expect(expectedIconUrl.origin).toBe(IMAGE_ASSET_ORIGIN);
-          expect(expectedIconUrl.pathname).toMatch(/^\/images\/technology-icons\/[a-z0-9-]+\.svg$/);
+          expect(expectedIconUrl.pathname).toMatch(/^\/technology-icons\/[a-z0-9-]+\.svg$/);
           expect(brandIcon?.getAttribute('src')).toBe(expectedPresentation.logo.src);
           expect(brandIcon?.getAttribute('width')).toBe(String(expectedIcon.width));
           expect(brandIcon?.getAttribute('height')).toBe(String(expectedIcon.height));
@@ -517,7 +517,7 @@ describe('ResumePage', () => {
     expect(logos.every((logo) => logo.getAttribute('alt') === '')).toBe(true);
     expect(
       logos.every((logo) =>
-        logo.getAttribute('src')?.startsWith(`${IMAGE_ASSET_ORIGIN}/images/company-logos/`),
+        logo.getAttribute('src')?.startsWith(`${IMAGE_ASSET_ORIGIN}/company-logos/`),
       ),
     ).toBe(true);
     expect(
@@ -530,9 +530,9 @@ describe('ResumePage', () => {
         identity.querySelector<HTMLImageElement>('.company-logo')?.getAttribute('src'),
       ),
     ).toEqual([
-      'https://resume-images.ohm-mho.space/images/company-logos/innovestx.png',
-      'https://resume-images.ohm-mho.space/images/company-logos/krungsri.png',
-      'https://resume-images.ohm-mho.space/images/company-logos/tisco.svg',
+      'https://resume-images.ohm-mho.space/company-logos/innovestx.png',
+      'https://resume-images.ohm-mho.space/company-logos/krungsri.png',
+      'https://resume-images.ohm-mho.space/company-logos/tisco.svg',
     ]);
     expect(element.querySelectorAll('.company-identity--client .company-label')).toHaveLength(3);
     expect(element.querySelectorAll('.company-relationship-arrow')).toHaveLength(3);

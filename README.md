@@ -27,7 +27,7 @@ The phone value must remain `Available on request`. Do not add a phone number, a
 
 ## Static assets
 
-All project-owned images are served from the DigitalOcean Space origin `https://resume-images.ohm-mho.space`. Résumé image URLs preserve their `/images/...` web paths beneath that origin, and the favicon is served from `/favicon.svg`; object URLs must not include `/public`.
+All project-owned images are served from the DigitalOcean Space origin `https://resume-images.ohm-mho.space`. Résumé and technology image object keys start directly with the root-level `/company-logos/...`, `/link-logos/...`, `/technology-icons/...`, or `/university-logos/...` category paths. The favicon is served separately from `/favicon.svg`, and object URLs must not include `/public`.
 
 The Space must allow unauthenticated public `GET` requests. It must also return an appropriate `Access-Control-Allow-Origin` header for canvas-based technology-icon contrast optimization. If an image or CORS access fails, the application does not use a local fallback or custom placeholder.
 

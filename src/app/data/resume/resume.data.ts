@@ -28,7 +28,7 @@ export const RESUME = {
       label: 'GitHub',
       url: 'https://github.com/nawaphonOHM',
       logo: {
-        src: imageAssetUrl('/images/link-logos/github.svg'),
+        src: imageAssetUrl('/link-logos/github.svg'),
         width: 98,
         height: 96,
         surface: 'light',
@@ -45,7 +45,7 @@ export const RESUME = {
       role: 'Back End Developer',
       company: 'Accord Innovations',
       companyLogo: {
-        src: imageAssetUrl('/images/company-logos/accord-innovations.png'),
+        src: imageAssetUrl('/company-logos/accord-innovations.png'),
         width: 250,
         height: 100,
         surface: 'dark',
@@ -53,7 +53,7 @@ export const RESUME = {
       client: {
         name: 'InnovestX',
         logo: {
-          src: imageAssetUrl('/images/company-logos/innovestx.png'),
+          src: imageAssetUrl('/company-logos/innovestx.png'),
           width: 142,
           height: 27,
           surface: 'light',
@@ -93,7 +93,7 @@ export const RESUME = {
       role: 'Software Engineer',
       company: 'Saitech Solution',
       companyLogo: {
-        src: imageAssetUrl('/images/company-logos/saitech-solution.png'),
+        src: imageAssetUrl('/company-logos/saitech-solution.png'),
         width: 200,
         height: 200,
         surface: 'light',
@@ -101,7 +101,7 @@ export const RESUME = {
       client: {
         name: 'Ayudhya Capital Services (AYCAP)',
         logo: {
-          src: imageAssetUrl('/images/company-logos/krungsri.png'),
+          src: imageAssetUrl('/company-logos/krungsri.png'),
           width: 200,
           height: 200,
           surface: 'dark',
@@ -122,7 +122,7 @@ export const RESUME = {
       role: 'Software Engineer',
       company: 'Nityo Infotech',
       companyLogo: {
-        src: imageAssetUrl('/images/company-logos/nityo-infotech.svg'),
+        src: imageAssetUrl('/company-logos/nityo-infotech.svg'),
         width: 4096,
         height: 1973,
         surface: 'light',
@@ -130,7 +130,7 @@ export const RESUME = {
       client: {
         name: 'TISCO Bank',
         logo: {
-          src: imageAssetUrl('/images/company-logos/tisco.svg'),
+          src: imageAssetUrl('/company-logos/tisco.svg'),
           width: 297,
           height: 119,
           surface: 'light',
@@ -149,7 +149,7 @@ export const RESUME = {
       role: 'Software Engineer Backend',
       company: 'LINE MAN Wongnai',
       companyLogo: {
-        src: imageAssetUrl('/images/company-logos/line-man-wongnai.webp'),
+        src: imageAssetUrl('/company-logos/line-man-wongnai.webp'),
         width: 555,
         height: 83,
         surface: 'light',
@@ -166,7 +166,7 @@ export const RESUME = {
       role: 'Full-Stack Software Developer',
       company: 'WiseSoft',
       companyLogo: {
-        src: imageAssetUrl('/images/company-logos/wisesoft.png'),
+        src: imageAssetUrl('/company-logos/wisesoft.png'),
         width: 203,
         height: 203,
         surface: 'light',
@@ -184,7 +184,7 @@ export const RESUME = {
     degree: 'Bachelor of Engineering (Computer Engineering)',
     institution: 'Prince of Songkla University',
     institutionLogo: {
-      src: imageAssetUrl('/images/university-logos/prince-of-songkla-university.webp'),
+      src: imageAssetUrl('/university-logos/prince-of-songkla-university.webp'),
       width: 600,
       height: 160,
       surface: 'light',
