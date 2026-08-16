@@ -46,6 +46,15 @@ describe('ImageZoomPreview', () => {
     expect(imageStyle.getPropertyValue('contain-intrinsic-size')).toBe(
       'var(--image-zoom-intrinsic-width) var(--image-zoom-intrinsic-height)',
     );
+    expect(imageStyle.width).toBe('auto');
+    expect(imageStyle.height).toBe('auto');
+    expect(imageStyle.maxWidth).toBe(
+      'var(--image-zoom-image-max-width, min(20vw, 100vw - 3.5rem))',
+    );
+    expect(imageStyle.maxHeight).toBe(
+      'var(--image-zoom-image-max-height, min(20vh, 100vh - 3.5rem))',
+    );
+    expect(imageStyle.objectFit).toBe('contain');
     expect(image?.getAttribute('src')).toBe(logo.src);
     expect(image?.getAttribute('width')).toBe('640');
     expect(image?.getAttribute('height')).toBe('320');

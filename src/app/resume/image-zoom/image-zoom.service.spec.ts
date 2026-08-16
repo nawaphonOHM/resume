@@ -1,6 +1,7 @@
 import {
   Overlay,
   OverlayContainer,
+  ViewportRuler,
   type ConnectedPosition,
   type OverlayRef,
 } from '@angular/cdk/overlay';
@@ -48,6 +49,8 @@ describe('ImageZoomService', () => {
   it('renders content in a viewport-bounded connected overlay with reposition scrolling', () => {
     const origin = createOrigin('first');
     const overlay = TestBed.inject(Overlay);
+    const viewportRuler = TestBed.inject(ViewportRuler);
+    vi.spyOn(viewportRuler, 'getViewportSize').mockReturnValue({ width: 1200, height: 800 });
     const create = vi.spyOn(overlay, 'create');
     const reposition = vi.spyOn(overlay.scrollStrategies, 'reposition');
     const service = TestBed.inject(ImageZoomService);
@@ -104,20 +107,29 @@ describe('ImageZoomService', () => {
         offsetY: -12,
       },
     ]);
-    expect(pane?.style.getPropertyValue('--image-zoom-viewport-max-width')).toMatch(
-      /^\d+(\.\d+)?px$/,
-    );
-    expect(pane?.style.getPropertyValue('--image-zoom-viewport-max-height')).toMatch(
-      /^\d+(\.\d+)?px$/,
-    );
-    expect(pane?.style.getPropertyValue('--image-zoom-image-max-width')).toMatch(/^\d+(\.\d+)?px$/);
-    expect(pane?.style.getPropertyValue('--image-zoom-image-max-height')).toMatch(
-      /^\d+(\.\d+)?px$/,
-    );
+    expect(pane?.style.getPropertyValue('--image-zoom-viewport-max-width')).toBe('1168px');
+    expect(pane?.style.getPropertyValue('--image-zoom-viewport-max-height')).toBe('768px');
+    expect(pane?.style.getPropertyValue('--image-zoom-image-max-width')).toBe('240px');
+    expect(pane?.style.getPropertyValue('--image-zoom-image-max-height')).toBe('160px');
     expect(preview?.getAttribute('aria-hidden')).toBe('true');
     expect(image?.getAttribute('src')).toBe(lightLogo.src);
     expect(image?.getAttribute('alt')).toBe('Light brand');
     expect(service.isOpenFor(origin, 'hover')).toBe(true);
+  });
+
+  it('bounds percentage image limits by chrome-safe dimensions on small viewports', () => {
+    const origin = createOrigin('small-viewport');
+    const viewportRuler = TestBed.inject(ViewportRuler);
+    vi.spyOn(viewportRuler, 'getViewportSize').mockReturnValue({ width: 60, height: 70 });
+    const service = TestBed.inject(ImageZoomService);
+
+    service.open(request(origin, lightLogo, 'Small viewport brand', 'hover'));
+
+    const pane = overlayContainer().querySelector<HTMLElement>('.image-zoom-overlay-pane');
+    expect(pane?.style.getPropertyValue('--image-zoom-viewport-max-width')).toBe('28px');
+    expect(pane?.style.getPropertyValue('--image-zoom-viewport-max-height')).toBe('38px');
+    expect(pane?.style.getPropertyValue('--image-zoom-image-max-width')).toBe('2px');
+    expect(pane?.style.getPropertyValue('--image-zoom-image-max-height')).toBe('12px');
   });
 
   it('marks only hover overlay panes as pointer-transparent', () => {

@@ -25,6 +25,7 @@ export interface ImageZoomRequest {
 }
 
 const VIEWPORT_MARGIN = 16;
+const IMAGE_MAX_VIEWPORT_RATIO = 0.2;
 const ORIGIN_GAP = 12;
 /** Panel padding (0.75rem * 2) + border (1px * 2), matching `image-zoom-preview.scss`. */
 const PANEL_CHROME_PX = 26;
@@ -212,8 +213,14 @@ export class ImageZoomService {
     const viewport = this.viewportRuler.getViewportSize();
     const maxWidth = Math.max(viewport.width - VIEWPORT_MARGIN * 2, 0);
     const maxHeight = Math.max(viewport.height - VIEWPORT_MARGIN * 2, 0);
-    const imageMaxWidth = Math.max(maxWidth - PANEL_CHROME_PX, 0);
-    const imageMaxHeight = Math.max(maxHeight - PANEL_CHROME_PX, 0);
+    const imageMaxWidth = Math.min(
+      viewport.width * IMAGE_MAX_VIEWPORT_RATIO,
+      Math.max(maxWidth - PANEL_CHROME_PX, 0),
+    );
+    const imageMaxHeight = Math.min(
+      viewport.height * IMAGE_MAX_VIEWPORT_RATIO,
+      Math.max(maxHeight - PANEL_CHROME_PX, 0),
+    );
     const pane = overlayRef.overlayElement;
 
     pane.style.maxWidth = `${maxWidth}px`;

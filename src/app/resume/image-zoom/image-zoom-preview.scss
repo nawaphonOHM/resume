@@ -39,8 +39,8 @@
   contain-intrinsic-size: var(--image-zoom-intrinsic-width) var(--image-zoom-intrinsic-height);
   width: auto;
   height: auto;
-  max-width: var(--image-zoom-image-max-width, calc(100vw - 3.5rem));
-  max-height: var(--image-zoom-image-max-height, calc(100vh - 3.5rem));
+  max-width: var(--image-zoom-image-max-width, min(20vw, calc(100vw - 3.5rem)));
+  max-height: var(--image-zoom-image-max-height, min(20vh, calc(100vh - 3.5rem)));
   object-fit: contain;
   user-select: none;
 }
