@@ -1,6 +1,6 @@
 {
   "name": "resume",
-  "version": "1.11.7",
+  "version": "1.11.8",
   "type": "module",
   "scripts": {
     "ng": "ng",
@@ -26,7 +26,6 @@
     "@angular/forms": "^22.1.2",
     "@angular/material": "^22.1.2",
     "@angular/platform-browser": "^22.1.2",
-    "@techstark/opencv-js": "^5.0.0-release.1",
     "material-icons": "^1.13.14",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"

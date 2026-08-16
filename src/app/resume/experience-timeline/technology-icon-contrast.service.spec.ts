@@ -1,4 +1,5 @@
 /** Verifies deferred, cached, contrast-safe technology-icon enhancement. */
+import { PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
@@ -6,8 +7,10 @@ import type { TechnologyIconMetadata } from './technology-icons';
 import {
   TECHNOLOGY_ICON_OPEN_CV_LOADER,
   TechnologyIconContrastService,
+  type TechnologyIconOpenCvLoader,
 } from './technology-icon-contrast.service';
 
+const OPEN_CV_CDN_URL = 'https://cdn.jsdelivr.net/npm/@techstark/opencv-js@5/+esm';
 const REMOTE_ICON_URL = 'https://resume-images.ohm-mho.space/technology-icons/test.svg';
 const SECOND_REMOTE_ICON_URL = 'https://resume-images.ohm-mho.space/technology-icons/second.svg';
 const ICON: TechnologyIconMetadata = {
@@ -281,15 +284,22 @@ describe('TechnologyIconContrastService', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     TestBed.resetTestingModule();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
   /** Configures the singleton with a controlled dynamic-import replacement. */
-  function createService(loader: () => Promise<unknown>): TechnologyIconContrastService {
+  function createService(
+    loader: TechnologyIconOpenCvLoader,
+    platformId: 'browser' | 'server' = 'browser',
+  ): TechnologyIconContrastService {
     TestBed.configureTestingModule({
-      providers: [{ provide: TECHNOLOGY_ICON_OPEN_CV_LOADER, useValue: loader }],
+      providers: [
+        { provide: PLATFORM_ID, useValue: platformId },
+        { provide: TECHNOLOGY_ICON_OPEN_CV_LOADER, useValue: loader },
+      ],
     });
     return TestBed.inject(TechnologyIconContrastService);
   }
@@ -304,6 +314,7 @@ describe('TechnologyIconContrastService', () => {
   it('requests anonymous CORS, evaluates both surfaces, and applies CLAHE only to luminance', async () => {
     const fake = createFakeOpenCv({ enhanceLuminance: () => 255 });
     const loader = vi.fn(async () => ({ default: fake.cv }));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const service = createService(loader);
 
     const pending = service.optimize(ICON);
@@ -315,7 +326,7 @@ describe('TechnologyIconContrastService', () => {
     runIdleTasks();
     const presentation = await pending;
 
-    expect(loader).toHaveBeenCalledOnce();
+    expect(loader).toHaveBeenCalledExactlyOnceWith(OPEN_CV_CDN_URL);
     expect(imageRequests).toEqual([{ crossOrigin: 'anonymous', src: REMOTE_ICON_URL }]);
     expect(fake.claheCalls).toHaveLength(2);
     expect(fake.claheCalls).toEqual(
@@ -343,6 +354,108 @@ describe('TechnologyIconContrastService', () => {
     expect(fake.allocations.every((allocation) => allocation.delete.mock.calls.length === 1)).toBe(
       true,
     );
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('retries loading and normalization at fixed one-second intervals before recovering', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(0);
+    sourcePixels = createSourcePixels([0, 0, 0, 0]);
+    const fake = createFakeOpenCv();
+    const attemptTimes: number[] = [];
+    const loader = vi.fn(async (_sourceUrl: string) => {
+      attemptTimes.push(Date.now());
+      const attempt = attemptTimes.length;
+      if (attempt === 1 || attempt === 3) {
+        throw new Error(`Synthetic CDN failure ${attempt}`);
+      }
+      return attempt === 2 ? undefined : { default: fake.cv };
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const service = createService(loader);
+
+    const pending = service.optimize(ICON);
+    runIdleTasks();
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(loader).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(999);
+    expect(loader).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(loader).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(loader).toHaveBeenCalledTimes(3);
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    await expect(pending).resolves.toEqual(expect.objectContaining({ backgroundColor: '#ffffff' }));
+    expect(attemptTimes).toEqual([0, 1_000, 2_000, 3_000]);
+    expect(loader.mock.calls.map(([sourceUrl]) => sourceUrl)).toEqual([
+      OPEN_CV_CDN_URL,
+      `${OPEN_CV_CDN_URL}?retry=1`,
+      `${OPEN_CV_CDN_URL}?retry=2`,
+      `${OPEN_CV_CDN_URL}?retry=3`,
+    ]);
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('shares exhausted retries and warns once across concurrent and later icons', async () => {
+    vi.useFakeTimers();
+    const loader = vi.fn(async (_sourceUrl: string) => {
+      throw new Error('Synthetic persistent CDN failure');
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const service = createService(loader);
+    const secondIcon = { ...ICON, src: SECOND_REMOTE_ICON_URL };
+
+    const first = service.optimize(ICON);
+    const second = service.optimize(secondIcon);
+    runIdleTasks();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(loader).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(loader).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(loader).toHaveBeenCalledTimes(3);
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(loader).toHaveBeenCalledTimes(4);
+    await vi.advanceTimersByTimeAsync(0);
+
+    await expect(Promise.all([first, second])).resolves.toEqual([
+      { logo: ICON, backgroundColor: '#ffffff' },
+      { logo: secondIcon, backgroundColor: '#ffffff' },
+    ]);
+    expect(loader.mock.calls.map(([sourceUrl]) => sourceUrl)).toEqual([
+      OPEN_CV_CDN_URL,
+      `${OPEN_CV_CDN_URL}?retry=1`,
+      `${OPEN_CV_CDN_URL}?retry=2`,
+      `${OPEN_CV_CDN_URL}?retry=3`,
+    ]);
+    expect(warn).toHaveBeenCalledOnce();
+
+    const laterIcon = { ...ICON, src: `${REMOTE_ICON_URL}?later` };
+    const later = service.optimize(laterIcon);
+    runIdleTasks();
+    await vi.advanceTimersByTimeAsync(0);
+
+    await expect(later).resolves.toEqual({ logo: laterIcon, backgroundColor: '#ffffff' });
+    expect(loader).toHaveBeenCalledTimes(4);
+    expect(warn).toHaveBeenCalledOnce();
+    expect(imageLoadCount).toBe(0);
+  });
+
+  it('does not load or warn outside the browser', async () => {
+    const fake = createFakeOpenCv();
+    const loader = vi.fn(async () => ({ default: fake.cv }));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const service = createService(loader, 'server');
+
+    await expect(service.optimize(ICON)).resolves.toEqual({
+      logo: ICON,
+      backgroundColor: '#ffffff',
+    });
+    expect(idleCallbacks).toHaveLength(0);
+    expect(loader).not.toHaveBeenCalled();
+    expect(warn).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -452,16 +565,12 @@ describe('TechnologyIconContrastService', () => {
     expect(imageLoadCount).toBe(2);
   });
 
-  it.each(['opencv', 'image', 'canvas', 'cross-origin canvas access'] as const)(
+  it.each(['image', 'canvas', 'cross-origin canvas access'] as const)(
     'resolves to the original light presentation after a %s failure',
     async (failure) => {
       const fake = createFakeOpenCv();
-      const loader = vi.fn(async () => {
-        if (failure === 'opencv') {
-          throw new Error('Synthetic OpenCV load failure');
-        }
-        return { default: fake.cv };
-      });
+      const loader = vi.fn(async () => ({ default: fake.cv }));
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       failImageLoading = failure === 'image';
       canvasAvailable = failure !== 'canvas';
       failCanvasReading = failure === 'cross-origin canvas access';
@@ -477,12 +586,15 @@ describe('TechnologyIconContrastService', () => {
         backgroundColor: '#ffffff',
       });
       expect(presentation.logo.src).toBe(REMOTE_ICON_URL);
+      expect(loader).toHaveBeenCalledOnce();
+      expect(warn).not.toHaveBeenCalled();
     },
   );
 
   it('cleans up every OpenCV allocation when processing throws', async () => {
     const fake = createFakeOpenCv({ failDuringClahe: true });
-    const service = createService(vi.fn(async () => ({ default: fake.cv })));
+    const loader = vi.fn(async () => ({ default: fake.cv }));
+    const service = createService(loader);
 
     const pending = service.optimize(ICON);
     runIdleTasks();
@@ -492,5 +604,6 @@ describe('TechnologyIconContrastService', () => {
     expect(fake.allocations.every((allocation) => allocation.delete.mock.calls.length === 1)).toBe(
       true,
     );
+    expect(loader).toHaveBeenCalledOnce();
   });
 });

@@ -23,8 +23,6 @@
           "options": {
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
-            "allowedCommonJsDependencies": ["@techstark/opencv-js"],
-            "externalDependencies": ["crypto", "fs"],
             "inlineStyleLanguage": "scss",
             "assets": [
               {

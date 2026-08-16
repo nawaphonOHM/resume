@@ -33,6 +33,12 @@ The Space must allow unauthenticated public `GET` requests. It must also return 
 
 The generated résumé PDF is the only local static-asset exception. It remains available from `/downloads/nawaphon-isarathanachaikul-resume.pdf`; Angular copies PDFs from `public/downloads` into the production artifact while project-owned images remain remote.
 
+## Runtime OpenCV dependency
+
+Technology-icon contrast optimization is browser-only and begins after the initial render during idle time. When optimization starts, the browser dynamically imports OpenCV from `https://cdn.jsdelivr.net/npm/@techstark/opencv-js@5/+esm`; OpenCV is not installed as an npm dependency or included in the application chunks.
+
+Deployments that enforce Content Security Policy must allow `https://cdn.jsdelivr.net` in the applicable `script-src` policy. If the CDN module is unavailable, blocked, or cannot enhance an icon, the application remains usable and displays the original icon on a light background.
+
 ## Formatting and tests
 
 ```bash

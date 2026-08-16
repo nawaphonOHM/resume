@@ -4,6 +4,12 @@ import { Injectable, InjectionToken, PLATFORM_ID, inject } from '@angular/core';
 import type { BrandLogo } from '../../model/resume/resume.model';
 import type { TechnologyIconMetadata } from './technology-icons';
 
+const OPEN_CV_CDN_URL = 'https://cdn.jsdelivr.net/npm/@techstark/opencv-js@5/+esm';
+const OPEN_CV_RETRY_COUNT = 3;
+const OPEN_CV_RETRY_DELAY_MS = 1_000;
+const OPEN_CV_RETRY_DELAY_MULTIPLIER = 1.0;
+const OPEN_CV_RETRY_JITTER_MS = 0;
+
 /** Exact card colors considered for every technology icon. */
 export type TechnologyIconBackgroundColor = '#ffffff' | '#0d1b2d';
 
@@ -14,7 +20,7 @@ export interface TechnologyIconPresentation {
 }
 
 /** Deferred OpenCV module loader, replaceable at the browser boundary in tests. */
-export type TechnologyIconOpenCvLoader = () => Promise<unknown>;
+export type TechnologyIconOpenCvLoader = (sourceUrl: string) => Promise<unknown>;
 
 /**
  * Loader whose factory keeps OpenCV out of the initial bundle and does no work
@@ -24,7 +30,7 @@ export const TECHNOLOGY_ICON_OPEN_CV_LOADER = new InjectionToken<TechnologyIconO
   'TECHNOLOGY_ICON_OPEN_CV_LOADER',
   {
     providedIn: 'root',
-    factory: () => () => import('@techstark/opencv-js') as Promise<unknown>,
+    factory: () => (sourceUrl) => import(sourceUrl) as Promise<unknown>,
   },
 );
 
@@ -118,7 +124,7 @@ function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
   );
 }
 
-/** Unwraps the default value emitted when the CommonJS package is imported. */
+/** Unwraps a default value exposed by an imported module. */
 function unwrapDefaultExport(value: unknown): unknown {
   if (typeof value !== 'object' || value === null || !('default' in value)) {
     return value;
@@ -278,12 +284,49 @@ export class TechnologyIconContrastService {
     });
   }
 
-  /** Loads and initializes the package at most once after idle work begins. */
+  /** Loads and initializes the complete retry sequence once after idle work begins. */
   private loadOpenCv(): Promise<OpenCvRuntime> {
-    this.openCvRuntime ??= Promise.resolve()
-      .then(() => this.openCvLoader())
-      .then((moduleValue) => normalizeOpenCvExport(moduleValue));
+    this.openCvRuntime ??= this.initializeOpenCv();
     return this.openCvRuntime;
+  }
+
+  /** Retries CDN loading and runtime normalization with deterministic source URLs. */
+  private async initializeOpenCv(): Promise<OpenCvRuntime> {
+    let finalError: unknown;
+
+    for (let retry = 0; retry <= OPEN_CV_RETRY_COUNT; retry++) {
+      if (retry > 0) {
+        await this.waitForOpenCvRetry(retry);
+      }
+
+      const sourceUrl = retry === 0 ? OPEN_CV_CDN_URL : `${OPEN_CV_CDN_URL}?retry=${retry}`;
+      try {
+        const moduleValue = await this.openCvLoader(sourceUrl);
+        return await normalizeOpenCvExport(moduleValue);
+      } catch (error) {
+        finalError = error;
+      }
+    }
+
+    const exhaustedError = finalError ?? new Error('OpenCV initialization failed');
+    this.view?.console.warn(
+      `OpenCV initialization failed after ${OPEN_CV_RETRY_COUNT + 1} attempts; using original technology icons.`,
+      exhaustedError,
+    );
+    throw exhaustedError;
+  }
+
+  /** Waits for the fixed retry delay without introducing jitter or server work. */
+  private waitForOpenCvRetry(retry: number): Promise<void> {
+    const view = this.view;
+    if (!view) {
+      return Promise.resolve();
+    }
+
+    const delay =
+      OPEN_CV_RETRY_DELAY_MS * OPEN_CV_RETRY_DELAY_MULTIPLIER ** (retry - 1) +
+      OPEN_CV_RETRY_JITTER_MS;
+    return new Promise<void>((resolve) => view.setTimeout(resolve, delay));
   }
 
   /** Runs the complete rasterize, evaluate, select, and serialize pipeline. */
