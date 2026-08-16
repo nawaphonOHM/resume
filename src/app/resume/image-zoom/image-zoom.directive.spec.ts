@@ -24,6 +24,7 @@ const LOGO: BrandLogo = {
   template: `
     <img
       [appImageZoom]="logo()"
+      [imageZoomBackground]="background()"
       [imageZoomLabel]="label()"
       [imageZoomTouch]="touchEnabled()"
       alt=""
@@ -32,6 +33,7 @@ const LOGO: BrandLogo = {
 })
 class ImageZoomHost {
   readonly logo = signal<BrandLogo>(LOGO);
+  readonly background = signal<string | undefined>(undefined);
   readonly label = signal('Test brand');
   readonly touchEnabled = signal(true);
 }
@@ -203,6 +205,25 @@ describe('ImageZoomDirective', () => {
     expect(imageZoomService.toggle).toHaveBeenCalledTimes(2);
     expect(imageZoomService.toggle).toHaveBeenLastCalledWith(
       request(image, LOGO, 'Test brand', 'touch'),
+    );
+  });
+
+  it('includes an optional exact preview background without changing the default request', async () => {
+    const image = await createImage();
+    setImageGeometry(image, { naturalWidth: 400, naturalHeight: 200, width: 200, height: 100 });
+
+    dispatchPointerEvent(image, 'pointerenter', 'mouse');
+
+    expect(imageZoomService.open).toHaveBeenLastCalledWith(
+      request(image, LOGO, 'Test brand', 'hover'),
+    );
+
+    fixture!.componentInstance.background.set('#0d1b2d');
+    await fixture!.whenStable();
+    dispatchPointerEvent(image, 'pointerenter', 'mouse');
+
+    expect(imageZoomService.open).toHaveBeenLastCalledWith(
+      request(image, LOGO, 'Test brand', 'hover', '#0d1b2d'),
     );
   });
 
@@ -412,6 +433,9 @@ function request(
   logo: BrandLogo,
   label: string,
   activation: ImageZoomRequest['activation'],
+  background?: string,
 ): ImageZoomRequest {
-  return { origin, logo, label, activation };
+  return background === undefined
+    ? { origin, logo, label, activation }
+    : { origin, logo, label, activation, background };
 }

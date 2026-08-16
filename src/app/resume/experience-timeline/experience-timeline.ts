@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 
 import type { Experience } from '../../model/resume/resume.model';
 import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
+import { TechnologyIconComponent } from './technology-icon';
 import { resolveTechnologyIcon } from './technology-icons';
 
 /** Renders ordered employment records with client relationships and technology metadata. */
@@ -19,6 +20,7 @@ import { resolveTechnologyIcon } from './technology-icons';
     MatDividerModule,
     MatIconModule,
     NgOptimizedImage,
+    TechnologyIconComponent,
   ],
   templateUrl: './experience-timeline.html',
   styleUrl: './experience-timeline.scss',

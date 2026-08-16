@@ -9,6 +9,9 @@ export interface ImageZoomPreviewData {
 
   /** Descriptive alternative text retained on the enlarged image. */
   readonly label: string;
+
+  /** Exact card color override; omission preserves the logo surface's existing default. */
+  readonly background?: string;
 }
 
 /** Overlay-scoped dependency token carrying content for one preview instance. */

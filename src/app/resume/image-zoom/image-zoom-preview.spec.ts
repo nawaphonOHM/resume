@@ -66,4 +66,32 @@ describe('ImageZoomPreview', () => {
     expect(image?.getAttribute('draggable')).toBe('false');
     expect(host.querySelectorAll('a, button, input, [tabindex]')).toHaveLength(0);
   });
+
+  it('uses an exact background override without changing the logo surface hooks', async () => {
+    const data: ImageZoomPreviewData = {
+      logo: {
+        src: '/images/enhanced-mark.png',
+        width: 128,
+        height: 128,
+        surface: 'dark',
+      },
+      label: 'Enhanced brand',
+      background: '#0d1b2d',
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [ImageZoomPreview],
+      providers: [{ provide: IMAGE_ZOOM_PREVIEW_DATA, useValue: data }],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ImageZoomPreview);
+    await fixture.whenStable();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const panel = host.querySelector<HTMLElement>('.image-zoom-preview');
+
+    expect(panel?.classList.contains('image-zoom-preview--dark')).toBe(true);
+    expect(panel?.getAttribute('data-image-zoom-surface')).toBe('dark');
+    expect(panel?.style.backgroundColor).toBe('rgb(13, 27, 45)');
+  });
 });

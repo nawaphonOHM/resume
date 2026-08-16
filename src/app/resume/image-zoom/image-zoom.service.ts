@@ -29,6 +29,9 @@ export interface ImageZoomRequest {
   /** Descriptive alternative text copied to the enlarged image. */
   readonly label: string;
 
+  /** Exact preview surface override; omission retains the logo tone's standard card color. */
+  readonly background?: string;
+
   /** Interaction mode used for ownership checks and pane pointer behavior. */
   readonly activation: ImageZoomActivation;
 }
@@ -168,6 +171,7 @@ export class ImageZoomService {
       const previewData: ImageZoomPreviewData = {
         logo: request.logo,
         label: request.label,
+        ...(request.background === undefined ? {} : { background: request.background }),
       };
       const previewInjector = Injector.create({
         parent: this.injector,

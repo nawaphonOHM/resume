@@ -10,11 +10,32 @@ import { RESUME_THEME_STORAGE_KEY } from '../../core/theme.service';
 import { RESUME } from '../../data/resume/resume.data';
 import type { BrandLogo } from '../../model/resume/resume.model';
 import {
+  TechnologyIconContrastService,
+  type TechnologyIconPresentation,
+} from '../experience-timeline/technology-icon-contrast.service';
+import { TechnologyIconComponent } from '../experience-timeline/technology-icon';
+import {
   TECHNOLOGY_ICON_FALLBACK_LABELS,
   resolveTechnologyIcon,
+  type TechnologyIconMetadata,
 } from '../experience-timeline/technology-icons';
 import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
 import { ResumePage } from './resume-page';
+
+const OPTIMIZED_ICON_SOURCE = 'data:image/png;base64,b3B0aW1pemVk';
+const OPTIMIZED_ICON_BACKGROUND = '#0d1b2d';
+
+/** Deterministic presentation fixture that keeps composed page tests independent of OpenCV. */
+function optimizedPresentation(icon: TechnologyIconMetadata): TechnologyIconPresentation {
+  return {
+    logo: {
+      ...icon,
+      src: OPTIMIZED_ICON_SOURCE,
+      surface: 'dark',
+    },
+    backgroundColor: OPTIMIZED_ICON_BACKGROUND,
+  };
+}
 
 describe('ResumePage', () => {
   /** Callback captured from the page's observer so tests can publish synthetic intersections. */
@@ -28,6 +49,9 @@ describe('ResumePage', () => {
 
   /** Spy recording initial-fragment restoration without moving the test viewport. */
   let scrollIntoView: ReturnType<typeof vi.fn>;
+
+  /** Deterministic optimizer fixture used by every composed technology-icon presenter. */
+  let optimize: ReturnType<typeof vi.fn<TechnologyIconContrastService['optimize']>>;
 
   beforeEach(async () => {
     observe = vi.fn();
@@ -76,8 +100,13 @@ describe('ResumePage', () => {
       'resume-theme-transitioning',
     );
 
+    optimize = vi.fn<TechnologyIconContrastService['optimize']>((icon) =>
+      Promise.resolve(optimizedPresentation(icon)),
+    );
+
     await TestBed.configureTestingModule({
       imports: [ResumePage],
+      providers: [{ provide: TechnologyIconContrastService, useValue: { optimize } }],
     }).compileComponents();
   });
 
@@ -203,6 +232,7 @@ describe('ResumePage', () => {
 
   it('wires every rendered image for zoom with GitHub as the only touch exception', async () => {
     const fixture = TestBed.createComponent(ResumePage);
+    await Promise.resolve();
     await fixture.whenStable();
     const renderedImages = fixture.debugElement.queryAll(By.css('img'));
     const zoomImages = fixture.debugElement.queryAll(By.directive(ImageZoomDirective));
@@ -210,6 +240,7 @@ describe('ResumePage', () => {
       readonly logo: BrandLogo;
       readonly label: string;
       readonly touch: boolean;
+      readonly background?: string;
     }> = [];
 
     for (const job of RESUME.experience) {
@@ -223,7 +254,13 @@ describe('ResumePage', () => {
         const logo = resolveTechnologyIcon(technology);
 
         if (logo) {
-          expectedBindings.push({ logo, label: technology, touch: true });
+          const presentation = optimizedPresentation(logo);
+          expectedBindings.push({
+            logo: presentation.logo,
+            label: technology,
+            touch: true,
+            background: presentation.backgroundColor,
+          });
         }
       }
     }
@@ -246,11 +283,13 @@ describe('ResumePage', () => {
 
     const actualBindings = zoomImages.map((image) => {
       const directive = image.injector.get(ImageZoomDirective);
+      const background = directive.imageZoomBackground();
 
       return {
         logo: directive.appImageZoom(),
         label: directive.imageZoomLabel(),
         touch: directive.imageZoomTouch(),
+        ...(background === undefined ? {} : { background }),
       };
     });
 
@@ -314,13 +353,26 @@ describe('ResumePage', () => {
     );
   });
 
-  it('renders every experience technology with one decorative leading icon', () => {
+  it('renders every experience technology with one decorative leading icon', async () => {
     const fixture = TestBed.createComponent(ResumePage);
-    fixture.detectChanges();
+    await Promise.resolve();
+    await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
     const cards = Array.from(element.querySelectorAll<HTMLElement>('.experience-card'));
+    const zoomByImage = new Map(
+      fixture.debugElement
+        .queryAll(By.directive(ImageZoomDirective))
+        .map((image) => [image.nativeElement, image.injector.get(ImageZoomDirective)] as const),
+    );
+    const expectedBrandedIcons: TechnologyIconMetadata[] = [];
     const renderedLabels: string[] = [];
     const renderedFallbackLabels: string[] = [];
+    const printStyles = Array.from(document.head.querySelectorAll<HTMLStyleElement>('style'))
+      .map((style) => style.textContent ?? '')
+      .find(
+        (styles) =>
+          styles.includes('@media print') && styles.includes('.technology-icon-container'),
+      );
 
     expect(cards).toHaveLength(RESUME.experience.length);
 
@@ -347,23 +399,28 @@ describe('ResumePage', () => {
         renderedLabels.push(label!.textContent!.trim());
 
         if (expectedIcon) {
+          const expectedPresentation = optimizedPresentation(expectedIcon);
           const brandIcon = brandIcons?.item(0);
           const iconFrame = brandIcon?.closest('.technology-icon-frame');
+          const zoom = brandIcon ? zoomByImage.get(brandIcon) : undefined;
 
+          expectedBrandedIcons.push(expectedIcon);
           expect(brandIcons).toHaveLength(1);
           expect(fallbackIcons).toHaveLength(0);
-          expect(brandIcon?.getAttribute('src')).toBe(expectedIcon.src);
-          expect(brandIcon?.getAttribute('src')).toMatch(
-            /^\/images\/technology-icons\/[a-z0-9-]+\.svg$/,
-          );
+          expect(iconContainer?.tagName.toLowerCase()).toBe('app-technology-icon');
+          expect(iconFrame).toBe(iconContainer);
+          expect(expectedIcon.src).toMatch(/^\/images\/technology-icons\/[a-z0-9-]+\.svg$/);
+          expect(brandIcon?.getAttribute('src')).toBe(expectedPresentation.logo.src);
           expect(brandIcon?.getAttribute('width')).toBe(String(expectedIcon.width));
           expect(brandIcon?.getAttribute('height')).toBe(String(expectedIcon.height));
           expect(brandIcon?.getAttribute('alt')).toBe('');
           expect(brandIcon?.getAttribute('aria-hidden')).toBe('true');
           expect(brandIcon?.getAttribute('loading')).toBe('lazy');
-          expect(
-            iconFrame?.classList.contains(`technology-icon-frame--${expectedIcon.surface}`),
-          ).toBe(true);
+          expect(iconFrame?.classList.contains('technology-icon-frame--dark')).toBe(true);
+          expect((iconFrame as HTMLElement | null)?.style.backgroundColor).toBe('rgb(13, 27, 45)');
+          expect(zoom?.appImageZoom()).toEqual(expectedPresentation.logo);
+          expect(zoom?.imageZoomLabel()).toBe(technology);
+          expect(zoom?.imageZoomBackground()).toBe(expectedPresentation.backgroundColor);
         } else {
           const fallbackIcon = fallbackIcons?.item(0);
 
@@ -378,6 +435,14 @@ describe('ResumePage', () => {
 
     expect(renderedLabels).toEqual(RESUME.experience.flatMap(({ technologies }) => technologies));
     expect([...new Set(renderedFallbackLabels)]).toEqual(TECHNOLOGY_ICON_FALLBACK_LABELS);
+    expect(fixture.debugElement.queryAll(By.directive(TechnologyIconComponent))).toHaveLength(
+      expectedBrandedIcons.length,
+    );
+    expect(optimize).toHaveBeenCalledTimes(expectedBrandedIcons.length);
+    expect(optimize.mock.calls.map(([icon]) => icon)).toEqual(expectedBrandedIcons);
+    expect(printStyles).toMatch(
+      /\.technology-icon-container[^\{]*\{[^}]*display:\s*none\s*!important/,
+    );
   });
 
   it('renders outsourced employer-to-client relationships and direct company identities', () => {

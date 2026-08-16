@@ -138,6 +138,21 @@ describe('ImageZoomService', () => {
     expect(service.isOpenFor(origin, 'hover')).toBe(true);
   });
 
+  it('forwards an optional exact background to the preview while retaining logo metadata', () => {
+    const origin = createOrigin('background-override');
+    const service = TestBed.inject(ImageZoomService);
+
+    service.open(request(origin, lightLogo, 'Enhanced brand', 'hover', '#0d1b2d'));
+
+    const panel = overlayContainer().querySelector<HTMLElement>('.image-zoom-preview');
+    const image = panel?.querySelector<HTMLImageElement>('img');
+
+    expect(panel?.classList.contains('image-zoom-preview--light')).toBe(true);
+    expect(panel?.style.backgroundColor).toBe('rgb(13, 27, 45)');
+    expect(image?.getAttribute('src')).toBe(lightLogo.src);
+    expect(image?.getAttribute('alt')).toBe('Enhanced brand');
+  });
+
   it('bounds percentage image limits by chrome-safe dimensions on small viewports', () => {
     const origin = createOrigin('small-viewport');
     const viewportRuler = TestBed.inject(ViewportRuler);
@@ -276,8 +291,11 @@ describe('ImageZoomService', () => {
     logo: BrandLogo,
     label: string,
     activation: ImageZoomRequest['activation'],
+    background?: string,
   ): ImageZoomRequest {
-    return { origin, logo, label, activation };
+    return background === undefined
+      ? { origin, logo, label, activation }
+      : { origin, logo, label, activation, background };
   }
 
   /** @returns The real CDK container that receives overlay panes during the current test. */

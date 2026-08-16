@@ -123,24 +123,7 @@
                     class="technology-chip-content inline-flex max-w-full items-center gap-[0.4rem] align-middle"
                   >
                     @if (resolveTechnologyIcon(technology); as icon) {
-                      <span
-                        class="technology-icon-container technology-icon-frame inline-grid h-5 w-5 shrink-0 place-items-center overflow-hidden rounded-[0.3rem] border border-solid border-[color:var(--resume-border)] p-px"
-                        [class.technology-icon-frame--light]="icon.surface === 'light'"
-                        [class.technology-icon-frame--dark]="icon.surface === 'dark'"
-                        [style.background-color]="icon.surface === 'light' ? '#ffffff' : '#071a2e'"
-                        aria-hidden="true"
-                      >
-                        <img
-                          class="technology-brand-icon block h-full w-full object-contain"
-                          [ngSrc]="icon.src"
-                          [width]="icon.width"
-                          [height]="icon.height"
-                          [appImageZoom]="icon"
-                          [imageZoomLabel]="technology"
-                          alt=""
-                          aria-hidden="true"
-                        />
-                      </span>
+                      <app-technology-icon [icon]="icon" [label]="technology" />
                     } @else {
                       <span
                         class="technology-icon-container inline-grid h-5 w-5 shrink-0 place-items-center overflow-hidden rounded-[0.3rem]"

@@ -48,6 +48,9 @@ export class ImageZoomDirective implements AfterViewInit {
   /** Required descriptive alternative text copied to the visual preview image. */
   readonly imageZoomLabel = input.required<string>();
 
+  /** Optional exact preview surface, overriding the logo tone's standard card color. */
+  readonly imageZoomBackground = input<string>();
+
   /** Whether completed touch clicks may toggle the preview; defaults to enabled. */
   readonly imageZoomTouch = input(true);
 
@@ -211,11 +214,14 @@ export class ImageZoomDirective implements AfterViewInit {
 
   /** Builds a service request that preserves this image as the overlay owner. */
   private request(activation: ImageZoomActivation): ImageZoomRequest {
+    const background = this.imageZoomBackground();
+
     return {
       origin: this.image,
       logo: this.appImageZoom(),
       label: this.imageZoomLabel(),
       activation,
+      ...(background === undefined ? {} : { background }),
     };
   }
 }
