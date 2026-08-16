@@ -33,6 +33,7 @@ describe('ImageZoomPreview', () => {
     const host = fixture.nativeElement as HTMLElement;
     const panel = host.querySelector<HTMLElement>('.image-zoom-preview');
     const image = host.querySelector<HTMLImageElement>('img');
+    const imageStyle = getComputedStyle(image!);
 
     expect(host.getAttribute('aria-hidden')).toBe('true');
     expect(host.getAttribute('tabindex')).toBeNull();
@@ -41,6 +42,10 @@ describe('ImageZoomPreview', () => {
     expect(panel?.style.getPropertyValue('--image-zoom-intrinsic-width')).toBe('640px');
     expect(panel?.style.getPropertyValue('--image-zoom-intrinsic-height')).toBe('320px');
     expect(getComputedStyle(panel!).backgroundColor).toBe(expectedSurface);
+    expect(imageStyle.contain).toBe('size');
+    expect(imageStyle.getPropertyValue('contain-intrinsic-size')).toBe(
+      'var(--image-zoom-intrinsic-width) var(--image-zoom-intrinsic-height)',
+    );
     expect(image?.getAttribute('src')).toBe(logo.src);
     expect(image?.getAttribute('width')).toBe('640');
     expect(image?.getAttribute('height')).toBe('320');

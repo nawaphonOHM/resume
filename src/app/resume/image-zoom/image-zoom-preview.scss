@@ -1,7 +1,7 @@
 :host {
   display: block;
-  max-width: calc(100vw - 2rem);
-  max-height: calc(100vh - 2rem);
+  max-width: var(--image-zoom-viewport-max-width, calc(100vw - 2rem));
+  max-height: var(--image-zoom-viewport-max-height, calc(100vh - 2rem));
 }
 
 .image-zoom-preview {
@@ -35,10 +35,12 @@
 
 .image-zoom-preview__image {
   display: block;
+  contain: size;
+  contain-intrinsic-size: var(--image-zoom-intrinsic-width) var(--image-zoom-intrinsic-height);
   width: auto;
   height: auto;
-  max-width: calc(100vw - 3.5rem);
-  max-height: calc(100vh - 3.5rem);
+  max-width: var(--image-zoom-image-max-width, calc(100vw - 3.5rem));
+  max-height: var(--image-zoom-image-max-height, calc(100vh - 3.5rem));
   object-fit: contain;
   user-select: none;
 }

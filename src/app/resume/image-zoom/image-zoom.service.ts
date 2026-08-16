@@ -1,4 +1,9 @@
-import { Overlay, type ConnectedPosition, type OverlayRef } from '@angular/cdk/overlay';
+import {
+  Overlay,
+  ViewportRuler,
+  type ConnectedPosition,
+  type OverlayRef,
+} from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { DestroyRef, Injectable, Injector, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
@@ -21,6 +26,8 @@ export interface ImageZoomRequest {
 
 const VIEWPORT_MARGIN = 16;
 const ORIGIN_GAP = 12;
+/** Panel padding (0.75rem * 2) + border (1px * 2), matching `image-zoom-preview.scss`. */
+const PANEL_CHROME_PX = 26;
 const IMAGE_ZOOM_POSITIONS: readonly ConnectedPosition[] = [
   {
     originX: 'end',
@@ -55,11 +62,13 @@ const IMAGE_ZOOM_POSITIONS: readonly ConnectedPosition[] = [
 @Injectable({ providedIn: 'root' })
 export class ImageZoomService {
   private readonly overlay = inject(Overlay);
+  private readonly viewportRuler = inject(ViewportRuler);
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
   private overlayRef: OverlayRef | null = null;
   private currentRequest: ImageZoomRequest | null = null;
   private dismissalSubscriptions: Subscription | null = null;
+  private paneResizeObserver: ResizeObserver | null = null;
 
   constructor() {
     this.destroyRef.onDestroy(() => this.close());
@@ -73,13 +82,15 @@ export class ImageZoomService {
 
     this.close();
 
+    // Exact positioning + push is the baseline, but CDK skips horizontal push when the
+    // overlay is wider than its clientWidth-based viewport (common with 100vw sizing and
+    // scrollbars). We clamp after every position pass so wide previews stay in-bounds.
     const positionStrategy = this.overlay
       .position()
       .flexibleConnectedTo(request.origin)
       .withPositions([...IMAGE_ZOOM_POSITIONS])
       .withViewportMargin(VIEWPORT_MARGIN)
-      .withFlexibleDimensions(true)
-      .withGrowAfterOpen(true)
+      .withFlexibleDimensions(false)
       .withPush(true);
     const overlayRef = this.overlay.create({
       positionStrategy,
@@ -94,6 +105,7 @@ export class ImageZoomService {
     this.overlayRef = overlayRef;
     this.currentRequest = request;
     this.dismissalSubscriptions = subscriptions;
+    this.installViewportBoundedPositioning(overlayRef);
 
     subscriptions.add(
       overlayRef.outsidePointerEvents().subscribe((event) => {
@@ -126,6 +138,8 @@ export class ImageZoomService {
         new ComponentPortal(ImageZoomPreview, null, previewInjector),
       );
       componentRef.changeDetectorRef.detectChanges();
+      // Attach positions before the preview's intrinsic box settles; remeasure afterwards.
+      this.watchOverlayPaneSize(overlayRef);
     } catch (error) {
       this.close(request.origin);
       throw error;
@@ -153,9 +167,7 @@ export class ImageZoomService {
     const overlayRef = this.overlayRef;
     const subscriptions = this.dismissalSubscriptions;
 
-    this.overlayRef = null;
-    this.currentRequest = null;
-    this.dismissalSubscriptions = null;
+    this.teardownOverlayTracking();
     subscriptions?.unsubscribe();
     overlayRef.dispose();
   }
@@ -174,9 +186,114 @@ export class ImageZoomService {
     }
 
     const subscriptions = this.dismissalSubscriptions;
+    this.teardownOverlayTracking();
+    subscriptions?.unsubscribe();
+  }
+
+  private installViewportBoundedPositioning(overlayRef: OverlayRef): void {
+    const updatePosition = overlayRef.updatePosition.bind(overlayRef);
+
+    // Scroll/reposition and explicit updatePosition calls all land here so clamping is sticky.
+    overlayRef.updatePosition = () => {
+      if (this.overlayRef !== overlayRef || !overlayRef.hasAttached()) {
+        return;
+      }
+
+      this.applyViewportSizeLimits(overlayRef);
+      updatePosition();
+      this.clampOverlayToViewport(overlayRef);
+    };
+  }
+
+  private applyViewportSizeLimits(overlayRef: OverlayRef): void {
+    const viewport = this.viewportRuler.getViewportSize();
+    const maxWidth = Math.max(viewport.width - VIEWPORT_MARGIN * 2, 0);
+    const maxHeight = Math.max(viewport.height - VIEWPORT_MARGIN * 2, 0);
+    const imageMaxWidth = Math.max(maxWidth - PANEL_CHROME_PX, 0);
+    const imageMaxHeight = Math.max(maxHeight - PANEL_CHROME_PX, 0);
+    const pane = overlayRef.overlayElement;
+
+    pane.style.maxWidth = `${maxWidth}px`;
+    pane.style.maxHeight = `${maxHeight}px`;
+    pane.style.setProperty('--image-zoom-viewport-max-width', `${maxWidth}px`);
+    pane.style.setProperty('--image-zoom-viewport-max-height', `${maxHeight}px`);
+    pane.style.setProperty('--image-zoom-image-max-width', `${imageMaxWidth}px`);
+    pane.style.setProperty('--image-zoom-image-max-height', `${imageMaxHeight}px`);
+  }
+
+  private clampOverlayToViewport(overlayRef: OverlayRef): void {
+    const pane = overlayRef.overlayElement;
+    const rect = pane.getBoundingClientRect();
+    const viewport = this.viewportRuler.getViewportSize();
+    const minLeft = VIEWPORT_MARGIN;
+    const minTop = VIEWPORT_MARGIN;
+    const maxRight = viewport.width - VIEWPORT_MARGIN;
+    const maxBottom = viewport.height - VIEWPORT_MARGIN;
+
+    let nextLeft = rect.left;
+    let nextTop = rect.top;
+
+    if (nextLeft + rect.width > maxRight) {
+      nextLeft = maxRight - rect.width;
+    }
+    if (nextLeft < minLeft) {
+      nextLeft = minLeft;
+    }
+
+    if (nextTop + rect.height > maxBottom) {
+      nextTop = maxBottom - rect.height;
+    }
+    if (nextTop < minTop) {
+      nextTop = minTop;
+    }
+
+    const deltaX = nextLeft - rect.left;
+    const deltaY = nextTop - rect.top;
+    if (Math.abs(deltaX) < 0.5 && Math.abs(deltaY) < 0.5) {
+      return;
+    }
+
+    // Re-base from the visual box. CDK may serialize top/left as `inset` and keep
+    // origin-gap transforms, which desync style.left from getBoundingClientRect().
+    pane.style.inset = 'auto';
+    pane.style.transform = 'none';
+    pane.style.left = `${nextLeft}px`;
+    pane.style.top = `${nextTop}px`;
+    pane.style.right = 'auto';
+    pane.style.bottom = 'auto';
+  }
+
+  private watchOverlayPaneSize(overlayRef: OverlayRef): void {
+    this.disconnectPaneResizeObserver();
+
+    const syncPosition = (): void => {
+      if (this.overlayRef === overlayRef && overlayRef.hasAttached()) {
+        overlayRef.updatePosition();
+      }
+    };
+
+    // First layout pass after detectChanges — intrinsic metadata sizing is available now.
+    syncPosition();
+
+    const ResizeObserverConstructor = globalThis.ResizeObserver;
+    if (typeof ResizeObserverConstructor !== 'function') {
+      return;
+    }
+
+    // Keep bounds correct if the preview box changes after image decode/layout.
+    this.paneResizeObserver = new ResizeObserverConstructor(() => syncPosition());
+    this.paneResizeObserver.observe(overlayRef.overlayElement);
+  }
+
+  private disconnectPaneResizeObserver(): void {
+    this.paneResizeObserver?.disconnect();
+    this.paneResizeObserver = null;
+  }
+
+  private teardownOverlayTracking(): void {
+    this.disconnectPaneResizeObserver();
     this.overlayRef = null;
     this.currentRequest = null;
     this.dismissalSubscriptions = null;
-    subscriptions?.unsubscribe();
   }
 }

@@ -58,6 +58,7 @@ describe('ImageZoomService', () => {
     const position = config?.positionStrategy as unknown as PositionStrategyState;
     const preview = overlayContainer().querySelector<HTMLElement>('app-image-zoom-preview');
     const image = preview?.querySelector<HTMLImageElement>('img');
+    const pane = overlayContainer().querySelector<HTMLElement>('.image-zoom-overlay-pane');
 
     expect(create).toHaveBeenCalledTimes(1);
     expect(reposition).toHaveBeenCalledWith({ scrollThrottle: 0 });
@@ -69,8 +70,8 @@ describe('ImageZoomService', () => {
     });
     expect(position._origin).toBe(origin);
     expect(position._viewportMargin).toBe(16);
-    expect(position._hasFlexibleDimensions).toBe(true);
-    expect(position._growAfterOpen).toBe(true);
+    expect(position._hasFlexibleDimensions).toBe(false);
+    expect(position._growAfterOpen).toBe(false);
     expect(position._canPush).toBe(true);
     expect(position._preferredPositions).toHaveLength(4);
     expect(position._preferredPositions).toMatchObject([
@@ -103,6 +104,16 @@ describe('ImageZoomService', () => {
         offsetY: -12,
       },
     ]);
+    expect(pane?.style.getPropertyValue('--image-zoom-viewport-max-width')).toMatch(
+      /^\d+(\.\d+)?px$/,
+    );
+    expect(pane?.style.getPropertyValue('--image-zoom-viewport-max-height')).toMatch(
+      /^\d+(\.\d+)?px$/,
+    );
+    expect(pane?.style.getPropertyValue('--image-zoom-image-max-width')).toMatch(/^\d+(\.\d+)?px$/);
+    expect(pane?.style.getPropertyValue('--image-zoom-image-max-height')).toMatch(
+      /^\d+(\.\d+)?px$/,
+    );
     expect(preview?.getAttribute('aria-hidden')).toBe('true');
     expect(image?.getAttribute('src')).toBe(lightLogo.src);
     expect(image?.getAttribute('alt')).toBe('Light brand');
