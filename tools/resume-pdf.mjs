@@ -1,5 +1,3 @@
-import { fileURLToPath } from 'node:url';
-
 import pdfmake from 'pdfmake';
 
 const COLORS = {
@@ -16,9 +14,7 @@ const PHONE_PATTERN = /(?:\+?66|0[689])[\s().-]*(?:\d[\s().-]*){8}/;
 const PHONE_LABEL = 'Available on request';
 const MINIMUM_PDF_SIZE = 10_000;
 const METADATA_DATE = '2026-01-01T00:00:00.000Z';
-const EMPLOYMENT_FONT_PATH = fileURLToPath(
-  new URL('./fonts/DejaVuSansMono-Bold.ttf', import.meta.url),
-);
+const EMPLOYMENT_FONT_URL = 'https://fonts.cdnfonts.com/s/108/DejaVuSansMono-Bold.ttf';
 const SUPPORTED_EMPLOYMENT_TYPES = new Set(['Internship', 'Permanent', 'Contract']);
 const STANDARD_FONT_NAMES = new Set([
   'Helvetica',
@@ -35,16 +31,14 @@ pdfmake.addFonts({
     bolditalics: 'Helvetica-BoldOblique',
   },
   EmploymentLabel: {
-    normal: EMPLOYMENT_FONT_PATH,
-    bold: EMPLOYMENT_FONT_PATH,
-    italics: EMPLOYMENT_FONT_PATH,
-    bolditalics: EMPLOYMENT_FONT_PATH,
+    normal: EMPLOYMENT_FONT_URL,
+    bold: EMPLOYMENT_FONT_URL,
+    italics: EMPLOYMENT_FONT_URL,
+    bolditalics: EMPLOYMENT_FONT_URL,
   },
 });
-pdfmake.setUrlAccessPolicy(() => false);
-pdfmake.setLocalAccessPolicy(
-  (path) => STANDARD_FONT_NAMES.has(path) || path === EMPLOYMENT_FONT_PATH,
-);
+pdfmake.setUrlAccessPolicy((url) => url === EMPLOYMENT_FONT_URL);
+pdfmake.setLocalAccessPolicy((path) => STANDARD_FONT_NAMES.has(path));
 
 function assertNonEmptyString(value, fieldName) {
   if (typeof value !== 'string' || value.trim() === '') {

@@ -33,6 +33,12 @@ The Space must allow unauthenticated public `GET` requests. It must also return 
 
 The generated résumé PDF is the only local static-asset exception. It remains available from `/downloads/nawaphon-isarathanachaikul-resume.pdf`; Angular copies PDFs from `public/downloads` into the production artifact while project-owned images remain remote.
 
+## Browser font dependency
+
+The browser résumé imports the DejaVu Sans Mono stylesheet from `https://fonts.cdnfonts.com/css/dejavu-sans-mono`, and browser font assets are served from `https://fonts.cdnfonts.com`. Résumé text and Angular Material controls use this family at bold weight; Material Icons retain their dedicated glyph font.
+
+Deployments that enforce Content Security Policy must allow `https://fonts.cdnfonts.com` in both the applicable `style-src` and `font-src` directives. If the CDN is unavailable or blocked, the browser falls back to a bold generic monospace font.
+
 ## Runtime OpenCV dependency
 
 Technology-icon contrast optimization is browser-only and begins after the initial render during idle time. When optimization starts, the browser dynamically imports OpenCV from `https://cdn.jsdelivr.net/npm/@techstark/opencv-js@5/+esm`; OpenCV is not installed as an npm dependency or included in the application chunks.
@@ -61,7 +67,9 @@ This command runs `tools/generate-resume-pdf.mjs`, which imports the same typed 
 public/downloads/nawaphon-isarathanachaikul-resume.pdf
 ```
 
-The generator uses the pure-JavaScript `pdfmake` library and standard PDF fonts. It does not launch a browser or require browser-related host libraries, so the build works on managed platforms such as DigitalOcean App Platform.
+The generator uses the pure-JavaScript `pdfmake` library and standard Helvetica fonts for general text. Employment-type labels use DejaVu Sans Mono Bold fetched directly from `https://fonts.cdnfonts.com/s/108/DejaVuSansMono-Bold.ttf`. It does not launch a browser or require browser-related host libraries, so the build works on managed platforms such as DigitalOcean App Platform.
+
+PDF regeneration and the complete production build require outbound HTTPS access to that exact font URL. The generator denies every other remote resource and has no local font cache or fallback; if the CDN asset is unavailable or redirects, PDF generation fails with a network or access-policy error and the build stops.
 
 Before writing the artifact, the generator verifies content parity with `resume.data.ts`, rejects phone-like data, `tel:` links, and non-HTTPS external links, and validates the PDF header, minimum size, and link annotations. `npm run pdf:generate` is an equivalent explicit command.
 
