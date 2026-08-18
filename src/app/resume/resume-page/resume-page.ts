@@ -1,5 +1,12 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, DestroyRef, afterNextRender, inject, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ErrorHandler,
+  afterNextRender,
+  inject,
+  signal,
+} from '@angular/core';
 
 import { ThemeService } from '../../core/theme.service';
 import { EducationSection } from '../education-section/education-section';
@@ -12,10 +19,11 @@ import {
   ResumeNavigation,
   type ResumeSectionId,
 } from '../resume-navigation/resume-navigation';
+import { ResumePdfService } from '../resume-pdf/resume-pdf.service';
 import { SummarySection } from '../summary-section/summary-section';
 
 /**
- * Composes the canonical résumé and coordinates document-level navigation, theme, and printing.
+ * Composes the canonical résumé and coordinates navigation, theme, printing, and PDF generation.
  *
  * @remarks After the first browser render, a valid initial fragment is restored without smooth
  * scrolling and observable sections begin driving the active navigation state. Direct link
@@ -39,6 +47,8 @@ import { SummarySection } from '../summary-section/summary-section';
 export class ResumePage {
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly errorHandler = inject(ErrorHandler);
+  private readonly resumePdfService = inject(ResumePdfService);
   private readonly themeService = inject(ThemeService);
 
   /** Canonical profile distributed to the presentational section components. */
@@ -46,6 +56,9 @@ export class ResumePage {
 
   /** Section currently represented as active in responsive navigation. */
   protected readonly activeSection = signal<ResumeSectionId>('about');
+
+  /** Whether one user-triggered PDF generation request is currently running. */
+  protected readonly downloadPending = signal(false);
 
   /** Template-facing reference to the theme service's selected preference. */
   protected readonly theme = this.themeService.theme;
@@ -75,6 +88,22 @@ export class ResumePage {
   /** Opens the browser print dialog when a document view is available. */
   protected printResume(): void {
     this.document.defaultView?.print();
+  }
+
+  /** Generates the PDF once per request while preserving retry behavior after any outcome. */
+  protected async downloadResume(): Promise<void> {
+    if (this.downloadPending()) {
+      return;
+    }
+
+    this.downloadPending.set(true);
+    try {
+      await this.resumePdfService.download();
+    } catch (error: unknown) {
+      this.errorHandler.handleError(error);
+    } finally {
+      this.downloadPending.set(false);
+    }
   }
 
   /**

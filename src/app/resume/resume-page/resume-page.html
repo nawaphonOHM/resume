@@ -2,7 +2,9 @@
 
 <app-resume-navigation
   [activeSection]="activeSection()"
+  [downloadPending]="downloadPending()"
   [theme]="theme()"
+  (downloadRequested)="downloadResume()"
   (sectionSelected)="selectSection($event)"
   (themeToggled)="toggleTheme()"
   (printRequested)="printResume()"

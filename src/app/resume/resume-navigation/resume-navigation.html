@@ -48,16 +48,18 @@
         <mat-icon aria-hidden="true">print</mat-icon>
       </button>
 
-      <a
+      <button
         mat-icon-button
         class="desktop-control"
-        [href]="downloadUrl"
-        download="nawaphon-isarathanachaikul-resume.pdf"
-        aria-label="Download résumé as PDF"
-        matTooltip="Download résumé as PDF"
+        type="button"
+        [disabled]="downloadPending()"
+        [attr.aria-label]="downloadControlLabel()"
+        [attr.aria-busy]="downloadPending()"
+        [matTooltip]="downloadControlLabel()"
+        (click)="downloadRequested.emit()"
       >
-        <mat-icon aria-hidden="true">download</mat-icon>
-      </a>
+        <mat-icon aria-hidden="true">{{ downloadIcon() }}</mat-icon>
+      </button>
 
       <button
         mat-icon-button
@@ -91,8 +93,15 @@
     <mat-icon aria-hidden="true">print</mat-icon>
     <span>Print résumé</span>
   </button>
-  <a mat-menu-item [href]="downloadUrl" download="nawaphon-isarathanachaikul-resume.pdf">
-    <mat-icon aria-hidden="true">download</mat-icon>
-    <span>Download PDF</span>
-  </a>
+  <button
+    mat-menu-item
+    type="button"
+    [disabled]="downloadPending()"
+    [attr.aria-label]="downloadControlLabel()"
+    [attr.aria-busy]="downloadPending()"
+    (click)="downloadRequested.emit()"
+  >
+    <mat-icon aria-hidden="true">{{ downloadIcon() }}</mat-icon>
+    <span>{{ downloadControlText() }}</span>
+  </button>
 </mat-menu>

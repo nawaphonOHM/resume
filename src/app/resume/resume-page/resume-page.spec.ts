@@ -1,7 +1,8 @@
 /**
- * Exercises the composed résumé, section accessibility, navigation orchestration, theme and print
- * controls, image-zoom bindings, and browser observer lifecycle.
+ * Exercises the composed résumé, section accessibility, navigation orchestration, theme, print,
+ * download controls, image-zoom bindings, and browser observer lifecycle.
  */
+import { ErrorHandler } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { vi } from 'vitest';
@@ -21,10 +22,23 @@ import {
   type TechnologyIconMetadata,
 } from '../experience-timeline/technology-icons';
 import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
+import { ResumeNavigation } from '../resume-navigation/resume-navigation';
+import { ResumePdfService } from '../resume-pdf/resume-pdf.service';
 import { ResumePage } from './resume-page';
 
 const OPTIMIZED_ICON_SOURCE = 'data:image/png;base64,b3B0aW1pemVk';
 const OPTIMIZED_ICON_BACKGROUND = '#0d1b2d';
+
+function deferred<T>(): {
+  readonly promise: Promise<T>;
+  readonly resolve: (value: T | PromiseLike<T>) => void;
+} {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  const promise = new Promise<T>((resolver) => {
+    resolve = resolver;
+  });
+  return { promise, resolve };
+}
 
 /** Deterministic presentation fixture that keeps composed page tests independent of OpenCV. */
 function optimizedPresentation(icon: TechnologyIconMetadata): TechnologyIconPresentation {
@@ -53,6 +67,12 @@ describe('ResumePage', () => {
 
   /** Deterministic optimizer fixture used by every composed technology-icon presenter. */
   let optimize: ReturnType<typeof vi.fn<TechnologyIconContrastService['optimize']>>;
+
+  /** PDF download fixture used to isolate page orchestration from the lazy runtime. */
+  let download: ReturnType<typeof vi.fn<ResumePdfService['download']>>;
+
+  /** Angular error-handler fixture that records rejected download attempts. */
+  let handleError: ReturnType<typeof vi.fn<ErrorHandler['handleError']>>;
 
   beforeEach(async () => {
     observe = vi.fn();
@@ -104,10 +124,16 @@ describe('ResumePage', () => {
     optimize = vi.fn<TechnologyIconContrastService['optimize']>((icon) =>
       Promise.resolve(optimizedPresentation(icon)),
     );
+    download = vi.fn<ResumePdfService['download']>(() => Promise.resolve());
+    handleError = vi.fn<ErrorHandler['handleError']>();
 
     await TestBed.configureTestingModule({
       imports: [ResumePage],
-      providers: [{ provide: TechnologyIconContrastService, useValue: { optimize } }],
+      providers: [
+        { provide: TechnologyIconContrastService, useValue: { optimize } },
+        { provide: ResumePdfService, useValue: { download } },
+        { provide: ErrorHandler, useValue: { handleError } },
+      ],
     }).compileComponents();
   });
 
@@ -595,11 +621,72 @@ describe('ResumePage', () => {
 
     element.querySelector<HTMLButtonElement>('[aria-label="Print résumé"]')?.click();
 
-    const download = element.querySelector<HTMLAnchorElement>(
-      'a[aria-label="Download résumé as PDF"]',
+    const downloadButton = element.querySelector<HTMLButtonElement>(
+      'button[aria-label="Download résumé as PDF"]',
     );
     expect(print).toHaveBeenCalledOnce();
-    expect(download?.hasAttribute('download')).toBe(true);
+    expect(downloadButton?.type).toBe('button');
+  });
+
+  it('shares pending state with navigation and prevents duplicate download requests', async () => {
+    const pendingDownload = deferred<void>();
+    download.mockReturnValueOnce(pendingDownload.promise);
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    const navigation = fixture.debugElement.query(By.directive(ResumeNavigation))
+      .componentInstance as ResumeNavigation;
+    const downloadButton = element.querySelector<HTMLButtonElement>(
+      'button.desktop-control[aria-label="Download résumé as PDF"]',
+    );
+
+    downloadButton?.click();
+    fixture.detectChanges();
+
+    expect(download).toHaveBeenCalledOnce();
+    expect(navigation.downloadPending()).toBe(true);
+    expect(downloadButton?.disabled).toBe(true);
+    expect(downloadButton?.getAttribute('aria-label')).toBe('Generating résumé PDF');
+
+    navigation.downloadRequested.emit();
+    expect(download).toHaveBeenCalledOnce();
+
+    pendingDownload.resolve(undefined);
+    await Promise.resolve();
+    fixture.detectChanges();
+
+    expect(navigation.downloadPending()).toBe(false);
+    expect(downloadButton?.disabled).toBe(false);
+    expect(downloadButton?.getAttribute('aria-label')).toBe('Download résumé as PDF');
+    expect(handleError).not.toHaveBeenCalled();
+  });
+
+  it('reports a rejected download, restores controls, and allows retry', async () => {
+    const failure = new Error('Synthetic download failure');
+    download.mockRejectedValueOnce(failure).mockResolvedValueOnce(undefined);
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    const downloadButton = element.querySelector<HTMLButtonElement>(
+      'button.desktop-control[aria-label="Download résumé as PDF"]',
+    );
+
+    downloadButton?.click();
+    await Promise.resolve();
+    fixture.detectChanges();
+
+    expect(handleError).toHaveBeenCalledOnce();
+    expect(handleError).toHaveBeenCalledWith(failure);
+    expect(downloadButton?.disabled).toBe(false);
+    expect(downloadButton?.getAttribute('aria-label')).toBe('Download résumé as PDF');
+
+    downloadButton?.click();
+    await Promise.resolve();
+    fixture.detectChanges();
+
+    expect(download).toHaveBeenCalledTimes(2);
+    expect(handleError).toHaveBeenCalledOnce();
+    expect(downloadButton?.disabled).toBe(false);
   });
 
   it('transfers the active navigation presentation immediately when a section link is clicked', () => {

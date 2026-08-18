@@ -3,7 +3,7 @@
 
 # Nawaphon Isarathanachaikul — Résumé Portfolio
 
-A public Angular single-page résumé built with Angular Material and Tailwind CSS. It includes responsive section navigation, remembered light and dark themes, browser-print styling, and a reproducible phone-redacted PDF download.
+A public Angular single-page résumé built with Angular Material and Tailwind CSS. It includes responsive section navigation, remembered light and dark themes, browser-print styling, and a user-triggered, phone-redacted PDF download.
 
 ## Requirements
 
@@ -31,7 +31,13 @@ All project-owned images are served from the DigitalOcean Space origin `https://
 
 The Space must allow unauthenticated public `GET` requests. It must also return an appropriate `Access-Control-Allow-Origin` header for canvas-based technology-icon contrast optimization. If an image or CORS access fails, the application does not use a local fallback or custom placeholder.
 
-The generated résumé PDF is the only local static-asset exception. It remains available from `/downloads/nawaphon-isarathanachaikul-resume.pdf`; Angular copies PDFs from `public/downloads` into the production artifact while project-owned images remain remote.
+The résumé PDF is generated in the browser and is not a local static asset. There is no stable `/downloads/...` PDF URL to configure or deploy.
+
+## On-demand résumé PDF
+
+Activating either Download PDF control generates the résumé directly from the canonical typed résumé data. The first request dynamically imports the browser build of `pdfmake` and its bundled virtual-file-system fonts; those modules remain outside the initial application bundle and are reused for later requests.
+
+Before starting the download, the application verifies the PDF header, minimum size, required links, content safeguards, and absence of phone or `tel:` data. Installation, production builds, and initial page loads perform no PDF generation.
 
 ## Runtime OpenCV dependency
 
@@ -47,23 +53,7 @@ npm run format:check
 npm test
 ```
 
-Prettier formats TypeScript, Angular templates, styles, JSON, and Markdown. The test command runs both the Angular suite and the PDF generator regression suite.
-
-## Regenerate the redacted PDF
-
-```bash
-npm run pdf
-```
-
-This command runs `tools/generate-resume-pdf.mjs`, which imports the same typed résumé data used by Angular and writes:
-
-```text
-public/downloads/nawaphon-isarathanachaikul-resume.pdf
-```
-
-The generator uses the pure-JavaScript `pdfmake` library and standard PDF fonts. It does not launch a browser or require browser-related host libraries, so the build works on managed platforms such as DigitalOcean App Platform.
-
-Before writing the artifact, the generator verifies content parity with `resume.data.ts`, rejects phone-like data, `tel:` links, and non-HTTPS external links, and validates the PDF header, minimum size, and link annotations. `npm run pdf:generate` is an equivalent explicit command.
+Prettier formats TypeScript, Angular templates, styles, JSON, and Markdown. The test command runs the Angular/Vitest suite, including the PDF document, privacy, lazy-loading, download, and retry coverage.
 
 ## Production build
 
@@ -71,10 +61,7 @@ Before writing the artifact, the generator verifies content parity with `resume.
 npm run build
 ```
 
-The public build performs these operations in order:
-
-1. Generate the redacted PDF directly from the typed résumé data.
-2. Compile the Angular application once so the PDF is included in the final static artifact.
+The production command compiles only the Angular application. It emits no generated résumé PDF; `pdfmake` and its fonts remain lazy browser chunks that load only after a user requests a download.
 
 Upload the contents of this directory to a web root:
 
@@ -86,15 +73,11 @@ The output is host-neutral and requires no backend, runtime API, route rewrites,
 
 ## Useful scripts
 
-| Command                | Purpose                                                              |
-| ---------------------- | -------------------------------------------------------------------- |
-| `npm start`            | Run the Angular development server.                                  |
-| `npm run watch`        | Continuously create development builds.                              |
-| `npm run build:app`    | Create one Angular production build without regenerating the PDF.    |
-| `npm run pdf`          | Regenerate the redacted PDF without building or launching a browser. |
-| `npm run build`        | Produce the complete static handoff, including the latest PDF.       |
-| `npm test`             | Run the Angular and PDF generator test suites once.                  |
-| `npm run test:app`     | Run the Angular test suite.                                          |
-| `npm run test:pdf`     | Run the PDF portability, content, and privacy tests.                 |
-| `npm run format`       | Format the project with Prettier.                                    |
-| `npm run format:check` | Verify formatting without changing files.                            |
+| Command                | Purpose                                         |
+| ---------------------- | ----------------------------------------------- |
+| `npm start`            | Run the Angular development server.             |
+| `npm run watch`        | Continuously create development builds.         |
+| `npm run build`        | Produce the static Angular deployment artifact. |
+| `npm test`             | Run the Angular/Vitest test suite once.         |
+| `npm run format`       | Format the project with Prettier.               |
+| `npm run format:check` | Verify formatting without changing files.       |

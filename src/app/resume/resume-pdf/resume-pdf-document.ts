@@ -1,6 +1,4 @@
-import { fileURLToPath } from 'node:url';
-
-import pdfmake from 'pdfmake';
+import type { Experience, ResumeEducation, ResumeProfile } from '../../model/resume/resume.model';
 
 const COLORS = {
   navy: '#102a43',
@@ -10,49 +8,131 @@ const COLORS = {
   border: '#d9e2ec',
   surface: '#f0f4f8',
   white: '#ffffff',
-};
+} as const;
 
 const PHONE_PATTERN = /(?:\+?66|0[689])[\s().-]*(?:\d[\s().-]*){8}/;
 const PHONE_LABEL = 'Available on request';
 const MINIMUM_PDF_SIZE = 10_000;
 const METADATA_DATE = '2026-01-01T00:00:00.000Z';
-const EMPLOYMENT_FONT_PATH = fileURLToPath(
-  new URL('./fonts/DejaVuSansMono-Bold.ttf', import.meta.url),
-);
-const SUPPORTED_EMPLOYMENT_TYPES = new Set(['Internship', 'Permanent', 'Contract']);
-const STANDARD_FONT_NAMES = new Set([
-  'Helvetica',
-  'Helvetica-Bold',
-  'Helvetica-Oblique',
-  'Helvetica-BoldOblique',
-]);
+const BROWSER_FONT = 'Roboto';
+const SUPPORTED_EMPLOYMENT_TYPES = new Set<string>(['Internship', 'Permanent', 'Contract']);
+const PDF_HEADER = [0x25, 0x50, 0x44, 0x46, 0x2d] as const;
 
-pdfmake.addFonts({
-  Helvetica: {
-    normal: 'Helvetica',
-    bold: 'Helvetica-Bold',
-    italics: 'Helvetica-Oblique',
-    bolditalics: 'Helvetica-BoldOblique',
-  },
-  EmploymentLabel: {
-    normal: EMPLOYMENT_FONT_PATH,
-    bold: EMPLOYMENT_FONT_PATH,
-    italics: EMPLOYMENT_FONT_PATH,
-    bolditalics: EMPLOYMENT_FONT_PATH,
-  },
-});
-pdfmake.setUrlAccessPolicy(() => false);
-pdfmake.setLocalAccessPolicy(
-  (path) => STANDARD_FONT_NAMES.has(path) || path === EMPLOYMENT_FONT_PATH,
-);
+type ResumePdfMargin = readonly [number, number, number, number];
+type ResumePdfColumnWidth = number | '*' | 'auto';
+type ResumePdfAlignment = 'left' | 'center' | 'right';
 
-function assertNonEmptyString(value, fieldName) {
+/** A pdfmake content node used by the browser-neutral résumé definition. */
+export interface ResumePdfNode {
+  readonly text?: string | readonly ResumePdfNode[];
+  readonly style?: string;
+  readonly headlineLevel?: number;
+  readonly margin?: ResumePdfMargin;
+  readonly columns?: readonly ResumePdfNode[];
+  readonly columnGap?: number;
+  readonly stack?: readonly ResumePdfNode[];
+  readonly ul?: readonly ResumePdfNode[];
+  readonly width?: ResumePdfColumnWidth;
+  readonly bold?: boolean;
+  readonly color?: string;
+  readonly font?: string;
+  readonly fontSize?: number;
+  readonly lineHeight?: number;
+  readonly link?: string;
+  readonly decoration?: 'underline';
+  readonly alignment?: ResumePdfAlignment;
+  readonly fillColor?: string;
+  readonly table?: ResumePdfTable;
+  readonly layout?: 'noBorders' | ResumePdfTableLayout;
+  readonly canvas?: readonly ResumePdfCanvas[];
+}
+
+/** Table data accepted by the résumé's pdfmake layout. */
+export interface ResumePdfTable {
+  readonly widths: readonly ResumePdfColumnWidth[];
+  readonly dontBreakRows?: boolean;
+  readonly body: readonly (readonly ResumePdfNode[])[];
+}
+
+/** Table callbacks accepted by the résumé's pdfmake layout. */
+export interface ResumePdfTableLayout {
+  readonly hLineColor?: (index: number) => string;
+  readonly vLineColor?: (index: number) => string;
+  readonly hLineWidth?: (index: number) => number;
+  readonly vLineWidth?: (index: number) => number;
+  readonly paddingLeft?: (index: number) => number;
+  readonly paddingRight?: (index: number) => number;
+  readonly paddingTop?: (index: number) => number;
+  readonly paddingBottom?: (index: number) => number;
+}
+
+/** Vector shape used for the document's page-edge accent. */
+export interface ResumePdfCanvas {
+  readonly type: 'rect';
+  readonly x: number;
+  readonly y: number;
+  readonly w: number;
+  readonly h: number;
+  readonly color: string;
+}
+
+/** Deterministic publication metadata embedded into the generated PDF. */
+export interface ResumePdfInfo {
+  readonly title: string;
+  readonly author: string;
+  readonly subject: string;
+  readonly keywords: string;
+  readonly creator: string;
+  readonly producer: string;
+  readonly creationDate: Date;
+  readonly modDate: Date;
+}
+
+/** Typed document definition consumed by the lazily loaded browser pdfmake runtime. */
+export interface ResumePdfDocumentDefinition {
+  readonly pageSize: 'A4';
+  readonly pageMargins: ResumePdfMargin;
+  readonly info: ResumePdfInfo;
+  readonly language: 'en';
+  readonly defaultStyle: ResumePdfStyle;
+  readonly styles: Readonly<Record<string, ResumePdfStyle>>;
+  readonly background: (
+    currentPage: number,
+    pageSize: Readonly<{ width: number; height: number }>,
+  ) => ResumePdfNode;
+  readonly footer: (currentPage: number, pageCount: number) => ResumePdfNode;
+  readonly content: readonly ResumePdfNode[];
+}
+
+/** Text styling fields used by the résumé document definition. */
+export interface ResumePdfStyle {
+  readonly font?: string;
+  readonly fontSize?: number;
+  readonly lineHeight?: number;
+  readonly color?: string;
+  readonly bold?: boolean;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isUint8Array(value: unknown): value is Uint8Array {
+  return (
+    ArrayBuffer.isView(value) && Object.prototype.toString.call(value) === '[object Uint8Array]'
+  );
+}
+
+function assertNonEmptyString(value: unknown, fieldName: string): asserts value is string {
   if (typeof value !== 'string' || value.trim() === '') {
     throw new Error(`The résumé ${fieldName} must be a non-empty string.`);
   }
 }
 
-function assertNonEmptyStringArray(value, fieldName) {
+function assertNonEmptyStringArray(
+  value: unknown,
+  fieldName: string,
+): asserts value is readonly string[] {
   if (!Array.isArray(value) || value.length === 0) {
     throw new Error(`The résumé ${fieldName} must contain at least one item.`);
   }
@@ -62,19 +142,19 @@ function assertNonEmptyStringArray(value, fieldName) {
   }
 }
 
-function assertEmploymentTypes(value, fieldName) {
+function assertEmploymentTypes(value: unknown, fieldName: string): void {
   if (!Array.isArray(value) || value.length === 0) {
     throw new Error(`The résumé ${fieldName} must contain at least one item.`);
   }
 
   for (const [index, employmentType] of value.entries()) {
-    if (!SUPPORTED_EMPLOYMENT_TYPES.has(employmentType)) {
+    if (typeof employmentType !== 'string' || !SUPPORTED_EMPLOYMENT_TYPES.has(employmentType)) {
       throw new Error(`The résumé ${fieldName}[${index}] must be a supported employment type.`);
     }
   }
 }
 
-function collectProperty(value, propertyName) {
+function collectProperty(value: unknown, propertyName: string): string[] {
   if (Array.isArray(value)) {
     return value.flatMap((entry) => collectProperty(entry, propertyName));
   }
@@ -89,11 +169,11 @@ function collectProperty(value, propertyName) {
   ]);
 }
 
-function employmentTypeLabel(experience) {
+function employmentTypeLabel(experience: Experience): string {
   return experience.employmentTypes.join(' → ');
 }
 
-function expectedResumeText(profile) {
+function expectedResumeText(profile: ResumeProfile): string[] {
   return [
     profile.name,
     profile.title,
@@ -118,7 +198,7 @@ function expectedResumeText(profile) {
   ];
 }
 
-function sectionHeading(text) {
+function sectionHeading(text: string): ResumePdfNode {
   return {
     text,
     style: 'sectionHeading',
@@ -127,17 +207,17 @@ function sectionHeading(text) {
   };
 }
 
-function detailRow(label, value, link) {
+function detailRow(label: string, value: string, link?: string): readonly ResumePdfNode[] {
   return [
     { text: label, style: 'detailLabel' },
     {
       text: value,
-      ...(link ? { link, color: COLORS.accent, decoration: 'underline' } : {}),
+      ...(link ? { link, color: COLORS.accent, decoration: 'underline' as const } : {}),
     },
   ];
 }
 
-function experienceBlock(experience) {
+function experienceBlock(experience: Experience): ResumePdfNode {
   return {
     stack: [
       {
@@ -173,7 +253,7 @@ function experienceBlock(experience) {
   };
 }
 
-function educationBlock(education) {
+function educationBlock(education: ResumeEducation): ResumePdfNode {
   return {
     table: {
       widths: ['*'],
@@ -243,15 +323,15 @@ function educationBlock(education) {
   };
 }
 
-function skillTableRows(skills) {
-  const cells = skills.map((skill) => ({
+function skillTableRows(skills: readonly string[]): ResumePdfNode[][] {
+  const cells: ResumePdfNode[] = skills.map((skill) => ({
     text: skill,
     bold: true,
     color: COLORS.navy,
     fillColor: COLORS.surface,
     margin: [8, 6, 8, 6],
   }));
-  const rows = [];
+  const rows: ResumePdfNode[][] = [];
 
   for (let index = 0; index < cells.length; index += 3) {
     const row = cells.slice(index, index + 3);
@@ -266,92 +346,107 @@ function skillTableRows(skills) {
   return rows;
 }
 
-export function validateResumeProfile(profile) {
-  if (!profile || typeof profile !== 'object') {
+/** Validates publication-critical fields before constructing a résumé PDF. */
+export function validateResumeProfile(profile: unknown): void {
+  if (!isRecord(profile)) {
     throw new Error('The résumé profile is required.');
   }
 
-  assertNonEmptyString(profile.name, 'name');
-  assertNonEmptyString(profile.title, 'title');
-  assertNonEmptyStringArray(profile.summary, 'summary');
-  assertNonEmptyStringArray(profile.skills, 'skills');
+  assertNonEmptyString(profile['name'], 'name');
+  assertNonEmptyString(profile['title'], 'title');
+  assertNonEmptyStringArray(profile['summary'], 'summary');
+  assertNonEmptyStringArray(profile['skills'], 'skills');
 
-  if (!profile.details || typeof profile.details !== 'object') {
+  const details = profile['details'];
+  if (!isRecord(details)) {
     throw new Error('The résumé profile details are required.');
   }
 
-  for (const [fieldName, value] of Object.entries(profile.details)) {
+  for (const [fieldName, value] of Object.entries(details)) {
     assertNonEmptyString(value, `details.${fieldName}`);
   }
 
-  if (profile.details.phoneLabel !== PHONE_LABEL) {
+  if (details['phoneLabel'] !== PHONE_LABEL) {
     throw new Error(`The résumé phone value must remain "${PHONE_LABEL}".`);
   }
 
-  if (!profile.education || typeof profile.education !== 'object') {
+  const education = profile['education'];
+  if (!isRecord(education)) {
     throw new Error('The résumé education is required.');
   }
 
   for (const fieldName of ['degree', 'institution', 'period', 'gpax']) {
-    assertNonEmptyString(profile.education[fieldName], `education.${fieldName}`);
+    assertNonEmptyString(education[fieldName], `education.${fieldName}`);
   }
 
-  const seniorProject = profile.education.seniorProject;
-
-  if (!seniorProject || typeof seniorProject !== 'object') {
+  const seniorProject = education['seniorProject'];
+  if (!isRecord(seniorProject)) {
     throw new Error('The résumé education seniorProject is required.');
   }
 
-  assertNonEmptyString(seniorProject.name, 'education.seniorProject.name');
-  assertNonEmptyString(seniorProject.url, 'education.seniorProject.url');
+  assertNonEmptyString(seniorProject['name'], 'education.seniorProject.name');
+  const projectUrl = seniorProject['url'];
+  assertNonEmptyString(projectUrl, 'education.seniorProject.url');
 
-  let parsedProjectUrl;
+  let parsedProjectUrl: URL;
   try {
-    parsedProjectUrl = new URL(seniorProject.url);
+    parsedProjectUrl = new URL(projectUrl);
   } catch {
-    throw new Error(`The résumé education project link is invalid: ${seniorProject.url}`);
+    throw new Error(`The résumé education project link is invalid: ${projectUrl}`);
   }
 
   if (parsedProjectUrl.protocol !== 'https:') {
-    throw new Error(`The résumé education project link must use HTTPS: ${seniorProject.url}`);
+    throw new Error(`The résumé education project link must use HTTPS: ${projectUrl}`);
   }
 
-  if (!Array.isArray(profile.links) || profile.links.length === 0) {
+  const links = profile['links'];
+  if (!Array.isArray(links) || links.length === 0) {
     throw new Error('The résumé links must contain at least one item.');
   }
 
-  for (const [index, link] of profile.links.entries()) {
-    assertNonEmptyString(link?.label, `links[${index}].label`);
-    assertNonEmptyString(link?.url, `links[${index}].url`);
+  for (const [index, link] of links.entries()) {
+    const label = isRecord(link) ? link['label'] : undefined;
+    const url = isRecord(link) ? link['url'] : undefined;
+    assertNonEmptyString(label, `links[${index}].label`);
+    assertNonEmptyString(url, `links[${index}].url`);
 
-    if (/^tel:/i.test(link.url)) {
+    if (/^tel:/i.test(url)) {
       throw new Error('The résumé contains a telephone link and cannot be published.');
     }
 
-    let parsedUrl;
+    let parsedUrl: URL;
     try {
-      parsedUrl = new URL(link.url);
+      parsedUrl = new URL(url);
     } catch {
-      throw new Error(`The résumé link is invalid: ${link.url}`);
+      throw new Error(`The résumé link is invalid: ${url}`);
     }
 
     if (parsedUrl.protocol !== 'https:') {
-      throw new Error(`The résumé link must use HTTPS: ${link.url}`);
+      throw new Error(`The résumé link must use HTTPS: ${url}`);
     }
   }
 
-  if (!Array.isArray(profile.experience) || profile.experience.length === 0) {
+  const experienceEntries = profile['experience'];
+  if (!Array.isArray(experienceEntries) || experienceEntries.length === 0) {
     throw new Error('The résumé experience must contain at least one item.');
   }
 
-  for (const [index, experience] of profile.experience.entries()) {
+  for (const [index, experience] of experienceEntries.entries()) {
+    const experienceRecord = isRecord(experience) ? experience : {};
+
     for (const fieldName of ['role', 'company', 'location', 'period']) {
-      assertNonEmptyString(experience?.[fieldName], `experience[${index}].${fieldName}`);
+      assertNonEmptyString(experienceRecord[fieldName], `experience[${index}].${fieldName}`);
     }
 
-    assertEmploymentTypes(experience.employmentTypes, `experience[${index}].employmentTypes`);
-    assertNonEmptyStringArray(experience.highlights, `experience[${index}].highlights`);
-    assertNonEmptyStringArray(experience.technologies, `experience[${index}].technologies`);
+    assertEmploymentTypes(
+      experienceRecord['employmentTypes'],
+      `experience[${index}].employmentTypes`,
+    );
+    assertNonEmptyStringArray(experienceRecord['highlights'], `experience[${index}].highlights`);
+    assertNonEmptyStringArray(
+      experienceRecord['technologies'],
+      `experience[${index}].technologies`,
+    );
   }
 
   const serializedProfile = JSON.stringify(profile);
@@ -365,11 +460,12 @@ export function validateResumeProfile(profile) {
   }
 }
 
-export function buildResumeDocumentDefinition(profile) {
+/** Builds a deterministic, browser-font-compatible pdfmake document definition. */
+export function buildResumeDocumentDefinition(profile: ResumeProfile): ResumePdfDocumentDefinition {
   validateResumeProfile(profile);
 
   const emailLink = `mailto:${profile.details.email}`;
-  const definition = {
+  const definition: ResumePdfDocumentDefinition = {
     pageSize: 'A4',
     pageMargins: [44, 48, 44, 52],
     info: {
@@ -384,7 +480,7 @@ export function buildResumeDocumentDefinition(profile) {
     },
     language: 'en',
     defaultStyle: {
-      font: 'Helvetica',
+      font: BROWSER_FONT,
       fontSize: 9.4,
       lineHeight: 1.22,
       color: COLORS.text,
@@ -410,7 +506,7 @@ export function buildResumeDocumentDefinition(profile) {
         color: COLORS.accent,
       },
       employmentType: {
-        font: 'EmploymentLabel',
+        font: BROWSER_FONT,
         fontSize: 8.5,
         bold: true,
         color: COLORS.accent,
@@ -548,9 +644,9 @@ export function buildResumeDocumentDefinition(profile) {
       ...profile.links.map(({ label, url }) => ({
         text: [
           { text: `${label}: `, bold: true, color: COLORS.navy },
-          { text: url, link: url, color: COLORS.accent, decoration: 'underline' },
+          { text: url, link: url, color: COLORS.accent, decoration: 'underline' as const },
         ],
-        margin: [0, 0, 0, 5],
+        margin: [0, 0, 0, 5] as const,
       })),
     ],
   };
@@ -566,8 +662,12 @@ export function buildResumeDocumentDefinition(profile) {
   return definition;
 }
 
-function validatePdfBuffer(pdf, profile) {
-  if (!Buffer.isBuffer(pdf) || pdf.subarray(0, 5).toString('ascii') !== '%PDF-') {
+/** Validates generated PDF bytes before browser download side effects occur. */
+export function validateResumePdfBytes(
+  pdf: unknown,
+  profile: ResumeProfile,
+): asserts pdf is Uint8Array {
+  if (!isUint8Array(pdf) || PDF_HEADER.some((expectedByte, index) => pdf[index] !== expectedByte)) {
     throw new Error('Generated output is not a PDF document.');
   }
 
@@ -575,7 +675,7 @@ function validatePdfBuffer(pdf, profile) {
     throw new Error(`Generated PDF is unexpectedly small (${pdf.byteLength} bytes).`);
   }
 
-  const pdfSource = pdf.toString('latin1');
+  const pdfSource = new TextDecoder('latin1').decode(pdf);
   const requiredLinks = [
     `mailto:${profile.details.email}`,
     profile.education.seniorProject.url,
@@ -591,14 +691,4 @@ function validatePdfBuffer(pdf, profile) {
   if (/tel:/i.test(pdfSource)) {
     throw new Error('Generated PDF contains a telephone link and cannot be published.');
   }
-}
-
-export async function createResumePdfBuffer(profile) {
-  const definition = buildResumeDocumentDefinition(profile);
-  const generatedPdf = await pdfmake.createPdf(definition).getBuffer();
-  const pdf = Buffer.isBuffer(generatedPdf) ? generatedPdf : Buffer.from(generatedPdf);
-
-  validatePdfBuffer(pdf, profile);
-
-  return pdf;
 }

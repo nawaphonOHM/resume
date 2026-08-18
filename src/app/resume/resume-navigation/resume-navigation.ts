@@ -56,6 +56,9 @@ export class ResumeNavigation {
   /** Current theme used to derive the opposite-theme control label and icon. */
   readonly theme = input.required<ResumeTheme>();
 
+  /** Whether a PDF request is running and both responsive controls must remain disabled. */
+  readonly downloadPending = input(false);
+
   /** Emits the fragment target selected through any navigation presentation. */
   readonly sectionSelected = output<ResumeSectionId>();
 
@@ -65,11 +68,11 @@ export class ResumeNavigation {
   /** Requests browser printing without coupling the navigation to the document object. */
   readonly printRequested = output<void>();
 
+  /** Requests on-demand PDF generation without coupling navigation to the browser runtime. */
+  readonly downloadRequested = output<void>();
+
   /** Shared section registry exposed to both desktop and mobile templates. */
   protected readonly sections = RESUME_SECTIONS;
-
-  /** Static public asset downloaded by both responsive navigation presentations. */
-  protected readonly downloadUrl = 'downloads/nawaphon-isarathanachaikul-resume.pdf';
 
   /** @returns An accessible action label naming the theme that will be selected. */
   protected themeControlLabel(): string {
@@ -79,5 +82,20 @@ export class ResumeNavigation {
   /** @returns The Material icon representing the theme that will be selected. */
   protected themeIcon(): string {
     return this.theme() === 'dark' ? 'light_mode' : 'dark_mode';
+  }
+
+  /** @returns The accessible label describing the current PDF download state. */
+  protected downloadControlLabel(): string {
+    return this.downloadPending() ? 'Generating résumé PDF' : 'Download résumé as PDF';
+  }
+
+  /** @returns The icon representing either generation progress or download readiness. */
+  protected downloadIcon(): string {
+    return this.downloadPending() ? 'progress_activity' : 'download';
+  }
+
+  /** @returns The concise mobile-menu label for the current PDF download state. */
+  protected downloadControlText(): string {
+    return this.downloadPending() ? 'Generating PDF…' : 'Download PDF';
   }
 }
