@@ -47,3 +47,5 @@ Thumbs.db
 
 /src/**/*.css
 /src/**/*.css.map
+
+.playwright-mcp
