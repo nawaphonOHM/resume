@@ -10,7 +10,7 @@ import {
   type TechnologyIconOpenCvLoader,
 } from './technology-icon-contrast.service';
 
-const OPEN_CV_CDN_URL = 'https://cdn.jsdelivr.net/npm/@techstark/opencv-js@5/+esm';
+const OPEN_CV_CDN_URL = 'https://cdn.jsdelivr.net/npm/@techstark/opencv-js/+esm';
 const REMOTE_ICON_URL = 'https://resume-images.ohm-mho.space/technology-icons/test.svg';
 const SECOND_REMOTE_ICON_URL = 'https://resume-images.ohm-mho.space/technology-icons/second.svg';
 const ICON: TechnologyIconMetadata = {

@@ -4,7 +4,7 @@ import { Injectable, InjectionToken, PLATFORM_ID, inject } from '@angular/core';
 import type { BrandLogo } from '../../model/resume/resume.model';
 import type { TechnologyIconMetadata } from './technology-icons';
 
-const OPEN_CV_CDN_URL = 'https://cdn.jsdelivr.net/npm/@techstark/opencv-js@5/+esm';
+const OPEN_CV_CDN_URL = 'https://cdn.jsdelivr.net/npm/@techstark/opencv-js/+esm';
 const OPEN_CV_RETRY_COUNT = 3;
 const OPEN_CV_RETRY_DELAY_MS = 1_000;
 const OPEN_CV_RETRY_DELAY_MULTIPLIER = 1.0;

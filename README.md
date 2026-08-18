@@ -48,7 +48,7 @@ Before starting the download, the application verifies the PDF header, minimum s
 
 ## Runtime OpenCV dependency
 
-Technology-icon contrast optimization is browser-only and begins after the initial render during idle time. When optimization starts, the browser dynamically imports OpenCV from `https://cdn.jsdelivr.net/npm/@techstark/opencv-js@5/+esm`; OpenCV is not installed as an npm dependency or included in the application chunks.
+Technology-icon contrast optimization is browser-only and begins after the initial render during idle time. When optimization starts, the browser dynamically imports OpenCV from `https://cdn.jsdelivr.net/npm/@techstark/opencv-js/+esm`; OpenCV is not installed as an npm dependency or included in the application chunks.
 
 Deployments that enforce Content Security Policy must allow `https://cdn.jsdelivr.net` in the applicable `script-src` policy. If the CDN module is unavailable, blocked, or cannot enhance an icon, the application remains usable and displays the original icon on a light background.
 
