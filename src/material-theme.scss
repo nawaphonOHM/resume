@@ -2,7 +2,7 @@
 /// Provides the global Angular Material theme used by the résumé application.
 ///
 /// Color tokens follow the document's `color-scheme`, while typography uses the
-/// same bold monospace family as the surrounding résumé and retains default density.
+/// same system-font weights as the surrounding résumé and retains default density.
 ////
 
 @use '@angular/material' as mat;
@@ -17,16 +17,16 @@ html {
       ),
       typography: (
         plain-family: (
-          'DejaVu Sans Mono',
-          monospace,
+          system-ui,
+          sans-serif,
         ),
         brand-family: (
-          'DejaVu Sans Mono',
-          monospace,
+          system-ui,
+          sans-serif,
         ),
         bold-weight: 700,
-        medium-weight: 700,
-        regular-weight: 700,
+        medium-weight: 600,
+        regular-weight: 400,
       ),
       density: 0,
     )
