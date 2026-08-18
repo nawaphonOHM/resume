@@ -1,6 +1,6 @@
 {
   "name": "resume",
-  "version": "1.11.11",
+  "version": "1.11.12",
   "type": "module",
   "scripts": {
     "ng": "ng",
@@ -22,7 +22,6 @@
     "@angular/material": "^22.1.2",
     "@angular/platform-browser": "^22.1.2",
     "material-icons": "^1.13.14",
-    "pdfmake": "^0.3.11",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
@@ -32,6 +31,7 @@
     "@angular/compiler-cli": "^22.1.2",
     "@tailwindcss/postcss": "^4.3.3",
     "jsdom": "^30.0.1",
+    "pdfmake": "0.3.3",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",

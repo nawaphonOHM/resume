@@ -35,7 +35,14 @@ The résumé PDF is generated in the browser and is not a local static asset. Th
 
 ## On-demand résumé PDF
 
-Activating either Download PDF control generates the résumé directly from the canonical typed résumé data. The first request dynamically imports the browser build of `pdfmake` and its bundled virtual-file-system fonts; those modules remain outside the initial application bundle and are reused for later requests.
+Activating either Download PDF control generates the résumé directly from the canonical typed résumé data. Only after the first activation, the browser loads these immutable cdnjs assets in order (core first, then the Roboto virtual fonts):
+
+- `https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.3/pdfmake.min.js` (`sha512-EkS5jkn3vXRWIdphIy51xskMZggNip3Or8kpe/FlM5XaQeiK2GZJ9OwrIEbXl6txKWsHNtm4OXtxzkkz41Mspw==`)
+- `https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.3/vfs_fonts.min.js` (`sha512-rpvsrDF7BNgiFOXqkKyyoJ46jZ8nwQ3NJJAmpYnYKuZHfzwR2wpz5cAaPX09RCj9un5E+ErATIqy4CZBcuNogA==`)
+
+Both scripts use Subresource Integrity, anonymous CORS, and a no-referrer policy. Successful and in-flight loads are reused, while a CDN outage, blocked script, integrity mismatch, or incompatible runtime fails the current request without creating a download and leaves both controls retryable. Production has no bundled fallback.
+
+Deployments that enforce Content Security Policy must allow `https://cdnjs.cloudflare.com` in `script-src`. Do not use cdnjs's `latest` alias. When upgrading, update both pinned CDN versions, both published SRI hashes, and the exact development-only `pdfmake` version together; the npm package is used solely as the network-independent integration-test fixture.
 
 Before starting the download, the application verifies the PDF header, minimum size, required links, content safeguards, and absence of phone or `tel:` data. Installation, production builds, and initial page loads perform no PDF generation.
 
@@ -61,7 +68,7 @@ Prettier formats TypeScript, Angular templates, styles, JSON, and Markdown. The 
 npm run build
 ```
 
-The production command compiles only the Angular application. It emits no generated résumé PDF; `pdfmake` and its fonts remain lazy browser chunks that load only after a user requests a download.
+The production command compiles only the Angular application. It emits neither a generated résumé PDF nor bundled or lazy `pdfmake`/virtual-font runtime chunks, and its `index.html` contains no eager cdnjs script tag, preconnect, or preload for them. The first PDF-runtime request occurs only after a user activates a Download PDF control.
 
 Upload the contents of this directory to a web root:
 

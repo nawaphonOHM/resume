@@ -1,16 +1,47 @@
 import { PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import pdfMakeModule from 'pdfmake/build/pdfmake.js';
+import virtualFileSystemModule from 'pdfmake/build/vfs_fonts.js';
 import { vi } from 'vitest';
 
 import { RESUME } from '../../data/resume/resume.data';
 import type { ResumePdfDocumentDefinition } from './resume-pdf-document';
 import {
+  RESUME_PDF_CDN_SCRIPT_LOADER,
   RESUME_PDF_FILENAME,
   RESUME_PDF_RUNTIME_LOADER,
   ResumePdfService,
+  type ResumePdfCdnAsset,
+  type ResumePdfCdnScriptLoader,
   type ResumePdfRuntime,
   type ResumePdfRuntimeLoader,
 } from './resume-pdf.service';
+
+const PDFMAKE_CORE_ASSET: ResumePdfCdnAsset = {
+  url: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.3/pdfmake.min.js',
+  integrity:
+    'sha512-EkS5jkn3vXRWIdphIy51xskMZggNip3Or8kpe/FlM5XaQeiK2GZJ9OwrIEbXl6txKWsHNtm4OXtxzkkz41Mspw==',
+};
+
+const PDFMAKE_FONT_ASSET: ResumePdfCdnAsset = {
+  url: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.3/vfs_fonts.min.js',
+  integrity:
+    'sha512-rpvsrDF7BNgiFOXqkKyyoJ46jZ8nwQ3NJJAmpYnYKuZHfzwR2wpz5cAaPX09RCj9un5E+ErATIqy4CZBcuNogA==',
+};
+
+const REQUIRED_ROBOTO_FONTS = [
+  'Roboto-Regular.ttf',
+  'Roboto-Medium.ttf',
+  'Roboto-Italic.ttf',
+  'Roboto-MediumItalic.ttf',
+] as const;
+
+interface TestBrowserPdfRuntime extends ResumePdfRuntime {
+  readonly virtualfs: { readonly storage: Record<string, unknown> };
+  addVirtualFileSystem(virtualFileSystem: Readonly<Record<string, unknown>>): void;
+}
+
+type PdfMakeWindow = Window & typeof globalThis & { pdfMake?: unknown };
 
 function validPdfBytes(additionalText = ''): Uint8Array {
   return new TextEncoder().encode(
@@ -35,6 +66,69 @@ function createFakeRuntime(initialBytes: unknown = validPdfBytes()) {
   return { runtime, createPdf, getBuffer };
 }
 
+function createFakeBrowserRuntime(initialBytes: unknown = validPdfBytes()) {
+  const fake = createFakeRuntime(initialBytes);
+  const storage: Record<string, unknown> = {};
+  const addVirtualFileSystem = vi.fn((virtualFileSystem: Readonly<Record<string, unknown>>) => {
+    Object.assign(storage, virtualFileSystem);
+  });
+  const runtime: TestBrowserPdfRuntime = Object.assign(fake.runtime, {
+    addVirtualFileSystem,
+    virtualfs: { storage },
+  });
+
+  return { ...fake, addVirtualFileSystem, runtime, storage };
+}
+
+function registerRobotoFonts(runtime: TestBrowserPdfRuntime): void {
+  for (const font of REQUIRED_ROBOTO_FONTS) {
+    runtime.virtualfs.storage[font] = { data: font };
+  }
+}
+
+function unwrapDefaultExport(value: unknown): unknown {
+  if (value && typeof value === 'object' && 'default' in value) {
+    return value.default;
+  }
+  return value;
+}
+
+function createLocalPdfMakeRuntime(): ResumePdfRuntime {
+  const runtime = unwrapDefaultExport(pdfMakeModule) as TestBrowserPdfRuntime;
+  const virtualFileSystem = unwrapDefaultExport(virtualFileSystemModule) as Readonly<
+    Record<string, unknown>
+  >;
+  runtime.addVirtualFileSystem(virtualFileSystem);
+  return runtime;
+}
+
+function setPdfMake(value: unknown): void {
+  Object.defineProperty(window, 'pdfMake', {
+    configurable: true,
+    value,
+    writable: true,
+  });
+}
+
+function cdnScripts(): HTMLScriptElement[] {
+  return Array.from(
+    document.head.querySelectorAll<HTMLScriptElement>(
+      'script[src^="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.3/"]',
+    ),
+  );
+}
+
+async function waitForCdnScripts(count: number): Promise<HTMLScriptElement[]> {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const scripts = cdnScripts();
+    if (scripts.length === count) {
+      return scripts;
+    }
+    await Promise.resolve();
+  }
+  throw new Error(`Expected ${count} pdfmake CDN script elements.`);
+}
+
 function createService(
   loader: ResumePdfRuntimeLoader,
   platformId: 'browser' | 'server' = 'browser',
@@ -43,6 +137,16 @@ function createService(
     providers: [
       { provide: PLATFORM_ID, useValue: platformId },
       { provide: RESUME_PDF_RUNTIME_LOADER, useValue: loader },
+    ],
+  });
+  return TestBed.inject(ResumePdfService);
+}
+
+function createServiceWithCdnLoader(loader?: ResumePdfCdnScriptLoader): ResumePdfService {
+  TestBed.configureTestingModule({
+    providers: [
+      { provide: PLATFORM_ID, useValue: 'browser' },
+      ...(loader ? [{ provide: RESUME_PDF_CDN_SCRIPT_LOADER, useValue: loader }] : []),
     ],
   });
   return TestBed.inject(ResumePdfService);
@@ -82,12 +186,14 @@ function restoreProperty(
 
 describe('ResumePdfService', () => {
   let originalCreateObjectUrl: PropertyDescriptor | undefined;
+  let originalPdfMake: PropertyDescriptor | undefined;
   let originalRevokeObjectUrl: PropertyDescriptor | undefined;
   let createObjectUrl: ReturnType<typeof vi.fn<(blob: Blob) => string>>;
   let revokeObjectUrl: ReturnType<typeof vi.fn<(url: string) => void>>;
 
   beforeEach(() => {
     originalCreateObjectUrl = Object.getOwnPropertyDescriptor(window.URL, 'createObjectURL');
+    originalPdfMake = Object.getOwnPropertyDescriptor(window, 'pdfMake');
     originalRevokeObjectUrl = Object.getOwnPropertyDescriptor(window.URL, 'revokeObjectURL');
     createObjectUrl = vi.fn((_blob: Blob) => 'blob:resume-pdf');
     revokeObjectUrl = vi.fn((_url: string) => undefined);
@@ -100,8 +206,257 @@ describe('ResumePdfService', () => {
   afterEach(() => {
     TestBed.resetTestingModule();
     vi.restoreAllMocks();
+    for (const script of cdnScripts()) {
+      script.remove();
+    }
     restoreProperty(window.URL, 'createObjectURL', originalCreateObjectUrl);
+    restoreProperty(window, 'pdfMake', originalPdfMake);
     restoreProperty(window.URL, 'revokeObjectURL', originalRevokeObjectUrl);
+  });
+
+  it('injects the exact secured CDN assets in order only after a download request', async () => {
+    const fake = createFakeBrowserRuntime();
+    const anchors = trackAnchorClicks();
+    const service = createServiceWithCdnLoader();
+
+    expect(cdnScripts()).toEqual([]);
+    expect(fake.createPdf).not.toHaveBeenCalled();
+    expect(createObjectUrl).not.toHaveBeenCalled();
+
+    const firstDownload = service.download();
+    const secondDownload = service.download();
+    const [coreScript] = await waitForCdnScripts(1);
+
+    expect(coreScript?.src).toBe(PDFMAKE_CORE_ASSET.url);
+    expect(coreScript?.integrity).toBe(PDFMAKE_CORE_ASSET.integrity);
+    expect(coreScript?.crossOrigin).toBe('anonymous');
+    expect(coreScript?.referrerPolicy).toBe('no-referrer');
+    expect(fake.createPdf).not.toHaveBeenCalled();
+
+    setPdfMake(fake.runtime);
+    coreScript?.dispatchEvent(new Event('load'));
+    const scripts = await waitForCdnScripts(2);
+    const fontScript = scripts[1];
+
+    expect(fontScript?.src).toBe(PDFMAKE_FONT_ASSET.url);
+    expect(fontScript?.integrity).toBe(PDFMAKE_FONT_ASSET.integrity);
+    expect(fontScript?.crossOrigin).toBe('anonymous');
+    expect(fontScript?.referrerPolicy).toBe('no-referrer');
+    expect(coreScript?.compareDocumentPosition(fontScript!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+
+    registerRobotoFonts(fake.runtime);
+    fontScript?.dispatchEvent(new Event('load'));
+    await Promise.all([firstDownload, secondDownload]);
+    await service.download();
+
+    expect(cdnScripts()).toEqual([coreScript, fontScript]);
+    expect(fake.createPdf).toHaveBeenCalledTimes(3);
+    expect(createObjectUrl).toHaveBeenCalledTimes(3);
+    expect(revokeObjectUrl).toHaveBeenCalledTimes(3);
+    expect(anchors).toHaveLength(3);
+  });
+
+  it('deduplicates script loads and removes failed elements and listeners before retrying', async () => {
+    TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'browser' }] });
+    const loader = TestBed.inject(RESUME_PDF_CDN_SCRIPT_LOADER);
+
+    const firstLoad = loader.load(PDFMAKE_CORE_ASSET);
+    const secondLoad = loader.load(PDFMAKE_CORE_ASSET);
+    const [failedScript] = await waitForCdnScripts(1);
+    const removeEventListener = vi.spyOn(failedScript!, 'removeEventListener');
+    const firstFailure = firstLoad.catch((error: unknown) => error);
+    const secondFailure = secondLoad.catch((error: unknown) => error);
+
+    expect(secondLoad).toBe(firstLoad);
+    failedScript?.dispatchEvent(new Event('error'));
+
+    await expect(firstFailure).resolves.toEqual(expect.any(Error));
+    await expect(secondFailure).resolves.toEqual(expect.any(Error));
+    expect(removeEventListener).toHaveBeenCalledWith('load', expect.any(Function));
+    expect(removeEventListener).toHaveBeenCalledWith('error', expect.any(Function));
+    expect(failedScript?.isConnected).toBe(false);
+    expect(cdnScripts()).toEqual([]);
+
+    const retry = loader.load(PDFMAKE_CORE_ASSET);
+    const [retryScript] = await waitForCdnScripts(1);
+    expect(retryScript).not.toBe(failedScript);
+    retryScript?.dispatchEvent(new Event('load'));
+    await expect(retry).resolves.toBeUndefined();
+    expect(loader.load(PDFMAKE_CORE_ASSET)).toBe(retry);
+
+    loader.invalidate(PDFMAKE_CORE_ASSET);
+    expect(retryScript?.isConnected).toBe(false);
+  });
+
+  it('uses the injectable CDN boundary with the exact sequential descriptors', async () => {
+    const fake = createFakeBrowserRuntime();
+    const load = vi.fn(async (asset: ResumePdfCdnAsset) => {
+      if (asset.url === PDFMAKE_CORE_ASSET.url) {
+        setPdfMake(fake.runtime);
+      } else {
+        registerRobotoFonts(fake.runtime);
+      }
+    });
+    const loader: ResumePdfCdnScriptLoader = { load, invalidate: vi.fn() };
+    const service = createServiceWithCdnLoader(loader);
+
+    expect(load).not.toHaveBeenCalled();
+    await service.download();
+
+    expect(load.mock.calls.map(([asset]) => asset)).toEqual([
+      PDFMAKE_CORE_ASSET,
+      PDFMAKE_FONT_ASSET,
+    ]);
+  });
+
+  it('rejects a core script load error without a download and permits a clean retry', async () => {
+    const fake = createFakeBrowserRuntime();
+    const anchorClick = vi.spyOn(window.HTMLAnchorElement.prototype, 'click');
+    const service = createServiceWithCdnLoader();
+
+    const failedDownload = service.download();
+    const [failedCoreScript] = await waitForCdnScripts(1);
+    const rejectedDownload = expect(failedDownload).rejects.toThrow(/pdfmake\.min\.js/);
+    failedCoreScript?.dispatchEvent(new Event('error'));
+    await rejectedDownload;
+
+    expect(cdnScripts()).toEqual([]);
+    expect(failedCoreScript?.isConnected).toBe(false);
+    expect(createObjectUrl).not.toHaveBeenCalled();
+    expect(anchorClick).not.toHaveBeenCalled();
+
+    const retry = service.download();
+    const [retryCoreScript] = await waitForCdnScripts(1);
+    expect(retryCoreScript).not.toBe(failedCoreScript);
+    setPdfMake(fake.runtime);
+    retryCoreScript?.dispatchEvent(new Event('load'));
+    const retryScripts = await waitForCdnScripts(2);
+    registerRobotoFonts(fake.runtime);
+    retryScripts[1]?.dispatchEvent(new Event('load'));
+    await expect(retry).resolves.toBeUndefined();
+
+    expect(createObjectUrl).toHaveBeenCalledOnce();
+    expect(anchorClick).toHaveBeenCalledOnce();
+  });
+
+  it('retains a validated core script when the font script fails and retries only the font asset', async () => {
+    const fake = createFakeBrowserRuntime();
+    const anchorClick = vi.spyOn(window.HTMLAnchorElement.prototype, 'click');
+    const service = createServiceWithCdnLoader();
+
+    const failedDownload = service.download();
+    const [coreScript] = await waitForCdnScripts(1);
+    setPdfMake(fake.runtime);
+    coreScript?.dispatchEvent(new Event('load'));
+    const firstScripts = await waitForCdnScripts(2);
+    const failedFontScript = firstScripts[1];
+    const rejectedDownload = expect(failedDownload).rejects.toThrow(/vfs_fonts\.min\.js/);
+
+    failedFontScript?.dispatchEvent(new Event('error'));
+    await rejectedDownload;
+
+    expect(cdnScripts()).toEqual([coreScript]);
+    expect(coreScript?.isConnected).toBe(true);
+    expect(failedFontScript?.isConnected).toBe(false);
+    expect(createObjectUrl).not.toHaveBeenCalled();
+    expect(anchorClick).not.toHaveBeenCalled();
+
+    const retry = service.download();
+    const retryScripts = await waitForCdnScripts(2);
+    const retryFontScript = retryScripts[1];
+    expect(retryScripts[0]).toBe(coreScript);
+    expect(retryFontScript).not.toBe(failedFontScript);
+
+    registerRobotoFonts(fake.runtime);
+    retryFontScript?.dispatchEvent(new Event('load'));
+    await expect(retry).resolves.toBeUndefined();
+
+    expect(createObjectUrl).toHaveBeenCalledOnce();
+    expect(anchorClick).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    ['window.pdfMake is missing', () => undefined],
+    [
+      'createPdf is missing',
+      () => ({
+        addVirtualFileSystem: vi.fn(),
+        virtualfs: { storage: {} },
+      }),
+    ],
+    [
+      'addVirtualFileSystem is missing',
+      () => ({
+        createPdf: createFakeRuntime().runtime.createPdf,
+        virtualfs: { storage: {} },
+      }),
+    ],
+  ])('invalidates a loaded core when %s and permits a clean retry', async (_label, malformed) => {
+    const valid = createFakeBrowserRuntime();
+    const anchorClick = vi.spyOn(window.HTMLAnchorElement.prototype, 'click');
+    const service = createServiceWithCdnLoader();
+
+    const failedDownload = service.download();
+    const [failedCoreScript] = await waitForCdnScripts(1);
+    setPdfMake(malformed());
+    const rejectedDownload = expect(failedDownload).rejects.toThrow(/runtime is unavailable/i);
+    failedCoreScript?.dispatchEvent(new Event('load'));
+    await rejectedDownload;
+
+    expect(cdnScripts()).toEqual([]);
+    expect(failedCoreScript?.isConnected).toBe(false);
+    expect((window as PdfMakeWindow).pdfMake).toBeUndefined();
+    expect(createObjectUrl).not.toHaveBeenCalled();
+    expect(anchorClick).not.toHaveBeenCalled();
+
+    const retry = service.download();
+    const [retryCoreScript] = await waitForCdnScripts(1);
+    expect(retryCoreScript).not.toBe(failedCoreScript);
+    setPdfMake(valid.runtime);
+    retryCoreScript?.dispatchEvent(new Event('load'));
+    const retryScripts = await waitForCdnScripts(2);
+    registerRobotoFonts(valid.runtime);
+    retryScripts[1]?.dispatchEvent(new Event('load'));
+    await expect(retry).resolves.toBeUndefined();
+
+    expect(createObjectUrl).toHaveBeenCalledOnce();
+    expect(anchorClick).toHaveBeenCalledOnce();
+  });
+
+  it('invalidates incomplete Roboto font registration while retaining the validated core', async () => {
+    const fake = createFakeBrowserRuntime();
+    const anchorClick = vi.spyOn(window.HTMLAnchorElement.prototype, 'click');
+    const service = createServiceWithCdnLoader();
+
+    const failedDownload = service.download();
+    const [coreScript] = await waitForCdnScripts(1);
+    setPdfMake(fake.runtime);
+    coreScript?.dispatchEvent(new Event('load'));
+    const firstScripts = await waitForCdnScripts(2);
+    const failedFontScript = firstScripts[1];
+    for (const font of REQUIRED_ROBOTO_FONTS.slice(0, -1)) {
+      fake.storage[font] = { data: font };
+    }
+    const rejectedDownload = expect(failedDownload).rejects.toThrow(/font bundle is unavailable/i);
+    failedFontScript?.dispatchEvent(new Event('load'));
+    await rejectedDownload;
+
+    expect(cdnScripts()).toEqual([coreScript]);
+    expect(coreScript?.isConnected).toBe(true);
+    expect(failedFontScript?.isConnected).toBe(false);
+    expect((window as PdfMakeWindow).pdfMake).toBe(fake.runtime);
+    expect(createObjectUrl).not.toHaveBeenCalled();
+    expect(anchorClick).not.toHaveBeenCalled();
+
+    const retry = service.download();
+    const retryScripts = await waitForCdnScripts(2);
+    expect(retryScripts[0]).toBe(coreScript);
+    registerRobotoFonts(fake.runtime);
+    retryScripts[1]?.dispatchEvent(new Event('load'));
+    await expect(retry).resolves.toBeUndefined();
+
+    expect(createObjectUrl).toHaveBeenCalledOnce();
+    expect(anchorClick).toHaveBeenCalledOnce();
   });
 
   it('defers all work until requested and downloads the same validated bytes once', async () => {
@@ -255,13 +610,13 @@ describe('ResumePdfService', () => {
     expect(anchors).toHaveLength(1);
   });
 
-  it('generates deterministic Unicode PDF bytes with canonical safe links using the default loader', async () => {
+  it('generates deterministic Unicode PDF bytes with canonical safe links using the local fixture', async () => {
     createObjectUrl
       .mockReturnValueOnce('blob:first-resume')
       .mockReturnValueOnce('blob:second-resume');
     const anchors = trackAnchorClicks();
-    TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'browser' }] });
-    const service = TestBed.inject(ResumePdfService);
+    const loader = vi.fn(async () => createLocalPdfMakeRuntime());
+    const service = createService(loader);
 
     await service.download();
     await service.download();
@@ -284,6 +639,7 @@ describe('ResumePdfService', () => {
       expect(pdfSource).toContain(url);
     }
     expect(pdfSource).not.toMatch(/tel:/i);
+    expect(loader).toHaveBeenCalledOnce();
     expect(anchors).toHaveLength(2);
     expect(revokeObjectUrl).toHaveBeenNthCalledWith(1, 'blob:first-resume');
     expect(revokeObjectUrl).toHaveBeenNthCalledWith(2, 'blob:second-resume');
