@@ -18,6 +18,14 @@ const LOGO: BrandLogo = {
   surface: 'light',
 };
 
+/** Replacement metadata used to verify that an attached preview cannot retain stale artwork. */
+const REPLACEMENT_LOGO: BrandLogo = {
+  src: '/images/replacement-logo.svg',
+  width: 800,
+  height: 400,
+  surface: 'dark',
+};
+
 /** Signal-driven host that exposes every directive input for per-test mutation. */
 @Component({
   imports: [ImageZoomDirective],
@@ -161,6 +169,22 @@ describe('ImageZoomDirective', () => {
     expect(imageZoomService.open).toHaveBeenCalledOnce();
   });
 
+  it('compares intrinsic dimensions with the rendered content box excluding frame space', async () => {
+    const image = await createImage();
+    setImageGeometry(image, {
+      naturalWidth: 220,
+      naturalHeight: 120,
+      width: 220,
+      height: 120,
+    });
+    image.style.border = '5px solid transparent';
+    image.style.padding = '5px';
+
+    dispatchPointerEvent(image, 'pointerenter', 'mouse');
+
+    expect(imageZoomService.open).toHaveBeenCalledOnce();
+  });
+
   it('uses natural dimensions first and falls back to valid logo metadata', async () => {
     const image = await createImage();
     const geometry = setImageGeometry(image, {
@@ -224,6 +248,49 @@ describe('ImageZoomDirective', () => {
 
     expect(imageZoomService.open).toHaveBeenLastCalledWith(
       request(image, LOGO, 'Test brand', 'hover', '#0d1b2d'),
+    );
+  });
+
+  it('invalidates stale previews when payload inputs change and reopens with current data', async () => {
+    const image = await createImage();
+    setImageGeometry(image, { naturalWidth: 400, naturalHeight: 200, width: 200, height: 100 });
+
+    dispatchPointerEvent(image, 'pointerenter', 'mouse');
+    expect(imageZoomService.open).toHaveBeenLastCalledWith(
+      request(image, LOGO, 'Test brand', 'hover'),
+    );
+    imageZoomService.close.mockClear();
+
+    fixture!.componentInstance.logo.set(REPLACEMENT_LOGO);
+    await fixture!.whenStable();
+
+    expect(imageZoomService.close).toHaveBeenCalledOnce();
+    expect(imageZoomService.close).toHaveBeenLastCalledWith(image);
+    dispatchPointerEvent(image, 'pointerenter', 'mouse');
+    expect(imageZoomService.open).toHaveBeenLastCalledWith(
+      request(image, REPLACEMENT_LOGO, 'Test brand', 'hover'),
+    );
+    imageZoomService.close.mockClear();
+
+    fixture!.componentInstance.label.set('Replacement brand');
+    await fixture!.whenStable();
+
+    expect(imageZoomService.close).toHaveBeenCalledOnce();
+    expect(imageZoomService.close).toHaveBeenLastCalledWith(image);
+    dispatchPointerEvent(image, 'pointerenter', 'mouse');
+    expect(imageZoomService.open).toHaveBeenLastCalledWith(
+      request(image, REPLACEMENT_LOGO, 'Replacement brand', 'hover'),
+    );
+    imageZoomService.close.mockClear();
+
+    fixture!.componentInstance.background.set('#0d1b2d');
+    await fixture!.whenStable();
+
+    expect(imageZoomService.close).toHaveBeenCalledOnce();
+    expect(imageZoomService.close).toHaveBeenLastCalledWith(image);
+    dispatchPointerEvent(image, 'pointerenter', 'mouse');
+    expect(imageZoomService.open).toHaveBeenLastCalledWith(
+      request(image, REPLACEMENT_LOGO, 'Replacement brand', 'hover', '#0d1b2d'),
     );
   });
 
@@ -321,8 +388,13 @@ describe('ImageZoomDirective', () => {
     expect(imageZoomService.open).toHaveBeenCalledOnce();
   });
 
-  it('observes its image and releases both observer and owned preview on destruction', async () => {
-    const image = await createImage();
+  it('starts observation after the initial render and releases all ownership on destruction', async () => {
+    fixture = TestBed.createComponent(ImageZoomHost);
+
+    expect(observe).not.toHaveBeenCalled();
+
+    await fixture.whenStable();
+    const image = fixture.nativeElement.querySelector('img') as HTMLImageElement;
 
     expect(observe).toHaveBeenCalledOnce();
     expect(observe).toHaveBeenCalledWith(image);
@@ -330,10 +402,11 @@ describe('ImageZoomDirective', () => {
     fixture!.destroy();
 
     expect(disconnect).toHaveBeenCalledOnce();
+    expect(imageZoomService.close).toHaveBeenCalledOnce();
     expect(imageZoomService.close).toHaveBeenLastCalledWith(image);
   });
 
-  /** Creates a stable host and returns the image enhanced by the directive. */
+  /** Waits for zoneless post-render work and returns the image enhanced by the directive. */
   async function createImage(): Promise<HTMLImageElement> {
     fixture = TestBed.createComponent(ImageZoomHost);
     await fixture.whenStable();

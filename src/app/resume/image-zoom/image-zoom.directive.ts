@@ -2,9 +2,12 @@ import {
   DestroyRef,
   Directive,
   ElementRef,
-  type AfterViewInit,
+  afterNextRender,
+  computed,
+  effect,
   inject,
   input,
+  signal,
 } from '@angular/core';
 
 import type { BrandLogo } from '../../model/resume/resume.model';
@@ -20,8 +23,25 @@ interface ImageSize {
   readonly height: number;
 }
 
+/** Atomic snapshot of browser-measured image state used by reactive eligibility derivation. */
+interface ImageState {
+  readonly failed: boolean;
+  readonly naturalSize: ImageSize | null;
+  readonly contentBoxSize: ImageSize | null;
+}
+
+/** Signal-derived preview data that must invalidate an attached same-origin overlay when changed. */
+type ImageZoomPayload = Omit<ImageZoomRequest, 'origin' | 'activation'>;
+
 /** Scale difference required to treat an image as downscaled rather than measurement noise. */
 const DOWNSCALE_TOLERANCE = 0.01;
+
+/** Unmeasured state used until the host image reaches its first browser render. */
+const INITIAL_IMAGE_STATE: ImageState = {
+  failed: false,
+  naturalSize: null,
+  contentBoxSize: null,
+};
 
 /**
  * Adds an intrinsic-size preview interaction to a rendered logo image when it is downscaled.
@@ -41,7 +61,7 @@ const DOWNSCALE_TOLERANCE = 0.01;
     '(pointerleave)': 'handlePointerLeave($event)',
   },
 })
-export class ImageZoomDirective implements AfterViewInit {
+export class ImageZoomDirective {
   /** Required logo metadata used for preview rendering and intrinsic-size fallback. */
   readonly appImageZoom = input.required<BrandLogo>();
 
@@ -56,28 +76,42 @@ export class ImageZoomDirective implements AfterViewInit {
 
   private readonly image = inject<ElementRef<HTMLImageElement>>(ElementRef).nativeElement;
   private readonly imageZoomService = inject(ImageZoomService);
+  private readonly imageState = signal<ImageState>(INITIAL_IMAGE_STATE);
+  private readonly eligible = computed(() =>
+    this.isEligible(this.imageState(), this.appImageZoom()),
+  );
+  private readonly previewPayload = computed<ImageZoomPayload>(() => {
+    const background = this.imageZoomBackground();
+
+    return {
+      logo: this.appImageZoom(),
+      label: this.imageZoomLabel(),
+      ...(background === undefined ? {} : { background }),
+    };
+  });
   private resizeObserver: ResizeObserver | null = null;
-  private imageFailed = false;
-  private eligible = false;
 
-  /** Registers lifecycle cleanup for resize observation and origin-owned overlays. */
+  /** Defers browser measurement and resize observation until the host image has rendered. */
   constructor() {
-    inject(DestroyRef).onDestroy(() => {
-      this.resizeObserver?.disconnect();
-      this.imageZoomService.close(this.image);
+    afterNextRender({
+      read: () => {
+        const ResizeObserverConstructor = globalThis.ResizeObserver;
+
+        if (typeof ResizeObserverConstructor === 'function') {
+          this.resizeObserver = new ResizeObserverConstructor(() => this.updateEligibility());
+          this.resizeObserver.observe(this.image);
+        }
+
+        this.updateEligibility();
+      },
     });
-  }
 
-  /** Starts optional resize tracking and computes initial eligibility after view creation. */
-  ngAfterViewInit(): void {
-    const ResizeObserverConstructor = globalThis.ResizeObserver;
+    effect((onCleanup) => {
+      this.previewPayload();
+      onCleanup(() => this.imageZoomService.close(this.image));
+    });
 
-    if (typeof ResizeObserverConstructor === 'function') {
-      this.resizeObserver = new ResizeObserverConstructor(() => this.updateEligibility());
-      this.resizeObserver.observe(this.image);
-    }
-
-    this.updateEligibility();
+    inject(DestroyRef).onDestroy(() => this.resizeObserver?.disconnect());
   }
 
   /** Opens hover ownership only for mouse or pen entry on an eligible image. */
@@ -107,14 +141,12 @@ export class ImageZoomDirective implements AfterViewInit {
 
   /** Clears failure state and reevaluates the image after a successful load. */
   protected handleLoad(): void {
-    this.imageFailed = false;
-    this.updateEligibility();
+    this.updateEligibility(false);
   }
 
   /** Marks the image ineligible and closes any preview it owns after a load failure. */
   protected handleError(): void {
-    this.imageFailed = true;
-    this.updateEligibility();
+    this.updateEligibility(true);
   }
 
   /**
@@ -122,24 +154,39 @@ export class ImageZoomDirective implements AfterViewInit {
    *
    * @returns The current eligibility used by event handlers.
    */
-  private updateEligibility(): boolean {
-    this.eligible = !this.imageFailed && this.isDownscaled();
+  private updateEligibility(failed = this.imageState().failed): boolean {
+    this.imageState.set(
+      failed
+        ? { failed: true, naturalSize: null, contentBoxSize: null }
+        : {
+            failed: false,
+            naturalSize: this.intrinsicSize(),
+            contentBoxSize: this.contentBoxSize(),
+          },
+    );
+    const eligible = this.eligible();
 
-    if (!this.eligible && this.imageZoomService.isOpenFor(this.image)) {
+    if (!eligible && this.imageZoomService.isOpenFor(this.image)) {
       this.imageZoomService.close(this.image);
     }
 
-    return this.eligible;
+    return eligible;
+  }
+
+  /** Purely derives whether the latest image snapshot can provide a useful enlargement. */
+  private isEligible(state: ImageState, logo: BrandLogo): boolean {
+    const metadataSize = { width: logo.width, height: logo.height };
+    const intrinsicSize =
+      state.naturalSize ?? (this.isValidSize(metadataSize) ? metadataSize : null);
+
+    return !state.failed && this.isDownscaled(intrinsicSize, state.contentBoxSize);
   }
 
   /**
    * Compares the contained scale against intrinsic dimensions; the tolerance prevents tiny layout
    * rounding differences from creating an interaction that provides no useful enlargement.
    */
-  private isDownscaled(): boolean {
-    const intrinsicSize = this.intrinsicSize();
-    const contentBoxSize = this.contentBoxSize();
-
+  private isDownscaled(intrinsicSize: ImageSize | null, contentBoxSize: ImageSize | null): boolean {
     if (!intrinsicSize || !contentBoxSize) {
       return false;
     }
@@ -152,20 +199,13 @@ export class ImageZoomDirective implements AfterViewInit {
     return Number.isFinite(containedScale) && containedScale < 1 - DOWNSCALE_TOLERANCE;
   }
 
-  /** @returns Valid natural dimensions, falling back to required logo metadata before loading. */
+  /** @returns Valid natural dimensions reported by the browser after loading, when available. */
   private intrinsicSize(): ImageSize | null {
     const naturalSize = {
       width: this.image.naturalWidth,
       height: this.image.naturalHeight,
     };
-
-    if (this.isValidSize(naturalSize)) {
-      return naturalSize;
-    }
-
-    const logo = this.appImageZoom();
-    const metadataSize = { width: logo.width, height: logo.height };
-    return this.isValidSize(metadataSize) ? metadataSize : null;
+    return this.isValidSize(naturalSize) ? naturalSize : null;
   }
 
   /** @returns The rendered content box after excluding borders and padding, when measurable. */
@@ -214,14 +254,10 @@ export class ImageZoomDirective implements AfterViewInit {
 
   /** Builds a service request that preserves this image as the overlay owner. */
   private request(activation: ImageZoomActivation): ImageZoomRequest {
-    const background = this.imageZoomBackground();
-
     return {
       origin: this.image,
-      logo: this.appImageZoom(),
-      label: this.imageZoomLabel(),
+      ...this.previewPayload(),
       activation,
-      ...(background === undefined ? {} : { background }),
     };
   }
 }
