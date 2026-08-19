@@ -1,8 +1,11 @@
 <section class="hero-section" aria-labelledby="hero-title">
   <div class="hero-copy">
     <p class="hero-kicker">
-      <span class="status-dot" aria-hidden="true"></span>
-      {{ profile().title }} · {{ profile().details.location }}
+      <span class="status-dot" aria-hidden="true" [style.--status-dot-color]="statusColor()"></span>
+      <span class="hero-kicker-copy">
+        {{ profile().title }} · {{ profile().details.location }} · UTC+7 ·
+        <time class="hero-clock">{{ formattedTime() }}</time>
+      </span>
     </p>
 
     <h1 id="hero-title">{{ profile().name }}</h1>

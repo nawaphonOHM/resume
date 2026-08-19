@@ -615,8 +615,12 @@ describe('ResumePage', () => {
     const summaries = Array.from(
       element.querySelectorAll('.summary-card mat-card-content > p'),
     ).map((item) => item.textContent?.trim());
+    const heroClock = text('.hero-clock');
 
-    expect(text('.hero-kicker')).toBe(`${RESUME.title} · ${RESUME.details.location}`);
+    expect(heroClock).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+    expect(text('.hero-kicker')).toBe(
+      `${RESUME.title} · ${RESUME.details.location} · UTC+7 · ${heroClock}`,
+    );
     expect(text('.hero-role')).toBe(RESUME.title);
     expect(text('.hero-introduction')).toBe(
       'Building reliable APIs, data integrations, event-driven workflows, and responsive interfaces for financial and business systems.',
