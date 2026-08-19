@@ -3,12 +3,12 @@ import { PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
-import type { TechnologyIconMetadata } from './technology-icons';
+import type { TechnologyIconMetadata } from './technology-icons.ts';
 import {
   TECHNOLOGY_ICON_OPEN_CV_LOADER,
   TechnologyIconContrastService,
   type TechnologyIconOpenCvLoader,
-} from './technology-icon-contrast.service';
+} from './technology-icon-contrast.service.ts';
 
 const OPEN_CV_CDN_URL = 'https://cdn.jsdelivr.net/npm/@techstark/opencv-js/+esm';
 const REMOTE_ICON_URL = 'https://resume-images.ohm-mho.space/technology-icons/test.svg';

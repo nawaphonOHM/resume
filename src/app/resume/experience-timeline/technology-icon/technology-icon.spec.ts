@@ -6,13 +6,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { vi } from 'vitest';
 
-import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
+import { ImageZoomDirective } from '../../image-zoom/image-zoom.directive.ts';
 import {
   TechnologyIconContrastService,
   type TechnologyIconPresentation,
-} from './technology-icon-contrast.service';
-import { TechnologyIconComponent } from './technology-icon';
-import type { TechnologyIconMetadata } from './technology-icons';
+} from './technology-icon-contrast.service.ts';
+import { TechnologyIconComponent } from './technology-icon.ts';
+import type { TechnologyIconMetadata } from './technology-icons.ts';
 
 const ICON: TechnologyIconMetadata = {
   src: '/images/technology-icons/oracle.svg',

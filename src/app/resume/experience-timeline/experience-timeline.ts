@@ -7,8 +7,8 @@ import { MatIconModule } from '@angular/material/icon';
 
 import type { Experience } from '../../model/resume/resume.model';
 import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
-import { TechnologyIconComponent } from './technology-icon';
-import { resolveTechnologyIcon } from './technology-icons';
+import { TechnologyIconComponent } from './technology-icon/technology-icon.ts';
+import { resolveTechnologyIcon } from './technology-icon/technology-icons.ts';
 
 /** Renders ordered employment records with client relationships and technology metadata. */
 @Component({

@@ -14,13 +14,13 @@ import type { BrandLogo } from '../../model/resume/resume.model';
 import {
   TechnologyIconContrastService,
   type TechnologyIconPresentation,
-} from '../experience-timeline/technology-icon-contrast.service';
-import { TechnologyIconComponent } from '../experience-timeline/technology-icon';
+} from '../experience-timeline/technology-icon/technology-icon-contrast.service.ts';
+import { TechnologyIconComponent } from '../experience-timeline/technology-icon/technology-icon.ts';
 import {
   TECHNOLOGY_ICON_FALLBACK_LABELS,
   resolveTechnologyIcon,
   type TechnologyIconMetadata,
-} from '../experience-timeline/technology-icons';
+} from '../experience-timeline/technology-icon/technology-icons.ts';
 import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
 import { ResumeNavigation } from '../resume-navigation/resume-navigation';
 import { ResumePdfService } from '../resume-pdf/resume-pdf.service';

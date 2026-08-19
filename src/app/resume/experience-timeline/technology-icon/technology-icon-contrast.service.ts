@@ -1,8 +1,8 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { Injectable, InjectionToken, PLATFORM_ID, inject } from '@angular/core';
 
-import type { BrandLogo } from '../../model/resume/resume.model';
-import type { TechnologyIconMetadata } from './technology-icons';
+import type { BrandLogo } from '../../../model/resume/resume.model.ts';
+import type { TechnologyIconMetadata } from './technology-icons.ts';
 
 const OPEN_CV_CDN_URL = 'https://cdn.jsdelivr.net/npm/@techstark/opencv-js/+esm';
 const OPEN_CV_RETRY_COUNT = 3;

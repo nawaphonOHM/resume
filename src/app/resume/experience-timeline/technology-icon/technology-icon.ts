@@ -1,11 +1,11 @@
 import { Component, computed, inject, input, resource } from '@angular/core';
 
-import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
+import { ImageZoomDirective } from '../../image-zoom/image-zoom.directive.ts';
 import {
   TechnologyIconContrastService,
   type TechnologyIconPresentation,
-} from './technology-icon-contrast.service';
-import type { TechnologyIconMetadata } from './technology-icons';
+} from './technology-icon-contrast.service.ts';
+import type { TechnologyIconMetadata } from './technology-icons.ts';
 
 /** Presents one decorative technology mark and upgrades it after deferred contrast processing. */
 @Component({

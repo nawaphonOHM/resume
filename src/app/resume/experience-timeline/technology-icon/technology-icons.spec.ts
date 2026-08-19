@@ -1,11 +1,11 @@
 /** Verifies exact technology-label coverage, remote assets, and fallback policy. */
-import { IMAGE_ASSET_ORIGIN } from '../../data/image-assets';
-import { RESUME } from '../../data/resume/resume.data';
+import { IMAGE_ASSET_ORIGIN } from '../../../data/image-assets.ts';
+import { RESUME } from '../../../data/resume/resume.data.ts';
 import {
   TECHNOLOGY_ICON_FALLBACK_LABELS,
   TECHNOLOGY_ICONS,
   resolveTechnologyIcon,
-} from './technology-icons';
+} from './technology-icons.ts';
 
 describe('technology icons', () => {
   /** Independent label-to-asset contract for every branded technology. */
