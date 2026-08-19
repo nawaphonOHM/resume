@@ -1,11 +1,10 @@
-<a class="skip-link" href="#main-content">Skip to main content</a>
+<a class="skip-link" routerLink="/" fragment="main-content">Skip to main content</a>
 
 <app-resume-navigation
   [activeSection]="activeSection()"
   [downloadPending]="downloadPending()"
   [theme]="theme()"
   (downloadRequested)="downloadResume()"
-  (sectionSelected)="selectSection($event)"
   (themeToggled)="toggleTheme()"
   (printRequested)="printResume()"
 />

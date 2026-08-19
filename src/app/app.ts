@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
-import { ResumePage } from './resume/resume-page/resume-page';
-
-/** Root application shell that hosts the single-page résumé. */
+/** Root application shell that hosts the routed single-page résumé. */
 @Component({
   selector: 'app-root',
-  imports: [ResumePage],
+  imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

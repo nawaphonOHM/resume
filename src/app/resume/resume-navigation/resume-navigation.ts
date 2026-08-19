@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { RouterLink } from '@angular/router';
 
 import type { ResumeTheme } from '../../core/theme.service';
 
@@ -32,9 +33,8 @@ export const RESUME_SECTIONS = [
 /**
  * Renders responsive section links and résumé-level theme, print, and download controls.
  *
- * @remarks Section anchors always retain their native fragments. Selection events let the
- * parent transfer active styling immediately while the browser remains responsible for fragment
- * navigation and history updates.
+ * @remarks Section anchors delegate fragment URL, history, and scroll behavior to the Router. The
+ * parent supplies active styling from routed fragments and observed viewport sections.
  */
 @Component({
   selector: 'app-resume-navigation',
@@ -45,6 +45,7 @@ export const RESUME_SECTIONS = [
     MatMenuModule,
     MatToolbarModule,
     MatTooltipModule,
+    RouterLink,
   ],
   templateUrl: './resume-navigation.html',
   styleUrl: './resume-navigation.scss',
@@ -58,9 +59,6 @@ export class ResumeNavigation {
 
   /** Whether a PDF request is running and both responsive controls must remain disabled. */
   readonly downloadPending = input(false);
-
-  /** Emits the fragment target selected through any navigation presentation. */
-  readonly sectionSelected = output<ResumeSectionId>();
 
   /** Requests that the parent switch to the opposite theme. */
   readonly themeToggled = output<void>();

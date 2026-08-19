@@ -1,11 +1,16 @@
-/** Verifies the root shell's bootstrap contract and primary page landmark. */
+/** Verifies the routed root shell's bootstrap contract and primary outlet. */
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { provideRouter, RouterOutlet } from '@angular/router';
+
 import { App } from './app';
+import { routes } from './app.routes';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
+      providers: [provideRouter(routes)],
     }).compileComponents();
   });
 
@@ -14,15 +19,15 @@ describe('App', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('renders an accessible primary landmark without router content', () => {
+  it('exposes the primary router outlet', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const main = compiled.querySelector('main#main-content');
+    const outlet = fixture.debugElement.query(By.directive(RouterOutlet));
 
-    expect(main).not.toBeNull();
-    expect(compiled.querySelector('h1')?.textContent).toContain('Nawaphon Isarathanachaikul');
-    expect(compiled.querySelector('router-outlet')).toBeNull();
+    expect(compiled.querySelector('router-outlet')).not.toBeNull();
+    expect(outlet).not.toBeNull();
+    expect(outlet.injector.get(RouterOutlet).name).toBe('primary');
   });
 });

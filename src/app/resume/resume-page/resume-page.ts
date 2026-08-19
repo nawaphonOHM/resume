@@ -7,6 +7,8 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { ThemeService } from '../../core/theme.service';
 import { EducationSection } from '../education-section/education-section';
@@ -25,11 +27,10 @@ import { SummarySection } from '../summary-section/summary-section';
 /**
  * Composes the canonical résumé and coordinates navigation, theme, printing, and PDF generation.
  *
- * @remarks After the first browser render, a valid initial fragment is restored without smooth
- * scrolling and observable sections begin driving the active navigation state. Direct link
- * selection updates that state immediately; native anchors remain responsible for URL and scroll
- * behavior. A missing document view or intersection observer suppresses only its corresponding
- * browser side effect.
+ * @remarks Recognized routed fragments and observable viewport sections share responsibility for
+ * active navigation state, while the Router owns URL, history, scrolling, and target focus. A
+ * missing document view or intersection observer suppresses only its corresponding browser side
+ * effect.
  */
 @Component({
   selector: 'app-resume-page',
@@ -39,12 +40,14 @@ import { SummarySection } from '../summary-section/summary-section';
     HeroSection,
     ProfileSidebar,
     ResumeNavigation,
+    RouterLink,
     SummarySection,
   ],
   templateUrl: './resume-page.html',
   styleUrl: './resume-page.scss',
 })
 export class ResumePage {
+  private readonly activatedRoute = inject(ActivatedRoute);
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
   private readonly errorHandler = inject(ErrorHandler);
@@ -63,21 +66,15 @@ export class ResumePage {
   /** Template-facing reference to the theme service's selected preference. */
   protected readonly theme = this.themeService.theme;
 
-  /** Defers hash restoration and DOM observation until section elements have rendered. */
+  /** Synchronizes routed fragments immediately and defers DOM observation until sections render. */
   constructor() {
-    afterNextRender(() => {
-      this.restoreInitialSection();
-      this.observeSections();
+    this.activatedRoute.fragment.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((fragment) => {
+      if (this.isSectionId(fragment)) {
+        this.activeSection.set(fragment);
+      }
     });
-  }
 
-  /**
-   * Transfers active navigation presentation as soon as a native section link is selected.
-   *
-   * @param section - Fragment-backed section selected by the reader.
-   */
-  protected selectSection(section: ResumeSectionId): void {
-    this.activeSection.set(section);
+    afterNextRender(() => this.observeSections());
   }
 
   /** Delegates explicit theme switching and persistence to the theme service. */
@@ -103,27 +100,6 @@ export class ResumePage {
       this.errorHandler.handleError(error);
     } finally {
       this.downloadPending.set(false);
-    }
-  }
-
-  /**
-   * Restores a recognized initial fragment and scrolls it into view without inheriting global
-   * smooth scrolling, then restores the root element's previous inline scroll behavior.
-   */
-  private restoreInitialSection(): void {
-    const view = this.document.defaultView;
-    const initialSection = view?.location.hash.slice(1);
-
-    if (this.isSectionId(initialSection)) {
-      this.activeSection.set(initialSection);
-      const root = this.document.documentElement;
-      const previousScrollBehavior = root.style.scrollBehavior;
-      root.style.scrollBehavior = 'auto';
-      this.document.getElementById(initialSection)?.scrollIntoView?.({
-        block: 'start',
-        behavior: 'auto',
-      });
-      root.style.scrollBehavior = previousScrollBehavior;
     }
   }
 
@@ -172,7 +148,7 @@ export class ResumePage {
   }
 
   /** @returns Whether a fragment value belongs to the shared section registry. */
-  private isSectionId(value: string | undefined): value is ResumeSectionId {
+  private isSectionId(value: string | null | undefined): value is ResumeSectionId {
     return RESUME_SECTIONS.some((section) => section.id === value);
   }
 }

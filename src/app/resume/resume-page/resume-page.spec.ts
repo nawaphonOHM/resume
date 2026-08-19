@@ -2,11 +2,20 @@
  * Exercises the composed résumé, section accessibility, navigation orchestration, theme, print,
  * download controls, image-zoom bindings, and browser observer lifecycle.
  */
-import { ErrorHandler } from '@angular/core';
+import { APP_BOOTSTRAP_LISTENER, ApplicationRef, ErrorHandler } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import {
+  provideRouter,
+  Router,
+  RouterLink,
+  withInMemoryScrolling,
+  withRouterConfig,
+} from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
 import { vi } from 'vitest';
 
+import { routes } from '../../app.routes';
 import { RESUME_THEME_STORAGE_KEY } from '../../core/theme.service';
 import { IMAGE_ASSET_ORIGIN } from '../../data/image-assets';
 import { RESUME } from '../../data/resume/resume.data';
@@ -52,6 +61,22 @@ function optimizedPresentation(icon: TechnologyIconMetadata): TechnologyIconPres
   };
 }
 
+/** Starts the real Router scroller for a harness fixture that is not bootstrapped by Angular. */
+function initializeRouterScrolling(harness: RouterTestingHarness): void {
+  const applicationRef = TestBed.inject(ApplicationRef);
+  applicationRef.components.unshift(harness.fixture.componentRef);
+  applicationRef.componentTypes.unshift(harness.fixture.componentRef.componentType);
+
+  try {
+    for (const listener of TestBed.inject(APP_BOOTSTRAP_LISTENER)) {
+      listener(harness.fixture.componentRef);
+    }
+  } finally {
+    applicationRef.components.shift();
+    applicationRef.componentTypes.shift();
+  }
+}
+
 describe('ResumePage', () => {
   /** Callback captured from the page's observer so tests can publish synthetic intersections. */
   let observerCallback: IntersectionObserverCallback;
@@ -61,9 +86,6 @@ describe('ResumePage', () => {
 
   /** Spy recording observer cleanup when the page is destroyed. */
   let disconnect: ReturnType<typeof vi.fn>;
-
-  /** Spy recording initial-fragment restoration without moving the test viewport. */
-  let scrollIntoView: ReturnType<typeof vi.fn>;
 
   /** Deterministic optimizer fixture used by every composed technology-icon presenter. */
   let optimize: ReturnType<typeof vi.fn<TechnologyIconContrastService['optimize']>>;
@@ -77,12 +99,6 @@ describe('ResumePage', () => {
   beforeEach(async () => {
     observe = vi.fn();
     disconnect = vi.fn();
-    scrollIntoView = vi.fn();
-
-    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
-      configurable: true,
-      value: scrollIntoView,
-    });
 
     /** Stable light-system preference fixture required by the page's theme service. */
     Object.defineProperty(window, 'matchMedia', {
@@ -130,6 +146,14 @@ describe('ResumePage', () => {
     await TestBed.configureTestingModule({
       imports: [ResumePage],
       providers: [
+        provideRouter(
+          routes,
+          withInMemoryScrolling({
+            anchorScrolling: 'enabled',
+            scrollPositionRestoration: 'enabled',
+          }),
+          withRouterConfig({ onSameUrlNavigation: 'reload' }),
+        ),
         { provide: TechnologyIconContrastService, useValue: { optimize } },
         { provide: ResumePdfService, useValue: { download } },
         { provide: ErrorHandler, useValue: { handleError } },
@@ -140,7 +164,6 @@ describe('ResumePage', () => {
   afterEach(() => {
     TestBed.resetTestingModule();
     vi.restoreAllMocks();
-    Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView');
     localStorage.clear();
     history.replaceState(null, '', location.pathname);
     document.documentElement.classList.remove(
@@ -161,6 +184,12 @@ describe('ResumePage', () => {
     const externalLinks = Array.from(
       element.querySelectorAll<HTMLAnchorElement>('a[target="_blank"]'),
     );
+    const heroExperienceAction =
+      element.querySelector<HTMLAnchorElement>('a.hero-secondary-action');
+    const routerManagedLinks = Array.from(
+      element.querySelectorAll<HTMLAnchorElement>('a[href^="/#"]'),
+    );
+    const experienceSection = element.querySelector<HTMLElement>('#experience');
 
     const educationSection = element.querySelector<HTMLElement>('#education');
     const projectLink = educationSection?.querySelector<HTMLAnchorElement>(
@@ -172,6 +201,18 @@ describe('ResumePage', () => {
       ?.nextElementSibling?.textContent?.trim();
 
     expect(sectionIds).toEqual(['about', 'experience', 'education', 'skills', 'profile']);
+    expect(heroExperienceAction).not.toBeNull();
+    expect(heroExperienceAction?.getAttribute('href')).toBe('/#experience');
+    expect(experienceSection).not.toBeNull();
+    expect(routerManagedLinks).toHaveLength(8);
+    expect(fixture.debugElement.queryAll(By.directive(RouterLink))).toHaveLength(8);
+    for (const link of routerManagedLinks) {
+      const targetId = link.getAttribute('href')?.slice(2);
+      expect(targetId).toBeTruthy();
+      expect(element.querySelector(`[id="${targetId}"]`)).not.toBeNull();
+    }
+    expect(element.querySelector('a.skip-link')?.getAttribute('href')).toBe('/#main-content');
+    expect(element.querySelector('main#main-content')?.getAttribute('tabindex')).toBe('-1');
     expect(element.querySelector('h1')?.textContent).toContain('Nawaphon Isarathanachaikul');
     expect(element.querySelectorAll('.experience-card')).toHaveLength(5);
     expect(educationSection?.getAttribute('aria-labelledby')).toBe('education-title');
@@ -689,26 +730,33 @@ describe('ResumePage', () => {
     expect(downloadButton?.disabled).toBe(false);
   });
 
-  it('transfers the active navigation presentation immediately when a section link is clicked', () => {
-    const fixture = TestBed.createComponent(ResumePage);
-    fixture.detectChanges();
-    const element = fixture.nativeElement as HTMLElement;
-    const aboutLink = element.querySelector<HTMLAnchorElement>('nav a[href="#about"]');
-    const experienceLink = element.querySelector<HTMLAnchorElement>('nav a[href="#experience"]');
-
-    expect(aboutLink?.classList.contains('navigation-link-active')).toBe(true);
-    expect(aboutLink?.getAttribute('aria-current')).toBe('location');
-    expect(experienceLink?.classList.contains('navigation-link-active')).toBe(false);
-    expect(experienceLink?.getAttribute('aria-current')).toBeNull();
-
-    experienceLink?.click();
-    fixture.detectChanges();
+  it('synchronizes active navigation with recognized Router fragments only', async () => {
+    const harness = await RouterTestingHarness.create('/#experience');
+    harness.detectChanges();
+    const element = harness.routeNativeElement!;
+    const aboutLink = element.querySelector<HTMLAnchorElement>('nav a[href="/#about"]');
+    const experienceLink = element.querySelector<HTMLAnchorElement>('nav a[href="/#experience"]');
 
     expect(aboutLink?.classList.contains('navigation-link-active')).toBe(false);
     expect(aboutLink?.getAttribute('aria-current')).toBeNull();
     expect(experienceLink?.classList.contains('navigation-link-active')).toBe(true);
     expect(experienceLink?.getAttribute('aria-current')).toBe('location');
-    expect(experienceLink?.getAttribute('href')).toBe('#experience');
+
+    await harness.navigateByUrl('/#education', ResumePage);
+    harness.detectChanges();
+    const educationLink = element.querySelector<HTMLAnchorElement>('nav a[href="/#education"]');
+
+    expect(educationLink?.classList.contains('navigation-link-active')).toBe(true);
+    expect(educationLink?.getAttribute('aria-current')).toBe('location');
+    expect(experienceLink?.classList.contains('navigation-link-active')).toBe(false);
+
+    await harness.navigateByUrl('/#main-content', ResumePage);
+    harness.detectChanges();
+    expect(educationLink?.getAttribute('aria-current')).toBe('location');
+
+    await harness.navigateByUrl('/#unknown-section', ResumePage);
+    harness.detectChanges();
+    expect(educationLink?.getAttribute('aria-current')).toBe('location');
   });
 
   it('updates active navigation from observed sections and disconnects cleanly', async () => {
@@ -732,12 +780,12 @@ describe('ResumePage', () => {
     );
     await fixture.whenStable();
 
-    expect(element.querySelector('nav a[href="#experience"]')?.getAttribute('aria-current')).toBe(
+    expect(element.querySelector('nav a[href="/#experience"]')?.getAttribute('aria-current')).toBe(
       'location',
     );
     expect(
       element
-        .querySelector('nav a[href="#experience"]')
+        .querySelector('nav a[href="/#experience"]')
         ?.classList.contains('navigation-link-active'),
     ).toBe(true);
 
@@ -753,21 +801,21 @@ describe('ResumePage', () => {
     );
     await fixture.whenStable();
 
-    expect(element.querySelector('nav a[href="#education"]')?.getAttribute('aria-current')).toBe(
+    expect(element.querySelector('nav a[href="/#education"]')?.getAttribute('aria-current')).toBe(
       'location',
     );
     expect(
       element
-        .querySelector('nav a[href="#education"]')
+        .querySelector('nav a[href="/#education"]')
         ?.classList.contains('navigation-link-active'),
     ).toBe(true);
     expect(
       element
-        .querySelector('nav a[href="#experience"]')
+        .querySelector('nav a[href="/#experience"]')
         ?.classList.contains('navigation-link-active'),
     ).toBe(false);
     expect(
-      element.querySelector('nav a[href="#experience"]')?.getAttribute('aria-current'),
+      element.querySelector('nav a[href="/#experience"]')?.getAttribute('aria-current'),
     ).toBeNull();
 
     expect(disconnect).not.toHaveBeenCalled();
@@ -789,16 +837,24 @@ describe('ResumePage', () => {
     expect(disconnect).not.toHaveBeenCalled();
   });
 
-  it('restores active navigation from a valid initial section hash', async () => {
-    history.replaceState(null, '', '#education');
-    const fixture = TestBed.createComponent(ResumePage);
-    fixture.detectChanges();
-    await fixture.whenStable();
-    const element = fixture.nativeElement as HTMLElement;
+  it('focuses the main content when the Router handles skip navigation', async () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    const harness = await RouterTestingHarness.create('/');
+    initializeRouterScrolling(harness);
+    harness.detectChanges();
+    const element = harness.routeNativeElement!;
+    const skipLink = element.querySelector<HTMLAnchorElement>('a.skip-link');
+    const main = element.querySelector<HTMLElement>('main#main-content');
 
-    expect(element.querySelector('nav a[href="#education"]')?.getAttribute('aria-current')).toBe(
-      'location',
-    );
-    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'start', behavior: 'auto' });
+    expect(skipLink?.getAttribute('href')).toBe('/#main-content');
+    expect(main?.getAttribute('tabindex')).toBe('-1');
+
+    skipLink?.click();
+    await harness.fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(TestBed.inject(Router).url).toBe('/#main-content');
+    expect(document.activeElement).toBe(main);
+    expect(scrollTo).toHaveBeenCalled();
   });
 });

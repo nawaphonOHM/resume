@@ -1,11 +1,6 @@
 <header class="navigation-shell print-hidden">
   <mat-toolbar class="navigation-toolbar">
-    <a
-      class="brand-mark"
-      href="#about"
-      aria-label="Go to About section"
-      (click)="sectionSelected.emit('about')"
-    >
+    <a class="brand-mark" routerLink="/" fragment="about" aria-label="Go to About section">
       <span aria-hidden="true">NI</span>
     </a>
 
@@ -16,8 +11,8 @@
           class="navigation-link"
           [class.navigation-link-active]="activeSection() === section.id"
           [attr.aria-current]="activeSection() === section.id ? 'location' : null"
-          [href]="'#' + section.id"
-          (click)="sectionSelected.emit(section.id)"
+          routerLink="/"
+          [fragment]="section.id"
         >
           {{ section.label }}
         </a>
@@ -78,9 +73,9 @@
   @for (section of sections; track section.id) {
     <a
       mat-menu-item
-      [href]="'#' + section.id"
+      routerLink="/"
+      [fragment]="section.id"
       [attr.aria-current]="activeSection() === section.id ? 'location' : null"
-      (click)="sectionSelected.emit(section.id)"
     >
       <mat-icon aria-hidden="true">chevron_right</mat-icon>
       <span>{{ section.label }}</span>

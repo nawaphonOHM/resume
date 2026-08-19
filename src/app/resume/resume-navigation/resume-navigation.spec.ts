@@ -1,14 +1,19 @@
 /**
- * Verifies stable section fragments, responsive active presentation, accessible control names,
- * and parent-facing navigation interactions.
+ * Verifies Router-managed section fragments, responsive active presentation, accessible control
+ * names, and parent-facing navigation interactions.
  */
+import { Component } from '@angular/core';
 import { type ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatMenuTrigger } from '@angular/material/menu';
+import { provideRouter, Router, RouterLink } from '@angular/router';
 import { vi } from 'vitest';
 
 import { ResumeNavigation } from './resume-navigation';
+
+@Component({ template: '' })
+class NavigationRouteTarget {}
 
 async function openMobileMenu(fixture: ComponentFixture<ResumeNavigation>): Promise<HTMLElement> {
   const trigger = fixture.debugElement
@@ -27,10 +32,17 @@ describe('ResumeNavigation', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ResumeNavigation],
+      providers: [
+        provideRouter([{ path: '', component: NavigationRouteTarget, pathMatch: 'full' }]),
+      ],
     }).compileComponents();
   });
 
-  it('renders stable section anchors and exposes the active section', () => {
+  afterEach(() => {
+    history.replaceState(null, '', location.pathname);
+  });
+
+  it('renders Router-managed section anchors in both responsive presentations', async () => {
     const fixture = TestBed.createComponent(ResumeNavigation);
     fixture.componentRef.setInput('activeSection', 'experience');
     fixture.componentRef.setInput('theme', 'light');
@@ -40,11 +52,11 @@ describe('ResumeNavigation', () => {
     const navigationLinks = Array.from(element.querySelectorAll<HTMLAnchorElement>('nav a'));
 
     expect(navigationLinks.map((link) => link.getAttribute('href'))).toEqual([
-      '#about',
-      '#experience',
-      '#education',
-      '#skills',
-      '#profile',
+      '/#about',
+      '/#experience',
+      '/#education',
+      '/#skills',
+      '/#profile',
     ]);
     expect(navigationLinks.map((link) => link.textContent?.trim())).toEqual([
       'About',
@@ -55,9 +67,18 @@ describe('ResumeNavigation', () => {
     ]);
     expect(
       navigationLinks
-        .find((link) => link.getAttribute('href') === '#experience')
+        .find((link) => link.getAttribute('href') === '/#experience')
         ?.getAttribute('aria-current'),
     ).toBe('location');
+    expect(element.querySelector('.brand-mark')?.getAttribute('href')).toBe('/#about');
+    expect(fixture.debugElement.queryAll(By.directive(RouterLink))).toHaveLength(6);
+
+    const menu = await openMobileMenu(fixture);
+    expect(
+      Array.from(menu.querySelectorAll<HTMLAnchorElement>('a')).map((link) =>
+        link.getAttribute('href'),
+      ),
+    ).toEqual(['/#about', '/#experience', '/#education', '/#skills', '/#profile']);
   });
 
   it('transfers the active presentation immediately without changing stable section anchors', () => {
@@ -68,9 +89,9 @@ describe('ResumeNavigation', () => {
 
     const element = fixture.nativeElement as HTMLElement;
     const navigationLinks = Array.from(element.querySelectorAll<HTMLAnchorElement>('nav a'));
-    const aboutLink = navigationLinks.find((link) => link.getAttribute('href') === '#about');
+    const aboutLink = navigationLinks.find((link) => link.getAttribute('href') === '/#about');
     const experienceLink = navigationLinks.find(
-      (link) => link.getAttribute('href') === '#experience',
+      (link) => link.getAttribute('href') === '/#experience',
     );
     const stableHrefs = navigationLinks.map((link) => link.getAttribute('href'));
 
@@ -185,26 +206,25 @@ describe('ResumeNavigation', () => {
     expect(mobileDownload?.querySelector('span')?.textContent?.trim()).toBe('Download PDF');
   });
 
-  it('emits section and theme interactions', () => {
+  it('navigates by section fragment and emits theme interactions', async () => {
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/');
     const fixture = TestBed.createComponent(ResumeNavigation);
     fixture.componentRef.setInput('activeSection', 'about');
     fixture.componentRef.setInput('theme', 'light');
     fixture.detectChanges();
 
-    let selectedSection: string | undefined;
     let themeToggled = false;
-    fixture.componentInstance.sectionSelected.subscribe((section) => {
-      selectedSection = section;
-    });
     fixture.componentInstance.themeToggled.subscribe(() => {
       themeToggled = true;
     });
 
     const element = fixture.nativeElement as HTMLElement;
-    element.querySelector<HTMLAnchorElement>('a[href="#education"]')?.click();
+    element.querySelector<HTMLAnchorElement>('a[href="/#education"]')?.click();
     element.querySelector<HTMLButtonElement>('[aria-label="Switch to dark theme"]')?.click();
+    await fixture.whenStable();
 
-    expect(selectedSection).toBe('education');
+    expect(router.url).toBe('/#education');
     expect(themeToggled).toBe(true);
   });
 });
