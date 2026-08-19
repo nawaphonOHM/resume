@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, input, signal, type OnInit } from '@angular/core';
+import { Component, computed, inject, input, resource } from '@angular/core';
 
 import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
 import {
@@ -21,35 +21,27 @@ import type { TechnologyIconMetadata } from './technology-icons';
     'aria-hidden': 'true',
   },
 })
-export class TechnologyIconComponent implements OnInit {
+export class TechnologyIconComponent {
   /** Original local SVG metadata displayed before and whenever optimization is unavailable. */
   readonly icon = input.required<TechnologyIconMetadata>();
 
   /** Technology name retained for the enlarged visual preview. */
   readonly label = input.required<string>();
 
-  /** Atomic artwork-and-surface state consumed by both the chip frame and zoom directive. */
-  protected readonly presentation = signal<TechnologyIconPresentation | undefined>(undefined);
-
+  private readonly fallbackPresentation = computed<TechnologyIconPresentation>(() => ({
+    logo: this.icon(),
+    backgroundColor: '#ffffff',
+  }));
   private readonly contrastService = inject(TechnologyIconContrastService);
-  private readonly destroyRef = inject(DestroyRef);
+  private readonly optimizedPresentation = resource({
+    params: () => this.icon(),
+    loader: ({ params: icon }) => this.contrastService.optimize(icon),
+  });
 
-  /** Publishes the original synchronously, then applies the safely resolved optimized result. */
-  ngOnInit(): void {
-    const icon = this.icon();
-    this.presentation.set({ logo: icon, backgroundColor: '#ffffff' });
-
-    try {
-      void this.contrastService.optimize(icon).then(
-        (presentation) => {
-          if (!this.destroyRef.destroyed) {
-            this.presentation.set(presentation);
-          }
-        },
-        () => undefined,
-      );
-    } catch {
-      // The original SVG and light frame are already usable.
-    }
-  }
+  /** Atomic artwork-and-surface state consumed by both the chip frame and zoom directive. */
+  protected readonly presentation = computed<TechnologyIconPresentation>(() =>
+    this.optimizedPresentation.hasValue()
+      ? this.optimizedPresentation.value()
+      : this.fallbackPresentation(),
+  );
 }

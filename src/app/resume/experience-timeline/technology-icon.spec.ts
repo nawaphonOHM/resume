@@ -21,6 +21,13 @@ const ICON: TechnologyIconMetadata = {
   surface: 'light',
 };
 
+const REPLACEMENT_ICON: TechnologyIconMetadata = {
+  src: '/images/technology-icons/angular.svg',
+  width: 32,
+  height: 32,
+  surface: 'dark',
+};
+
 const OPTIMIZED_PRESENTATION: TechnologyIconPresentation = {
   logo: {
     src: 'data:image/png;base64,optimized',
@@ -31,18 +38,32 @@ const OPTIMIZED_PRESENTATION: TechnologyIconPresentation = {
   backgroundColor: '#0d1b2d',
 };
 
+const REPLACEMENT_PRESENTATION: TechnologyIconPresentation = {
+  logo: {
+    src: 'data:image/png;base64,replacement',
+    width: 32,
+    height: 32,
+    surface: 'light',
+  },
+  backgroundColor: '#ffffff',
+};
+
+interface PendingOptimization {
+  resolve: (presentation: TechnologyIconPresentation) => void;
+  reject: (reason: unknown) => void;
+}
+
 describe('TechnologyIconComponent', () => {
   let fixture: ComponentFixture<TechnologyIconComponent> | undefined;
-  let resolveOptimization: (presentation: TechnologyIconPresentation) => void;
-  let rejectOptimization: (reason: unknown) => void;
+  let pendingOptimizations: PendingOptimization[];
   let optimize: ReturnType<typeof vi.fn<TechnologyIconContrastService['optimize']>>;
 
   beforeEach(async () => {
+    pendingOptimizations = [];
     optimize = vi.fn<TechnologyIconContrastService['optimize']>(
       () =>
         new Promise<TechnologyIconPresentation>((resolve, reject) => {
-          resolveOptimization = resolve;
-          rejectOptimization = reject;
+          pendingOptimizations.push({ resolve, reject });
         }),
     );
 
@@ -58,7 +79,7 @@ describe('TechnologyIconComponent', () => {
   });
 
   it('renders the original immediately and atomically applies the optimized frame and zoom data', async () => {
-    fixture = await createComponent();
+    fixture = createComponent();
     const host = fixture.nativeElement as HTMLElement;
     const image = host.querySelector<HTMLImageElement>('img')!;
     const zoom = fixture.debugElement
@@ -83,7 +104,7 @@ describe('TechnologyIconComponent', () => {
     expect(zoom.imageZoomLabel()).toBe('Oracle');
     expect(zoom.imageZoomBackground()).toBe('#ffffff');
 
-    resolveOptimization(OPTIMIZED_PRESENTATION);
+    pendingOptimizations[0]!.resolve(OPTIMIZED_PRESENTATION);
     await Promise.resolve();
     await fixture.whenStable();
 
@@ -101,11 +122,11 @@ describe('TechnologyIconComponent', () => {
   });
 
   it('retains the usable original presentation when optimization unexpectedly rejects', async () => {
-    fixture = await createComponent();
+    fixture = createComponent();
     const host = fixture.nativeElement as HTMLElement;
     const image = host.querySelector<HTMLImageElement>('img')!;
 
-    rejectOptimization(new Error('optimization failed'));
+    pendingOptimizations[0]!.reject(new Error('optimization failed'));
     await Promise.resolve();
     await fixture.whenStable();
 
@@ -114,11 +135,50 @@ describe('TechnologyIconComponent', () => {
     expect(host.style.backgroundColor).toBe('rgb(255, 255, 255)');
   });
 
-  async function createComponent(): Promise<ComponentFixture<TechnologyIconComponent>> {
+  it('optimizes a replacement icon and ignores the superseded optimization result', async () => {
+    fixture = createComponent();
+    const host = fixture.nativeElement as HTMLElement;
+    const image = host.querySelector<HTMLImageElement>('img')!;
+    const zoom = fixture.debugElement
+      .query(By.directive(ImageZoomDirective))
+      .injector.get(ImageZoomDirective);
+
+    fixture.componentRef.setInput('icon', REPLACEMENT_ICON);
+    TestBed.tick();
+
+    expect(optimize).toHaveBeenCalledTimes(2);
+    expect(optimize).toHaveBeenNthCalledWith(2, REPLACEMENT_ICON);
+    expect(image.getAttribute('src')).toBe(REPLACEMENT_ICON.src);
+    expect(image.getAttribute('width')).toBe('32');
+    expect(image.getAttribute('height')).toBe('32');
+    expect(host.classList.contains('technology-icon-frame--light')).toBe(true);
+    expect(host.classList.contains('technology-icon-frame--dark')).toBe(false);
+    expect(host.style.backgroundColor).toBe('rgb(255, 255, 255)');
+    expect(zoom.appImageZoom()).toBe(REPLACEMENT_ICON);
+    expect(zoom.imageZoomBackground()).toBe('#ffffff');
+
+    pendingOptimizations[1]!.resolve(REPLACEMENT_PRESENTATION);
+    await Promise.resolve();
+    await Promise.resolve();
+    TestBed.tick();
+
+    expect(image.getAttribute('src')).toBe(REPLACEMENT_PRESENTATION.logo.src);
+    expect(zoom.appImageZoom()).toBe(REPLACEMENT_PRESENTATION.logo);
+
+    pendingOptimizations[0]!.resolve(OPTIMIZED_PRESENTATION);
+    await Promise.resolve();
+    await Promise.resolve();
+    TestBed.tick();
+
+    expect(image.getAttribute('src')).toBe(REPLACEMENT_PRESENTATION.logo.src);
+    expect(zoom.appImageZoom()).toBe(REPLACEMENT_PRESENTATION.logo);
+  });
+
+  function createComponent(): ComponentFixture<TechnologyIconComponent> {
     const componentFixture = TestBed.createComponent(TechnologyIconComponent);
     componentFixture.componentRef.setInput('icon', ICON);
     componentFixture.componentRef.setInput('label', 'Oracle');
-    await componentFixture.whenStable();
+    TestBed.tick();
     return componentFixture;
   }
 });
