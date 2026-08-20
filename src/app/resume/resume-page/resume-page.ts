@@ -7,7 +7,7 @@ import {
   HostListener,
   afterNextRender,
   inject,
-  signal,
+  signal, injectAsync,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -24,7 +24,6 @@ import {
   ResumeNavigation,
   type ResumeSectionId,
 } from '../resume-navigation/resume-navigation';
-import { ResumePdfService } from '../resume-pdf/resume-pdf.service';
 import { SummarySection } from '../summary-section/summary-section';
 
 /** Stable identifiers shared by deferred content and its printable fallback states. */
@@ -64,7 +63,7 @@ export class ResumePage {
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
   private readonly errorHandler = inject(ErrorHandler);
-  private readonly resumePdfService = inject(ResumePdfService);
+  private readonly resumePdfService = injectAsync(() => import('../resume-pdf/resume-pdf.service'))
   private readonly scrollDispatcher = inject(ScrollDispatcher);
   private readonly themeService = inject(ThemeService);
   private readonly viewportRuler = inject(ViewportRuler);
@@ -152,7 +151,8 @@ export class ResumePage {
 
     this.downloadPending.set(true);
     try {
-      await this.resumePdfService.download();
+      const resumePdf = await this.resumePdfService();
+      await resumePdf.download();
     } catch (error: unknown) {
       this.errorHandler.handleError(error);
     } finally {

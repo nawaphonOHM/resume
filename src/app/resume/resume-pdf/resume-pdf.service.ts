@@ -290,7 +290,7 @@ export const RESUME_PDF_RUNTIME_LOADER = new InjectionToken<ResumePdfRuntimeLoad
 
 /** Lazily generates, validates, and downloads the canonical résumé PDF. */
 @Injectable({ providedIn: 'root' })
-export class ResumePdfService {
+export default class ResumePdfService {
   private readonly document = inject(DOCUMENT);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly runtimeLoader = inject(RESUME_PDF_RUNTIME_LOADER);
