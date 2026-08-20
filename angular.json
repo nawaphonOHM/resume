@@ -28,6 +28,34 @@
           },
           "configurations": {
             "production": {
+              "fileReplacements": [
+                {
+                  "replace": "src/bootstrap/startup-config.ts",
+                  "with": "src/bootstrap/startup-config.production.ts"
+                }
+              ],
+              "externalDependencies": [
+                "@angular/cdk/a11y",
+                "@angular/cdk/bidi",
+                "@angular/cdk/coercion",
+                "@angular/cdk/keycodes",
+                "@angular/cdk/layout",
+                "@angular/cdk/observers/private",
+                "@angular/cdk/overlay",
+                "@angular/cdk/platform",
+                "@angular/cdk/portal",
+                "@angular/cdk/private",
+                "@angular/cdk/scrolling",
+                "@angular/compiler",
+                "@angular/core",
+                "@angular/core/primitives/signals",
+                "@angular/core/rxjs-interop",
+                "@angular/common",
+                "@angular/common/http",
+                "@angular/platform-browser",
+                "rxjs",
+                "rxjs/operators"
+              ],
               "budgets": [
                 {
                   "type": "initial",
@@ -63,7 +91,68 @@
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "exclude": ["src/fallback/**/*.spec.ts"]
+          }
+        }
+      }
+    },
+    "fallback": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "src/fallback",
+      "sourceRoot": "src/fallback",
+      "prefix": "fallback",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "src/fallback/main.ts",
+            "tsConfig": "tsconfig.fallback.json",
+            "inlineStyleLanguage": "scss",
+            "outputPath": {
+              "base": "dist/resume/browser/fallback",
+              "browser": ""
+            },
+            "index": false,
+            "styles": [],
+            "outputHashing": "none",
+            "extractLicenses": false
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "250kB",
+                  "maximumError": "500kB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ]
+            },
+            "development": {
+              "optimization": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "buildTarget": "fallback:build:development",
+            "tsConfig": "tsconfig.fallback.spec.json",
+            "include": ["**/*.spec.ts"]
+          }
         }
       }
     }

@@ -110,9 +110,11 @@ describe('HeroSection', () => {
 
     const element = renderHero().nativeElement as HTMLElement;
 
-    expect(normalizedText(element.querySelector('.hero-kicker-copy'))).toBe(
-      'Backend Software Engineer · Bangkok, Thailand · UTC+7 · 2026-01-02 08:04:05',
-    );
+    expect(
+      Array.from(element.querySelectorAll('.hero-kicker-copy')).map((kicker) =>
+        normalizedText(kicker),
+      ),
+    ).toEqual(['Backend Software Engineer · Bangkok, Thailand', 'UTC+7 · 2026-01-02 08:04:05']);
     expect(normalizedText(element.querySelector('.hero-clock'))).toBe('2026-01-02 08:04:05');
   });
 

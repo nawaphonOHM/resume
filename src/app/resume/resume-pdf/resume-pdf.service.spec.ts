@@ -10,12 +10,12 @@ import {
   RESUME_PDF_CDN_SCRIPT_LOADER,
   RESUME_PDF_FILENAME,
   RESUME_PDF_RUNTIME_LOADER,
-  ResumePdfService,
   type ResumePdfCdnAsset,
   type ResumePdfCdnScriptLoader,
   type ResumePdfRuntime,
   type ResumePdfRuntimeLoader,
 } from './resume-pdf.service';
+import ResumePdfService from './resume-pdf.service';
 
 const PDFMAKE_CORE_ASSET: ResumePdfCdnAsset = {
   url: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.3/pdfmake.min.js',

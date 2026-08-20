@@ -1,0 +1,14 @@
+<main
+  class="unavailable"
+  aria-labelledby="unavailable-heading"
+  aria-describedby="unavailable-status"
+>
+  <section class="unavailable__card">
+    <p class="unavailable__eyebrow">Temporary outage</p>
+    <h1 id="unavailable-heading">Website is unavailable</h1>
+    <p id="unavailable-status" class="unavailable__status" role="status">
+      The website could not load its required resources. Check your connection, then retry.
+    </p>
+    <button type="button" (click)="retry()">Retry</button>
+  </section>
+</main>

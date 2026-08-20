@@ -40,7 +40,7 @@ import {
 } from '../experience-timeline/technology-icon/technology-icons.ts';
 import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
 import { ResumeNavigation, type ResumeSectionId } from '../resume-navigation/resume-navigation';
-import { ResumePdfService } from '../resume-pdf/resume-pdf.service';
+import ResumePdfService from '../resume-pdf/resume-pdf.service';
 import { RESUME_DEFER_BOUNDARIES, ResumePage } from './resume-page';
 
 const OPTIMIZED_ICON_SOURCE = 'data:image/png;base64,b3B0aW1pemVk';
@@ -801,9 +801,11 @@ describe('ResumePage', () => {
     const heroClock = text('.hero-clock');
 
     expect(heroClock).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
-    expect(text('.hero-kicker')).toBe(
-      `${RESUME.title} · ${RESUME.details.location} · UTC+7 · ${heroClock}`,
-    );
+    expect(
+      Array.from(element.querySelectorAll('.hero-kicker')).map((kicker) =>
+        kicker.textContent?.replace(/\s+/g, ' ').trim(),
+      ),
+    ).toEqual([`${RESUME.title} · ${RESUME.details.location}`, `UTC+7 · ${heroClock}`]);
     expect(text('.hero-role')).toBe(RESUME.title);
     expect(text('.hero-introduction')).toBe(
       'Building reliable APIs, data integrations, event-driven workflows, and responsive interfaces for financial and business systems.',
@@ -988,16 +990,16 @@ describe('ResumePage', () => {
     downloadButton?.click();
     fixture.detectChanges();
 
-    expect(download).toHaveBeenCalledOnce();
     expect(navigation.downloadPending()).toBe(true);
     expect(downloadButton?.disabled).toBe(true);
     expect(downloadButton?.getAttribute('aria-label')).toBe('Generating résumé PDF');
+    await vi.waitFor(() => expect(download).toHaveBeenCalledOnce());
 
     navigation.downloadRequested.emit();
     expect(download).toHaveBeenCalledOnce();
 
     pendingDownload.resolve(undefined);
-    await Promise.resolve();
+    await vi.waitFor(() => expect(navigation.downloadPending()).toBe(false));
     fixture.detectChanges();
 
     expect(navigation.downloadPending()).toBe(false);
@@ -1017,7 +1019,7 @@ describe('ResumePage', () => {
     );
 
     downloadButton?.click();
-    await Promise.resolve();
+    await vi.waitFor(() => expect(handleError).toHaveBeenCalledOnce());
     fixture.detectChanges();
 
     expect(handleError).toHaveBeenCalledOnce();
@@ -1026,8 +1028,10 @@ describe('ResumePage', () => {
     expect(downloadButton?.getAttribute('aria-label')).toBe('Download résumé as PDF');
 
     downloadButton?.click();
-    await Promise.resolve();
-    fixture.detectChanges();
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(downloadButton?.disabled).toBe(false);
+    });
 
     expect(download).toHaveBeenCalledTimes(2);
     expect(handleError).toHaveBeenCalledOnce();

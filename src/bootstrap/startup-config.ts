@@ -1,0 +1,1 @@
+export { LOCAL_STARTUP_CONFIGURATION as STARTUP_CONFIGURATION } from './runtime-config';

@@ -1,13 +1,15 @@
 {
   "name": "resume",
-  "version": "2.2.4",
+  "version": "3.0.0",
   "type": "module",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test --watch=false",
+    "start": "ng serve resume",
+    "build": "ng build resume && ng build fallback",
+    "build:fallback": "ng build fallback",
+    "watch": "ng build resume --watch --configuration development",
+    "test": "ng test resume --watch=false",
+    "test:fallback": "ng test fallback --watch=false",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

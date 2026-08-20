@@ -28,6 +28,12 @@
     },
     {
       "path": "./tsconfig.spec.json"
+    },
+    {
+      "path": "./tsconfig.fallback.json"
+    },
+    {
+      "path": "./tsconfig.fallback.spec.json"
     }
   ]
 }

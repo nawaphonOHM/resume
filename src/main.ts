@@ -1,9 +1,4 @@
-/**
- * Browser entry point that bootstraps the standalone résumé application and
- * reports initialization failures to the developer console.
- */
-import { bootstrapApplication } from '@angular/platform-browser';
-import { appConfig } from './app/app.config';
-import { App } from './app/app';
+/** Framework-free entry that defers Angular until local or CDN startup is selected. */
+import { startBrowserApplication } from './bootstrap/browser-startup';
 
-bootstrapApplication(App, appConfig).catch((err) => console.error(err));
+startBrowserApplication().catch((error: unknown) => console.error(error));
