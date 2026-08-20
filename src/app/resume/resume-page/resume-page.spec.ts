@@ -1071,7 +1071,7 @@ describe('ResumePage', () => {
     expect(educationLink?.getAttribute('aria-current')).toBe('location');
   });
 
-  it('updates responsive active navigation from scroll and resize geometry', async () => {
+  it('renders responsive active navigation from viewport signals without manual change detection', async () => {
     const fixture = TestBed.createComponent(ResumePage);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -1081,6 +1081,8 @@ describe('ResumePage', () => {
     expect(viewportChanged).toHaveBeenCalledWith(100);
 
     setSectionRect(element, 'experience', 100, 600);
+    // Keep viewport emissions followed only by scheduler stabilization so this remains a zoneless
+    // signal-rendering regression test rather than relying on fixture.detectChanges().
     scrollEvents.next();
     await fixture.whenStable();
 

@@ -5,7 +5,6 @@ import {
   DestroyRef,
   ErrorHandler,
   HostListener,
-  NgZone,
   afterNextRender,
   inject,
   signal,
@@ -65,7 +64,6 @@ export class ResumePage {
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
   private readonly errorHandler = inject(ErrorHandler);
-  private readonly ngZone = inject(NgZone);
   private readonly resumePdfService = inject(ResumePdfService);
   private readonly scrollDispatcher = inject(ScrollDispatcher);
   private readonly themeService = inject(ThemeService);
@@ -114,7 +112,7 @@ export class ResumePage {
       )
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(() => {
-          this.ngZone.run(() => this.updateActiveSection());
+          this.updateActiveSection();
         });
     });
   }
