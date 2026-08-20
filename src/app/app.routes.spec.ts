@@ -1,7 +1,7 @@
 /** Verifies root activation and the application's Router-managed scrolling contract. */
 import { PlatformLocation, ViewportScroller } from '@angular/common';
 import { APP_BOOTSTRAP_LISTENER, ApplicationRef } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { DeferBlockBehavior, TestBed } from '@angular/core/testing';
 import { NavigationEnd, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { vi } from 'vitest';
@@ -37,6 +37,7 @@ describe('application routes', () => {
       setHistoryScrollRestoration,
     };
     TestBed.configureTestingModule({
+      deferBlockBehavior: DeferBlockBehavior.Manual,
       providers: [
         appConfig.providers,
         { provide: ViewportScroller, useValue: viewportScroller },
@@ -110,9 +111,22 @@ describe('application routes', () => {
 
   it('scrolls an initial fragment after applying the computed sticky-header offset', async () => {
     const harness = await bootstrapHarnessAt('/#experience');
+    const element = harness.routeNativeElement!;
+    const fragmentTarget = element.querySelector<HTMLElement>('#experience');
+    const placeholderTargets = ['about', 'experience', 'education', 'skills', 'profile'].map((id) =>
+      element.querySelector<HTMLElement>(`#${id}`),
+    );
 
     expect(router.url).toBe('/#experience');
-    expect(harness.routeNativeElement?.querySelector('#experience')).not.toBeNull();
+    expect(fragmentTarget).not.toBeNull();
+    expect(fragmentTarget?.hasAttribute('data-resume-defer-placeholder')).toBe(true);
+    expect(fragmentTarget?.getAttribute('role')).toBe('status');
+    expect(placeholderTargets.every((target) => target !== null)).toBe(true);
+    expect(
+      placeholderTargets.every((target) => target?.closest('[data-resume-defer-placeholder]')),
+    ).toBe(true);
+    expect(element.querySelectorAll('[data-resume-defer-placeholder]')).toHaveLength(3);
+    expect(element.querySelector('app-experience-timeline')).toBeNull();
     expect(setOffset).toHaveBeenCalledWith([0, 88]);
     expect(scrollToAnchor).toHaveBeenCalledWith('experience');
     expect(setOffset.mock.invocationCallOrder[0]).toBeLessThan(

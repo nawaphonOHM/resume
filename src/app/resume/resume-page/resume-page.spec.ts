@@ -1,9 +1,16 @@
 /**
  * Exercises the composed résumé, section accessibility, navigation orchestration, theme, print,
- * download controls, image-zoom bindings, and browser observer lifecycle.
+ * download controls, image-zoom bindings, and viewport-tracking lifecycle.
  */
+import { ScrollDispatcher, ViewportRuler } from '@angular/cdk/scrolling';
 import { APP_BOOTSTRAP_LISTENER, ApplicationRef, ErrorHandler } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  DeferBlockBehavior,
+  DeferBlockState,
+  TestBed,
+} from '@angular/core/testing';
+import { MatMenuTrigger } from '@angular/material/menu';
 import { By } from '@angular/platform-browser';
 import {
   provideRouter,
@@ -13,6 +20,7 @@ import {
   withRouterConfig,
 } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { Subject } from 'rxjs';
 import { vi } from 'vitest';
 
 import { routes } from '../../app.routes';
@@ -31,9 +39,9 @@ import {
   type TechnologyIconMetadata,
 } from '../experience-timeline/technology-icon/technology-icons.ts';
 import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
-import { ResumeNavigation } from '../resume-navigation/resume-navigation';
+import { ResumeNavigation, type ResumeSectionId } from '../resume-navigation/resume-navigation';
 import { ResumePdfService } from '../resume-pdf/resume-pdf.service';
-import { ResumePage } from './resume-page';
+import { RESUME_DEFER_BOUNDARIES, ResumePage } from './resume-page';
 
 const OPTIMIZED_ICON_SOURCE = 'data:image/png;base64,b3B0aW1pemVk';
 const OPTIMIZED_ICON_BACKGROUND = '#0d1b2d';
@@ -77,15 +85,70 @@ function initializeRouterScrolling(harness: RouterTestingHarness): void {
   }
 }
 
+/** Renders all manually controlled boundaries before assertions that exercise complete content. */
+async function renderDeferredSections(fixture: ComponentFixture<ResumePage>): Promise<void> {
+  fixture.detectChanges();
+  const deferBlocks = await fixture.getDeferBlocks();
+
+  expect(deferBlocks).toHaveLength(3);
+  for (const deferBlock of deferBlocks) {
+    await deferBlock.render(DeferBlockState.Complete);
+  }
+  fixture.detectChanges();
+}
+
+/** Invokes the page-level print workflow while retaining its asynchronous completion handle. */
+function requestPrint(fixture: ComponentFixture<ResumePage>): Promise<void> {
+  return (
+    fixture.componentInstance as unknown as {
+      printResume(): Promise<void>;
+    }
+  ).printResume();
+}
+
+/** Supplies viewport-relative section bounds while retaining the element for replacement checks. */
+function setSectionRect(
+  root: ParentNode,
+  sectionId: ResumeSectionId,
+  top: number,
+  bottom: number,
+): HTMLElement {
+  const element = root.querySelector<HTMLElement>(`#${sectionId}`);
+  expect(element).not.toBeNull();
+  Object.defineProperty(element, 'getBoundingClientRect', {
+    configurable: true,
+    value: vi.fn(() => ({ top, bottom }) as DOMRect),
+  });
+  return element!;
+}
+
+/** Opens the responsive menu so page-level active state can be asserted in its rendered links. */
+async function openMobileMenu(fixture: ComponentFixture<ResumePage>): Promise<HTMLElement> {
+  const trigger = fixture.debugElement
+    .query(By.directive(MatMenuTrigger))
+    .injector.get(MatMenuTrigger);
+  trigger.openMenu();
+  fixture.detectChanges();
+  await fixture.whenStable();
+
+  const menu = document.querySelector<HTMLElement>('[role="menu"]');
+  expect(menu).not.toBeNull();
+  return menu!;
+}
+
 describe('ResumePage', () => {
-  /** Callback captured from the page's observer so tests can publish synthetic intersections. */
-  let observerCallback: IntersectionObserverCallback;
+  /** Synthetic document-scroll stream returned by the CDK dispatcher fixture. */
+  let scrollEvents: Subject<void>;
 
-  /** Spy recording sections registered with the observer fixture. */
-  let observe: ReturnType<typeof vi.fn>;
+  /** Synthetic viewport-resize stream returned by the CDK ruler fixture. */
+  let viewportChangeEvents: Subject<Event>;
 
-  /** Spy recording observer cleanup when the page is destroyed. */
-  let disconnect: ReturnType<typeof vi.fn>;
+  /** Spies recording the requested CDK stream throttles. */
+  let scrolled: ReturnType<typeof vi.fn<ScrollDispatcher['scrolled']>>;
+  let viewportChanged: ReturnType<typeof vi.fn<ViewportRuler['change']>>;
+
+  /** Deterministic page-coordinate viewport geometry consumed on every tracking event. */
+  let getViewportRect: ReturnType<typeof vi.fn<ViewportRuler['getViewportRect']>>;
 
   /** Deterministic optimizer fixture used by every composed technology-icon presenter. */
   let optimize: ReturnType<typeof vi.fn<TechnologyIconContrastService['optimize']>>;
@@ -97,8 +160,8 @@ describe('ResumePage', () => {
   let handleError: ReturnType<typeof vi.fn<ErrorHandler['handleError']>>;
 
   beforeEach(async () => {
-    observe = vi.fn();
-    disconnect = vi.fn();
+    scrollEvents = new Subject<void>();
+    viewportChangeEvents = new Subject<Event>();
 
     /** Stable light-system preference fixture required by the page's theme service. */
     Object.defineProperty(window, 'matchMedia', {
@@ -111,23 +174,6 @@ describe('ResumePage', () => {
         addListener: vi.fn(),
         removeListener: vi.fn(),
       })),
-    });
-
-    /** Deterministic observer fixture that exposes registration, callback, and cleanup behavior. */
-    Object.defineProperty(window, 'IntersectionObserver', {
-      configurable: true,
-      value: function (callback: IntersectionObserverCallback) {
-        observerCallback = callback;
-        return {
-          root: null,
-          rootMargin: '0px',
-          thresholds: [],
-          observe,
-          unobserve: vi.fn(),
-          disconnect,
-          takeRecords: vi.fn(() => []),
-        };
-      },
     });
 
     localStorage.clear();
@@ -144,6 +190,7 @@ describe('ResumePage', () => {
     handleError = vi.fn<ErrorHandler['handleError']>();
 
     await TestBed.configureTestingModule({
+      deferBlockBehavior: DeferBlockBehavior.Manual,
       imports: [ResumePage],
       providers: [
         provideRouter(
@@ -159,6 +206,19 @@ describe('ResumePage', () => {
         { provide: ErrorHandler, useValue: { handleError } },
       ],
     }).compileComponents();
+
+    scrolled = vi.spyOn(TestBed.inject(ScrollDispatcher), 'scrolled').mockReturnValue(scrollEvents);
+    viewportChanged = vi
+      .spyOn(TestBed.inject(ViewportRuler), 'change')
+      .mockReturnValue(viewportChangeEvents);
+    getViewportRect = vi.spyOn(TestBed.inject(ViewportRuler), 'getViewportRect').mockReturnValue({
+      top: 1000,
+      bottom: 2000,
+      left: 0,
+      right: 1200,
+      width: 1200,
+      height: 1000,
+    });
   });
 
   afterEach(() => {
@@ -173,9 +233,132 @@ describe('ResumePage', () => {
     );
   });
 
-  it('renders every résumé section and keeps public links safe', () => {
+  it('keeps the shell and hero eager while exposing three accessible placeholder roots', async () => {
     const fixture = TestBed.createComponent(ResumePage);
     fixture.detectChanges();
+    const deferBlocks = await fixture.getDeferBlocks();
+    const element = fixture.nativeElement as HTMLElement;
+    const placeholderRoots = Array.from(
+      element.querySelectorAll<HTMLElement>('[data-resume-defer-placeholder]'),
+    );
+    const anchors = Array.from(element.querySelectorAll<HTMLElement>('[data-resume-section]'));
+    const groupedPlaceholder = element.querySelector<HTMLElement>(
+      '.resume-defer-placeholder--education-profile',
+    );
+
+    expect(deferBlocks).toHaveLength(3);
+    expect(element.querySelector('app-resume-navigation')).not.toBeNull();
+    expect(element.querySelector('app-hero-section')).not.toBeNull();
+    expect(element.querySelector('main#main-content')).not.toBeNull();
+    expect(element.querySelector('footer')).not.toBeNull();
+    expect(element.querySelector('app-summary-section')).toBeNull();
+    expect(element.querySelector('app-experience-timeline')).toBeNull();
+    expect(element.querySelector('app-education-section')).toBeNull();
+    expect(element.querySelector('app-profile-sidebar')).toBeNull();
+    expect(placeholderRoots).toHaveLength(3);
+    expect(placeholderRoots.map((root) => root.getAttribute('role'))).toEqual([
+      'status',
+      'status',
+      'status',
+    ]);
+    expect(placeholderRoots.every((root) => root.getAttribute('aria-busy') === 'true')).toBe(true);
+    expect(anchors.map(({ id }) => id)).toEqual([
+      'about',
+      'experience',
+      'education',
+      'skills',
+      'profile',
+    ]);
+    expect(anchors.every((anchor) => anchor.getAttribute('tabindex') === '-1')).toBe(true);
+    expect(anchors.every((anchor) => anchor.hasAttribute('aria-labelledby'))).toBe(true);
+    expect(groupedPlaceholder?.querySelectorAll(':scope > section')).toHaveLength(3);
+    expect(element.querySelectorAll('[data-resume-defer-settled]')).toHaveLength(0);
+  });
+
+  it('renders every deferred boundary once and marks complete content as settled', async () => {
+    const fixture = TestBed.createComponent(ResumePage);
+    await renderDeferredSections(fixture);
+    const element = fixture.nativeElement as HTMLElement;
+    const hosts = Array.from(
+      element.querySelectorAll<HTMLElement>(
+        'app-summary-section, app-experience-timeline, app-education-section, app-profile-sidebar',
+      ),
+    );
+    const settledHosts = Array.from(
+      element.querySelectorAll<HTMLElement>('[data-resume-defer-settled]'),
+    );
+
+    expect(hosts.map(({ tagName }) => tagName.toLowerCase())).toEqual([
+      'app-summary-section',
+      'app-experience-timeline',
+      'app-education-section',
+      'app-profile-sidebar',
+    ]);
+    expect(settledHosts.map((host) => host.getAttribute('data-resume-defer-settled'))).toEqual(
+      Object.values(RESUME_DEFER_BOUNDARIES),
+    );
+    expect(settledHosts.map(({ tagName }) => tagName.toLowerCase())).toEqual([
+      'app-summary-section',
+      'app-experience-timeline',
+      'app-profile-sidebar',
+    ]);
+    expect(element.querySelectorAll('[data-resume-defer-placeholder]')).toHaveLength(0);
+    expect(element.querySelectorAll('[data-resume-section]')).toHaveLength(5);
+
+    fixture.detectChanges();
+    expect(Array.from(element.querySelectorAll('[data-resume-defer-settled]'))).toEqual(
+      settledHosts,
+    );
+  });
+
+  it('preserves every fragment target and settlement marker in deferred error states', async () => {
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const deferBlocks = await fixture.getDeferBlocks();
+
+    for (const deferBlock of deferBlocks) {
+      await deferBlock.render(DeferBlockState.Error);
+    }
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const errorRoots = Array.from(
+      element.querySelectorAll<HTMLElement>('[data-resume-defer-error]'),
+    );
+    const anchors = Array.from(element.querySelectorAll<HTMLElement>('[data-resume-section]'));
+
+    expect(errorRoots).toHaveLength(3);
+    expect(errorRoots.map((root) => root.getAttribute('role'))).toEqual([
+      'alert',
+      'alert',
+      'alert',
+    ]);
+    expect(errorRoots.map((root) => root.getAttribute('data-resume-defer-settled'))).toEqual(
+      Object.values(RESUME_DEFER_BOUNDARIES),
+    );
+    expect(anchors.map(({ id }) => id)).toEqual([
+      'about',
+      'experience',
+      'education',
+      'skills',
+      'profile',
+    ]);
+    expect(anchors.every((anchor) => anchor.getAttribute('tabindex') === '-1')).toBe(true);
+    expect(anchors.every((anchor) => anchor.textContent?.includes('unavailable'))).toBe(true);
+    expect(
+      element
+        .querySelector('.resume-defer-error--education-profile')
+        ?.querySelectorAll(':scope > section'),
+    ).toHaveLength(3);
+    expect(element.querySelector('app-summary-section')).toBeNull();
+    expect(element.querySelector('app-experience-timeline')).toBeNull();
+    expect(element.querySelector('app-education-section')).toBeNull();
+    expect(element.querySelector('app-profile-sidebar')).toBeNull();
+  });
+
+  it('renders every résumé section and keeps public links safe', async () => {
+    const fixture = TestBed.createComponent(ResumePage);
+    await renderDeferredSections(fixture);
     const element = fixture.nativeElement as HTMLElement;
 
     const sectionIds = Array.from(
@@ -240,9 +423,9 @@ describe('ResumePage', () => {
     );
   });
 
-  it('renders the GitHub logo before its label and keeps the personal website text-only', () => {
+  it('renders the GitHub logo before its label and keeps the personal website text-only', async () => {
     const fixture = TestBed.createComponent(ResumePage);
-    fixture.detectChanges();
+    await renderDeferredSections(fixture);
     const element = fixture.nativeElement as HTMLElement;
     const [github, personalWebsite] = RESUME.links;
     const linksCard = element.querySelector<HTMLElement>('.links-card');
@@ -300,7 +483,7 @@ describe('ResumePage', () => {
 
   it('wires every rendered image for zoom with GitHub as the only touch exception', async () => {
     const fixture = TestBed.createComponent(ResumePage);
-    await Promise.resolve();
+    await renderDeferredSections(fixture);
     await fixture.whenStable();
     const renderedImages = fixture.debugElement.queryAll(By.css('img'));
     const zoomImages = fixture.debugElement.queryAll(By.directive(ImageZoomDirective));
@@ -370,9 +553,9 @@ describe('ResumePage', () => {
     ]);
   });
 
-  it('renders the official university logo beside the accessible institution identity', () => {
+  it('renders the official university logo beside the accessible institution identity', async () => {
     const fixture = TestBed.createComponent(ResumePage);
-    fixture.detectChanges();
+    await renderDeferredSections(fixture);
     const element = fixture.nativeElement as HTMLElement;
     const identity = element.querySelector<HTMLElement>('#education .institution-identity');
     const logoFrame = identity?.querySelector<HTMLElement>('.institution-logo-frame');
@@ -397,9 +580,9 @@ describe('ResumePage', () => {
     expect(getComputedStyle(printIcon!).display).toBe('none');
   });
 
-  it('renders one accessible employment type marker for every experience', () => {
+  it('renders one accessible employment type marker for every experience', async () => {
     const fixture = TestBed.createComponent(ResumePage);
-    fixture.detectChanges();
+    await renderDeferredSections(fixture);
     const element = fixture.nativeElement as HTMLElement;
     const cards = Array.from(element.querySelectorAll<HTMLElement>('.experience-card'));
     const expectedLabels = [
@@ -423,7 +606,7 @@ describe('ResumePage', () => {
 
   it('renders every experience technology with one decorative leading icon', async () => {
     const fixture = TestBed.createComponent(ResumePage);
-    await Promise.resolve();
+    await renderDeferredSections(fixture);
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
     const cards = Array.from(element.querySelectorAll<HTMLElement>('.experience-card'));
@@ -515,9 +698,9 @@ describe('ResumePage', () => {
     );
   });
 
-  it('renders outsourced employer-to-client relationships and direct company identities', () => {
+  it('renders outsourced employer-to-client relationships and direct company identities', async () => {
     const fixture = TestBed.createComponent(ResumePage);
-    fixture.detectChanges();
+    await renderDeferredSections(fixture);
     const element = fixture.nativeElement as HTMLElement;
     const cards = Array.from(element.querySelectorAll<HTMLElement>('.experience-card'));
 
@@ -606,9 +789,9 @@ describe('ResumePage', () => {
     expect(element.querySelectorAll('.company-identities a')).toHaveLength(0);
   });
 
-  it('renders the backend-first profile and four summary cards', () => {
+  it('renders the backend-first profile and four summary cards', async () => {
     const fixture = TestBed.createComponent(ResumePage);
-    fixture.detectChanges();
+    await renderDeferredSections(fixture);
     const element = fixture.nativeElement as HTMLElement;
     const text = (selector: string) =>
       element.querySelector(selector)?.textContent?.replace(/\s+/g, ' ').trim();
@@ -630,9 +813,126 @@ describe('ResumePage', () => {
     expect(text('footer p')).toBe(`${RESUME.name} · ${RESUME.title}`);
   });
 
-  it('fades both theme directions and provides keyboard-named controls', () => {
+  it('waits to print until every deferred boundary has completed', async () => {
     const print = vi.fn();
     Object.defineProperty(window, 'print', { configurable: true, value: print });
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const deferBlocks = await fixture.getDeferBlocks();
+    const main = fixture.nativeElement.querySelector('main#main-content') as HTMLElement;
+    const observe = vi.spyOn(window.MutationObserver.prototype, 'observe');
+    const disconnect = vi.spyOn(window.MutationObserver.prototype, 'disconnect');
+
+    const printCompleted = requestPrint(fixture);
+
+    expect(print).not.toHaveBeenCalled();
+    expect(observe).toHaveBeenCalledOnce();
+    expect(observe).toHaveBeenCalledWith(
+      main,
+      expect.objectContaining({ childList: true, subtree: true }),
+    );
+
+    await deferBlocks[0].render(DeferBlockState.Complete);
+    fixture.detectChanges();
+    await deferBlocks[1].render(DeferBlockState.Complete);
+    fixture.detectChanges();
+    expect(print).not.toHaveBeenCalled();
+
+    await deferBlocks[2].render(DeferBlockState.Complete);
+    fixture.detectChanges();
+    await printCompleted;
+
+    expect(print).toHaveBeenCalledOnce();
+    expect(disconnect).toHaveBeenCalledOnce();
+  });
+
+  it('treats deferred error fallbacks as settled before printing', async () => {
+    const print = vi.fn();
+    Object.defineProperty(window, 'print', { configurable: true, value: print });
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const deferBlocks = await fixture.getDeferBlocks();
+
+    const printCompleted = requestPrint(fixture);
+
+    for (const [index, deferBlock] of deferBlocks.entries()) {
+      await deferBlock.render(DeferBlockState.Error);
+      fixture.detectChanges();
+
+      if (index < deferBlocks.length - 1) {
+        expect(print).not.toHaveBeenCalled();
+      }
+    }
+    await printCompleted;
+
+    expect(print).toHaveBeenCalledOnce();
+    expect(
+      fixture.nativeElement.querySelectorAll(
+        '[data-resume-defer-error][data-resume-defer-settled]',
+      ),
+    ).toHaveLength(3);
+  });
+
+  it('reuses settled print readiness for later print requests', async () => {
+    const print = vi.fn();
+    Object.defineProperty(window, 'print', { configurable: true, value: print });
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const deferBlocks = await fixture.getDeferBlocks();
+    const observe = vi.spyOn(window.MutationObserver.prototype, 'observe');
+
+    const firstPrint = requestPrint(fixture);
+    for (const deferBlock of deferBlocks) {
+      await deferBlock.render(DeferBlockState.Complete);
+      fixture.detectChanges();
+    }
+    await firstPrint;
+
+    const printButton = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      '[aria-label="Print résumé"]',
+    );
+    expect(printButton).not.toBeNull();
+    printButton!.click();
+    await Promise.resolve();
+
+    expect(print).toHaveBeenCalledTimes(2);
+    expect(observe).toHaveBeenCalledOnce();
+  });
+
+  it('requests all boundaries synchronously for native printing without opening a dialog', async () => {
+    const print = vi.fn();
+    Object.defineProperty(window, 'print', { configurable: true, value: print });
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    const component = fixture.componentInstance as unknown as {
+      readonly renderAllSections: () => boolean;
+    };
+
+    window.dispatchEvent(new Event('beforeprint'));
+
+    expect(component.renderAllSections()).toBe(true);
+    expect(print).not.toHaveBeenCalled();
+    expect(element.querySelectorAll('[data-resume-defer-placeholder]')).toHaveLength(3);
+    expect(element.querySelectorAll('[data-resume-defer-settled]')).toHaveLength(0);
+  });
+
+  it('disconnects a pending print wait when the page is destroyed', async () => {
+    const print = vi.fn();
+    Object.defineProperty(window, 'print', { configurable: true, value: print });
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const disconnect = vi.spyOn(window.MutationObserver.prototype, 'disconnect');
+
+    const printCompleted = requestPrint(fixture);
+    fixture.destroy();
+    await printCompleted;
+
+    expect(disconnect).toHaveBeenCalledOnce();
+    expect(print).not.toHaveBeenCalled();
+  });
+
+  it('fades both theme directions and provides keyboard-named controls', () => {
     const fixture = TestBed.createComponent(ResumePage);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
@@ -664,12 +964,12 @@ describe('ResumePage', () => {
       element.querySelector<HTMLButtonElement>('[aria-label="Switch to dark theme"]')?.textContent,
     ).toContain('dark_mode');
 
-    element.querySelector<HTMLButtonElement>('[aria-label="Print résumé"]')?.click();
-
     const downloadButton = element.querySelector<HTMLButtonElement>(
       'button[aria-label="Download résumé as PDF"]',
     );
-    expect(print).toHaveBeenCalledOnce();
+    expect(element.querySelector<HTMLButtonElement>('[aria-label="Print résumé"]')?.type).toBe(
+      'button',
+    );
     expect(downloadButton?.type).toBe('button');
   });
 
@@ -737,6 +1037,7 @@ describe('ResumePage', () => {
   it('synchronizes active navigation with recognized Router fragments only', async () => {
     const harness = await RouterTestingHarness.create('/#experience');
     harness.detectChanges();
+    await harness.fixture.whenStable();
     const element = harness.routeNativeElement!;
     const aboutLink = element.querySelector<HTMLAnchorElement>('nav a[href="/#about"]');
     const experienceLink = element.querySelector<HTMLAnchorElement>('nav a[href="/#experience"]');
@@ -745,6 +1046,13 @@ describe('ResumePage', () => {
     expect(aboutLink?.getAttribute('aria-current')).toBeNull();
     expect(experienceLink?.classList.contains('navigation-link-active')).toBe(true);
     expect(experienceLink?.getAttribute('aria-current')).toBe('location');
+
+    setSectionRect(element, 'about', 40, 640);
+    scrollEvents.next();
+    await harness.fixture.whenStable();
+
+    expect(aboutLink?.getAttribute('aria-current')).toBe('location');
+    expect(TestBed.inject(Router).url).toBe('/#experience');
 
     await harness.navigateByUrl('/#education', ResumePage);
     harness.detectChanges();
@@ -763,25 +1071,17 @@ describe('ResumePage', () => {
     expect(educationLink?.getAttribute('aria-current')).toBe('location');
   });
 
-  it('updates active navigation from observed sections and disconnects cleanly', async () => {
+  it('updates responsive active navigation from scroll and resize geometry', async () => {
     const fixture = TestBed.createComponent(ResumePage);
     fixture.detectChanges();
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
-    const experienceSection = element.querySelector<HTMLElement>('#experience');
-    const educationSection = element.querySelector<HTMLElement>('#education');
 
-    expect(observe).toHaveBeenCalledTimes(5);
-    observerCallback(
-      [
-        {
-          isIntersecting: true,
-          target: experienceSection,
-          boundingClientRect: { top: 24 },
-        } as unknown as IntersectionObserverEntry,
-      ],
-      {} as IntersectionObserver,
-    );
+    expect(scrolled).toHaveBeenCalledWith(100);
+    expect(viewportChanged).toHaveBeenCalledWith(100);
+
+    setSectionRect(element, 'experience', 100, 600);
+    scrollEvents.next();
     await fixture.whenStable();
 
     expect(element.querySelector('nav a[href="/#experience"]')?.getAttribute('aria-current')).toBe(
@@ -793,25 +1093,24 @@ describe('ResumePage', () => {
         ?.classList.contains('navigation-link-active'),
     ).toBe(true);
 
-    observerCallback(
-      [
-        {
-          isIntersecting: true,
-          target: educationSection,
-          boundingClientRect: { top: 12 },
-        } as unknown as IntersectionObserverEntry,
-      ],
-      {} as IntersectionObserver,
-    );
+    getViewportRect.mockReturnValue({
+      top: 2000,
+      bottom: 2500,
+      left: 0,
+      right: 1200,
+      width: 1200,
+      height: 500,
+    });
+    setSectionRect(element, 'experience', -100, 50);
+    setSectionRect(element, 'skills', 120, 400);
+    viewportChangeEvents.next(new Event('resize'));
     await fixture.whenStable();
 
-    expect(element.querySelector('nav a[href="/#education"]')?.getAttribute('aria-current')).toBe(
+    expect(element.querySelector('nav a[href="/#skills"]')?.getAttribute('aria-current')).toBe(
       'location',
     );
     expect(
-      element
-        .querySelector('nav a[href="/#education"]')
-        ?.classList.contains('navigation-link-active'),
+      element.querySelector('nav a[href="/#skills"]')?.classList.contains('navigation-link-active'),
     ).toBe(true);
     expect(
       element
@@ -822,23 +1121,62 @@ describe('ResumePage', () => {
       element.querySelector('nav a[href="/#experience"]')?.getAttribute('aria-current'),
     ).toBeNull();
 
-    expect(disconnect).not.toHaveBeenCalled();
-    fixture.destroy();
-    expect(disconnect).toHaveBeenCalledOnce();
+    const menu = await openMobileMenu(fixture);
+    expect(menu.querySelector('a[href="/#skills"]')?.getAttribute('aria-current')).toBe('location');
   });
 
-  it('skips section observation when IntersectionObserver is unavailable', async () => {
-    Object.defineProperty(window, 'IntersectionObserver', {
-      configurable: true,
-      value: undefined,
-    });
+  it('re-queries section elements after deferred content replaces a placeholder', async () => {
     const fixture = TestBed.createComponent(ResumePage);
     fixture.detectChanges();
     await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    const placeholder = setSectionRect(element, 'experience', 100, 600);
+    const placeholderRect = vi.mocked(placeholder.getBoundingClientRect);
 
-    expect(observe).not.toHaveBeenCalled();
+    scrollEvents.next();
+    await fixture.whenStable();
+    expect(element.querySelector('nav a[href="/#experience"]')?.getAttribute('aria-current')).toBe(
+      'location',
+    );
+
+    const deferBlocks = await fixture.getDeferBlocks();
+    await deferBlocks[1].render(DeferBlockState.Complete);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const renderedExperience = element.querySelector<HTMLElement>('#experience');
+
+    expect(renderedExperience).not.toBe(placeholder);
+    setSectionRect(element, 'experience', -500, -100);
+    setSectionRect(element, 'education', 100, 500);
+    scrollEvents.next();
+    await fixture.whenStable();
+
+    expect(element.querySelector('nav a[href="/#education"]')?.getAttribute('aria-current')).toBe(
+      'location',
+    );
+    expect(placeholderRect).toHaveBeenCalledOnce();
+  });
+
+  it('unsubscribes from both CDK viewport streams when destroyed', async () => {
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    setSectionRect(element, 'experience', 100, 600);
+
+    expect(scrollEvents.observed).toBe(true);
+    expect(viewportChangeEvents.observed).toBe(true);
+    scrollEvents.next();
+    await fixture.whenStable();
+    const geometryReads = getViewportRect.mock.calls.length;
+
     fixture.destroy();
-    expect(disconnect).not.toHaveBeenCalled();
+    expect(scrollEvents.observed).toBe(false);
+    expect(viewportChangeEvents.observed).toBe(false);
+
+    scrollEvents.next();
+    viewportChangeEvents.next(new Event('resize'));
+    expect(getViewportRect).toHaveBeenCalledTimes(geometryReads);
   });
 
   it('focuses the main content when the Router handles skip navigation', async () => {

@@ -46,6 +46,99 @@ main > div {
   z-index: 1;
 }
 
+// Keep fragment targets present and reserve realistic space while deferred sections load.
+.resume-defer-anchor {
+  display: flex;
+  align-items: flex-start;
+  padding: clamp(3rem, 7vw, 5rem) 0;
+  outline: none;
+}
+
+.resume-defer-anchor:focus-visible .resume-defer-message {
+  outline: 0.2rem solid color-mix(in srgb, var(--resume-accent) 75%, transparent);
+  outline-offset: 0.3rem;
+}
+
+.resume-defer-reserve--summary {
+  min-height: 38rem;
+}
+
+.resume-defer-reserve--experience {
+  min-height: 130rem;
+}
+
+.resume-defer-reserve--education {
+  min-height: 38rem;
+}
+
+.resume-defer-reserve--skills {
+  min-height: 30rem;
+}
+
+.resume-defer-reserve--profile {
+  min-height: 42rem;
+}
+
+.resume-defer-message {
+  display: flex;
+  width: 100%;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: clamp(1.35rem, 3vw, 2rem);
+  border: 1px solid var(--resume-border);
+  border-radius: 1.4rem;
+  background: color-mix(in srgb, var(--resume-surface) 92%, var(--resume-brand-soft));
+  color: var(--resume-muted);
+  box-shadow: 0 0.75rem 2rem rgb(8 35 62 / 5%);
+}
+
+.resume-defer-message h2 {
+  margin: 0;
+  color: var(--resume-text);
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  line-height: 1.15;
+}
+
+.resume-defer-message p:last-child {
+  margin: 0.75rem 0 0;
+  line-height: 1.65;
+}
+
+.resume-defer-kicker {
+  margin: 0 0 0.55rem;
+  color: var(--resume-accent);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.resume-defer-indicator {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 auto;
+  margin-top: 0.2rem;
+  border: 0.2rem solid var(--resume-border);
+  border-top-color: var(--resume-accent);
+  border-radius: 50%;
+  animation: resume-defer-spin 800ms linear infinite;
+}
+
+.resume-defer-error .resume-defer-message {
+  border-color: color-mix(in srgb, #b42318 55%, var(--resume-border));
+  background: color-mix(in srgb, #fff0ee 55%, var(--resume-surface));
+}
+
+.resume-defer-error .resume-defer-kicker {
+  color: color-mix(in srgb, #b42318 75%, var(--resume-text));
+}
+
+@keyframes resume-defer-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
 footer {
   border-top: 1px solid var(--resume-border);
   background: var(--resume-surface);
@@ -60,6 +153,32 @@ footer p {
 @media (prefers-reduced-motion: reduce) {
   .skip-link {
     transition: none;
+  }
+
+  .resume-defer-indicator {
+    animation: none;
+  }
+}
+
+@media (max-width: 48rem) {
+  .resume-defer-reserve--summary {
+    min-height: 44rem;
+  }
+
+  .resume-defer-reserve--experience {
+    min-height: 180rem;
+  }
+
+  .resume-defer-reserve--education {
+    min-height: 52rem;
+  }
+
+  .resume-defer-reserve--skills {
+    min-height: 36rem;
+  }
+
+  .resume-defer-reserve--profile {
+    min-height: 54rem;
   }
 }
 
@@ -85,6 +204,32 @@ footer p {
   main > div {
     max-width: none !important;
     padding: 0 !important;
+  }
+
+  .resume-defer-anchor {
+    min-height: 0 !important;
+    padding: 4mm 0 !important;
+  }
+
+  .resume-defer-message {
+    padding: 3mm;
+    border-radius: 2.5mm;
+    background: #ffffff !important;
+    box-shadow: none;
+  }
+
+  .resume-defer-message h2 {
+    color: #172033 !important;
+    font-size: 13pt;
+  }
+
+  .resume-defer-message p {
+    color: #44516a !important;
+    font-size: 8pt;
+  }
+
+  .resume-defer-indicator {
+    display: none;
   }
 
   footer {
