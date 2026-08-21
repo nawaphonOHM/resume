@@ -1,6 +1,6 @@
 import { Component, computed, inject, input, resource } from '@angular/core';
 
-import { ImageZoomDirective } from '../../image-zoom/image-zoom.directive.ts';
+import { ImageZoomDirective } from '../../../directive/image-zome/image-zoom.directive.ts';
 import {
   TechnologyIconContrastService,
   type TechnologyIconPresentation,

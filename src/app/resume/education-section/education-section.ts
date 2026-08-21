@@ -6,7 +6,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 
 import type { ResumeEducation } from '../../model/resume/resume.model';
-import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
+import { ImageZoomDirective } from '../../directive/image-zome/image-zoom.directive.ts';
 
 /** Presents the academic record, institution branding, and capstone link. */
 @Component({

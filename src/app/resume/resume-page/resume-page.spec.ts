@@ -38,7 +38,7 @@ import {
   resolveTechnologyIcon,
   type TechnologyIconMetadata,
 } from '../experience-timeline/technology-icon/technology-icons.ts';
-import { ImageZoomDirective } from '../image-zoom/image-zoom.directive';
+import { ImageZoomDirective } from '../../directive/image-zome/image-zoom.directive.ts';
 import { ResumeNavigation, type ResumeSectionId } from '../resume-navigation/resume-navigation';
 import { ResumePdfService } from '../resume-pdf/resume-pdf.service';
 import { RESUME_DEFER_BOUNDARIES, ResumePage } from './resume-page';

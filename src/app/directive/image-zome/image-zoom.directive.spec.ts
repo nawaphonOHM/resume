@@ -6,9 +6,9 @@ import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
-import type { BrandLogo } from '../../model/resume/resume.model';
-import { ImageZoomDirective } from './image-zoom.directive';
-import { ImageZoomService, type ImageZoomRequest } from './image-zoom.service';
+import type { BrandLogo } from '../../model/resume/resume.model.ts';
+import { ImageZoomDirective } from './image-zoom.directive.ts';
+import { ImageZoomService, type ImageZoomRequest } from '../../resume/image-zoom/image-zoom.service.ts';
 
 /** Intrinsic logo fixture shared by host input and expected service requests. */
 const LOGO: BrandLogo = {

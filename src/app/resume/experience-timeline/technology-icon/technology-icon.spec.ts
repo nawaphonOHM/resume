@@ -6,7 +6,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { vi } from 'vitest';
 
-import { ImageZoomDirective } from '../../image-zoom/image-zoom.directive.ts';
+import { ImageZoomDirective } from '../../../directive/image-zome/image-zoom.directive.ts';
 import {
   TechnologyIconContrastService,
   type TechnologyIconPresentation,
