@@ -6,11 +6,12 @@ import {
   type TechnologyIconPresentation,
 } from './technology-icon-contrast.service.ts';
 import type { TechnologyIconMetadata } from './technology-icons.ts';
+import {NgOptimizedImage} from '@angular/common';
 
 /** Presents one decorative technology mark and upgrades it after deferred contrast processing. */
 @Component({
   selector: 'app-technology-icon',
-  imports: [ImageZoomDirective],
+  imports: [ImageZoomDirective, NgOptimizedImage],
   templateUrl: './technology-icon.html',
   host: {
     class:
