@@ -1,11 +1,11 @@
 {
   "name": "resume",
-  "version": "2.2.5",
+  "version": "2.2.6",
   "type": "module",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test --watch=false",
     "format": "prettier --write .",
