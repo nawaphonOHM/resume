@@ -27,7 +27,7 @@ import { routes } from '../../app.routes';
 import { RESUME_THEME_STORAGE_KEY } from '../../core/theme.service';
 import { IMAGE_ASSET_ORIGIN } from '../../data/image-assets';
 import { RESUME } from '../../data/resume/resume.data';
-import type { BrandLogo } from '../../model/resume/resume.model';
+import type { BrandLogo } from '../../helper/resume/resume.model';
 import {
   TechnologyIconContrastService,
   type TechnologyIconPresentation,

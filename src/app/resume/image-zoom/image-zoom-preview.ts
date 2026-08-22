@@ -1,6 +1,6 @@
 import { Component, InjectionToken, inject } from '@angular/core';
 
-import type { BrandLogo } from '../../model/resume/resume.model';
+import type { BrandLogo } from '../../helper/resume/resume.model';
 import {NgOptimizedImage} from '@angular/common';
 
 /** Immutable content supplied to an overlay-hosted image preview. */

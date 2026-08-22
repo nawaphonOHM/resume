@@ -1,5 +1,5 @@
 import { RESUME } from '../../data/resume/resume.data';
-import type { ResumeProfile } from '../../model/resume/resume.model';
+import type { ResumeProfile } from '../../helper/resume/resume.model';
 import {
   buildResumeDocumentDefinition,
   validateResumePdfBytes,

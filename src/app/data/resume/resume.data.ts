@@ -1,4 +1,4 @@
-import type { ResumeProfile } from '../../model/resume/resume.model';
+import type { ResumeProfile } from '../../helper/resume/resume.model';
 import { imageAssetUrl } from '../image-assets.ts';
 
 /**

@@ -10,7 +10,7 @@ import {
   signal,
 } from '@angular/core';
 
-import type { BrandLogo } from '../../model/resume/resume.model.ts';
+import type { BrandLogo } from '../../helper/resume/resume.model.ts';
 import {
   ImageZoomService,
   type ImageZoomActivation,

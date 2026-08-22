@@ -8,7 +8,7 @@ import { ComponentPortal } from '@angular/cdk/portal';
 import { DestroyRef, Injectable, Injector, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 
-import type { BrandLogo } from '../../model/resume/resume.model';
+import type { BrandLogo } from '../../helper/resume/resume.model';
 import {
   IMAGE_ZOOM_PREVIEW_DATA,
   ImageZoomPreview,

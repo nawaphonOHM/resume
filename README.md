@@ -21,7 +21,7 @@ Open `http://localhost:4200/`. The development server reloads when source files 
 
 ## Edit résumé content
 
-All publishable résumé facts live in `src/app/data/resume/resume.data.ts` and conform to the contracts in `src/app/model/resume/resume.model.ts`. Update that data source rather than duplicating content in component templates.
+All publishable résumé facts live in `src/app/data/resume/resume.data.ts` and conform to the contracts in `src/app/helper/resume/resume.model.ts`. Update that data source rather than duplicating content in component templates.
 
 The phone value must remain `Available on request`. Do not add a phone number, a `tel:` link, or the private source PDF anywhere under the project.
 

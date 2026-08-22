@@ -11,7 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 
-import type { ResumeProfile } from '../../model/resume/resume.model';
+import type { ResumeProfile } from '../../helper/resume/resume.model';
 
 /** Milliseconds between UTC and the fixed Bangkok UTC+7 timezone. */
 const UTC_PLUS_SEVEN_OFFSET_MS = 7 * 60 * 60 * 1_000;

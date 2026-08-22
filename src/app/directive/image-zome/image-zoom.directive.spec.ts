@@ -6,7 +6,7 @@ import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
-import type { BrandLogo } from '../../model/resume/resume.model.ts';
+import type { BrandLogo } from '../../helper/resume/resume.model.ts';
 import { ImageZoomDirective } from './image-zoom.directive.ts';
 import { ImageZoomService, type ImageZoomRequest } from '../../resume/image-zoom/image-zoom.service.ts';
 

@@ -1,5 +1,5 @@
 /** Guards the canonical résumé content, ordering, privacy, and asset metadata. */
-import type { ResumeLink } from '../../model/resume/resume.model';
+import type { ResumeLink } from '../../helper/resume/resume.model';
 import { IMAGE_ASSET_ORIGIN, imageAssetUrl } from '../image-assets';
 import { RESUME } from './resume.data';
 

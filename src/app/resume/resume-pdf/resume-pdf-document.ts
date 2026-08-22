@@ -1,4 +1,4 @@
-import type { Experience, ResumeEducation, ResumeProfile } from '../../model/resume/resume.model';
+import type { Experience, ResumeEducation, ResumeProfile } from '../../helper/resume/resume.model';
 
 const COLORS = {
   navy: '#102a43',

@@ -5,7 +5,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 
-import type { Experience } from '../../model/resume/resume.model';
+import type { Experience } from '../../helper/resume/resume.model';
 import { ImageZoomDirective } from '../../directive/image-zome/image-zoom.directive.ts';
 import { TechnologyIconComponent } from './technology-icon/technology-icon.ts';
 import { resolveTechnologyIcon } from './technology-icon/technology-icons.ts';
