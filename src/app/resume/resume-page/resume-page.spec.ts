@@ -31,7 +31,7 @@ import type { BrandLogo } from '../../model/resume/resume.model';
 import {
   TechnologyIconContrastService,
   type TechnologyIconPresentation,
-} from '../experience-timeline/technology-icon/technology-icon-contrast.service.ts';
+} from '../experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts';
 import { TechnologyIconComponent } from '../experience-timeline/technology-icon/technology-icon.ts';
 import {
   TECHNOLOGY_ICON_FALLBACK_LABELS,

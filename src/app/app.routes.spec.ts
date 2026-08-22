@@ -8,7 +8,7 @@ import { vi } from 'vitest';
 
 import { appConfig } from './app.config';
 import { routes } from './app.routes';
-import { TechnologyIconContrastService } from './resume/experience-timeline/technology-icon/technology-icon-contrast.service';
+import { TechnologyIconContrastService } from './resume/experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts';
 import { ResumePage } from './resume/resume-page/resume-page';
 
 describe('application routes', () => {

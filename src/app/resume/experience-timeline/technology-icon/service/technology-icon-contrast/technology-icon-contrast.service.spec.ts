@@ -3,7 +3,7 @@ import { PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
-import type { TechnologyIconMetadata } from './technology-icons.ts';
+import type { TechnologyIconMetadata } from '../../technology-icons.ts';
 import {
   TECHNOLOGY_ICON_OPEN_CV_LOADER,
   TechnologyIconContrastService,

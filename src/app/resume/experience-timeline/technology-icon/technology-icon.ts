@@ -4,7 +4,7 @@ import { ImageZoomDirective } from '../../../directive/image-zome/image-zoom.dir
 import {
   TechnologyIconContrastService,
   type TechnologyIconPresentation,
-} from './technology-icon-contrast.service.ts';
+} from './service/technology-icon-contrast/technology-icon-contrast.service.ts';
 import type { TechnologyIconMetadata } from './technology-icons.ts';
 import {NgOptimizedImage} from '@angular/common';
 
