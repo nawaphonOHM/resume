@@ -12,7 +12,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
-import type { BrandLogo } from '../../helper/resume/resume.model';
+import type { BrandLogo } from '../../helper/resume-profile/resume-profile.interface.ts';
 import { ImageZoomService, type ImageZoomRequest } from './image-zoom.service';
 
 /** Runtime CDK strategy state inspected to verify fluent positioning configuration. */

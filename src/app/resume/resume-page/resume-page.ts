@@ -7,7 +7,8 @@ import {
   HostListener,
   afterNextRender,
   inject,
-  signal, injectAsync,
+  signal,
+  injectAsync,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -35,7 +36,7 @@ export const RESUME_DEFER_BOUNDARIES = {
 
 const VIEWPORT_EVENT_THROTTLE_MS = 100;
 const SECTION_ACTIVATION_RATIO = 0.18;
-const DEFER_SETTLEMENT_ATTRIBUTE = 'data-resume-defer-settled';
+const DEFER_SETTLEMENT_ATTRIBUTE = 'data-resume-profile-defer-settled';
 const DEFER_BOUNDARY_IDS = Object.values(RESUME_DEFER_BOUNDARIES);
 
 /**
@@ -45,15 +46,15 @@ const DEFER_BOUNDARY_IDS = Object.values(RESUME_DEFER_BOUNDARIES);
  * active navigation state, while the Router owns URL, history, scrolling, and target focus.
  */
 @Component({
-  selector: 'app-resume-page',
+  selector: 'app-resume-profile-page',
   imports: [
     EducationSection,
     ExperienceTimeline,
     HeroSection,
     ProfileSidebar,
-    ResumeNavigation,
     RouterLink,
     SummarySection,
+    ResumeNavigation,
   ],
   templateUrl: './resume-page.html',
   styleUrl: './resume-page.scss',
@@ -63,7 +64,7 @@ export class ResumePage {
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
   private readonly errorHandler = inject(ErrorHandler);
-  private readonly resumePdfService = injectAsync(() => import('../resume-pdf/resume-pdf.service'))
+  private readonly resumePdfService = injectAsync(() => import('../resume-pdf/resume-pdf.service'));
   private readonly scrollDispatcher = inject(ScrollDispatcher);
   private readonly themeService = inject(ThemeService);
   private readonly viewportRuler = inject(ViewportRuler);

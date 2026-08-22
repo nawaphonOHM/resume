@@ -489,10 +489,10 @@ describe('ResumePdfService', () => {
 
     expect(anchors).toHaveLength(1);
     expect(anchors[0]?.download).toBe(RESUME_PDF_FILENAME);
-    expect(anchors[0]?.href).toBe('blob:resume-pdf');
+    expect(anchors[0]?.href).toBe('blob:resume-profile-pdf');
     expect(anchors[0]?.isConnected).toBe(false);
     expect(revokeObjectUrl).toHaveBeenCalledOnce();
-    expect(revokeObjectUrl).toHaveBeenCalledWith('blob:resume-pdf');
+    expect(revokeObjectUrl).toHaveBeenCalledWith('blob:resume-profile-pdf');
   });
 
   it('shares an in-flight runtime load and reuses it for later generation', async () => {
@@ -550,7 +550,7 @@ describe('ResumePdfService', () => {
 
     expect(document.querySelector(`a[download="${RESUME_PDF_FILENAME}"]`)).toBeNull();
     expect(revokeObjectUrl).toHaveBeenCalledOnce();
-    expect(revokeObjectUrl).toHaveBeenCalledWith('blob:resume-pdf');
+    expect(revokeObjectUrl).toHaveBeenCalledWith('blob:resume-profile-pdf');
   });
 
   it('does no loading, generation, or download work outside the browser', async () => {
@@ -612,8 +612,8 @@ describe('ResumePdfService', () => {
 
   it('generates deterministic Unicode PDF bytes with canonical safe links using the local fixture', async () => {
     createObjectUrl
-      .mockReturnValueOnce('blob:first-resume')
-      .mockReturnValueOnce('blob:second-resume');
+      .mockReturnValueOnce('blob:first-resume-profile')
+      .mockReturnValueOnce('blob:second-resume-profile');
     const anchors = trackAnchorClicks();
     const loader = vi.fn(async () => createLocalPdfMakeRuntime());
     const service = createService(loader);
@@ -641,7 +641,7 @@ describe('ResumePdfService', () => {
     expect(pdfSource).not.toMatch(/tel:/i);
     expect(loader).toHaveBeenCalledOnce();
     expect(anchors).toHaveLength(2);
-    expect(revokeObjectUrl).toHaveBeenNthCalledWith(1, 'blob:first-resume');
-    expect(revokeObjectUrl).toHaveBeenNthCalledWith(2, 'blob:second-resume');
+    expect(revokeObjectUrl).toHaveBeenNthCalledWith(1, 'blob:first-resume-profile');
+    expect(revokeObjectUrl).toHaveBeenNthCalledWith(2, 'blob:second-resume-profile');
   });
 });

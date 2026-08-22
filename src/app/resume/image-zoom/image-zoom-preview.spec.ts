@@ -4,7 +4,7 @@
  */
 import { TestBed } from '@angular/core/testing';
 
-import type { BrandLogo } from '../../helper/resume/resume.model';
+import type { BrandLogo } from '../../helper/resume-profile/resume-profile.interface.ts';
 import {
   IMAGE_ZOOM_PREVIEW_DATA,
   ImageZoomPreview,

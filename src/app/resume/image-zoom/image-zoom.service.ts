@@ -8,12 +8,12 @@ import { ComponentPortal } from '@angular/cdk/portal';
 import { DestroyRef, Injectable, Injector, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 
-import type { BrandLogo } from '../../helper/resume/resume.model';
 import {
   IMAGE_ZOOM_PREVIEW_DATA,
   ImageZoomPreview,
   type ImageZoomPreviewData,
 } from './image-zoom-preview';
+import {BrandLogo} from '../../helper/brand-logo/brand-logo.interface.ts';
 
 /** Interaction mode that owns an open preview and controls its pointer behavior. */
 export type ImageZoomActivation = 'hover' | 'touch';

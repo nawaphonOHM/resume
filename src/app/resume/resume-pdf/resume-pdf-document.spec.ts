@@ -1,5 +1,5 @@
 import { RESUME } from '../../data/resume/resume.data';
-import type { ResumeProfile } from '../../helper/resume/resume.model';
+import type { ResumeProfile } from '../../helper/resume-profile/resume-profile.interface.ts';
 import {
   buildResumeDocumentDefinition,
   validateResumePdfBytes,
@@ -63,7 +63,7 @@ function validPdfBytes(additionalText = ''): Uint8Array {
   );
 }
 
-describe('resume PDF document definition', () => {
+describe('resume-profile PDF document definition', () => {
   it('contains every résumé fact and only safe links', () => {
     const definition = buildResumeDocumentDefinition(RESUME);
     const documentText = collectProperty(definition, 'text').join('\n');

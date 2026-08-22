@@ -8,7 +8,7 @@ import {
   type ResumePdfDocumentDefinition,
 } from './resume-pdf-document';
 
-export const RESUME_PDF_FILENAME = 'nawaphon-isarathanachaikul-resume.pdf';
+export const RESUME_PDF_FILENAME = 'nawaphon-isarathanachaikul-resume-profile.pdf';
 
 /** Generated document handle exposed by the browser pdfmake runtime. */
 export interface ResumePdfGenerator {

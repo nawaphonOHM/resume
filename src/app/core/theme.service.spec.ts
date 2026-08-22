@@ -9,7 +9,7 @@ import { vi } from 'vitest';
 import { RESUME_THEME_STORAGE_KEY, ThemeService } from './theme.service';
 
 describe('ThemeService', () => {
-  const transitionClass = 'resume-theme-transitioning';
+  const transitionClass = 'resume-profile-theme-transitioning';
 
   /** Mutable backing state for the deterministic `matchMedia` test double. */
   let prefersDark: boolean;
@@ -45,8 +45,8 @@ describe('ThemeService', () => {
     vi.useFakeTimers();
     localStorage.clear();
     document.documentElement.classList.remove(
-      'resume-theme-light',
-      'resume-theme-dark',
+      'resume-profile-theme-light',
+      'resume-profile-theme-dark',
       transitionClass,
     );
     TestBed.configureTestingModule({});
@@ -58,8 +58,8 @@ describe('ThemeService', () => {
     vi.restoreAllMocks();
     localStorage.clear();
     document.documentElement.classList.remove(
-      'resume-theme-light',
-      'resume-theme-dark',
+      'resume-profile-theme-light',
+      'resume-profile-theme-dark',
       transitionClass,
     );
   });
@@ -69,14 +69,14 @@ describe('ThemeService', () => {
     const service = TestBed.inject(ThemeService);
 
     expect(service.theme()).toBe('dark');
-    expect(document.documentElement.classList.contains('resume-theme-dark')).toBe(true);
+    expect(document.documentElement.classList.contains('resume-profile-theme-dark')).toBe(true);
     expect(document.documentElement.classList.contains(transitionClass)).toBe(false);
 
     prefersDark = false;
     systemThemeListener?.({ matches: false } as MediaQueryListEvent);
 
     expect(service.theme()).toBe('light');
-    expect(document.documentElement.classList.contains('resume-theme-light')).toBe(true);
+    expect(document.documentElement.classList.contains('resume-profile-theme-light')).toBe(true);
     expect(document.documentElement.classList.contains(transitionClass)).toBe(false);
   });
 
@@ -141,8 +141,8 @@ describe('ThemeService', () => {
     service.setTheme('light');
 
     expect(service.theme()).toBe('light');
-    expect(document.documentElement.classList.contains('resume-theme-light')).toBe(true);
-    expect(document.documentElement.classList.contains('resume-theme-dark')).toBe(false);
+    expect(document.documentElement.classList.contains('resume-profile-theme-light')).toBe(true);
+    expect(document.documentElement.classList.contains('resume-profile-theme-dark')).toBe(false);
     expect(document.documentElement.classList.contains(transitionClass)).toBe(true);
     expect(localStorage.getItem(RESUME_THEME_STORAGE_KEY)).toBe('light');
 
@@ -160,11 +160,11 @@ describe('ThemeService', () => {
 
     window.dispatchEvent(new Event('beforeprint'));
     expect(service.theme()).toBe('dark');
-    expect(document.documentElement.classList.contains('resume-theme-light')).toBe(true);
+    expect(document.documentElement.classList.contains('resume-profile-theme-light')).toBe(true);
     expect(document.documentElement.classList.contains(transitionClass)).toBe(false);
 
     window.dispatchEvent(new Event('afterprint'));
-    expect(document.documentElement.classList.contains('resume-theme-dark')).toBe(true);
+    expect(document.documentElement.classList.contains('resume-profile-theme-dark')).toBe(true);
     expect(document.documentElement.classList.contains(transitionClass)).toBe(false);
   });
 
@@ -179,12 +179,12 @@ describe('ThemeService', () => {
     window.dispatchEvent(new Event('beforeprint'));
 
     expect(document.documentElement.classList.contains(transitionClass)).toBe(false);
-    expect(document.documentElement.classList.contains('resume-theme-light')).toBe(true);
+    expect(document.documentElement.classList.contains('resume-profile-theme-light')).toBe(true);
     expect(vi.getTimerCount()).toBe(timerCount);
     expect(clearTimeout).toHaveBeenCalledOnce();
 
     window.dispatchEvent(new Event('afterprint'));
-    expect(document.documentElement.classList.contains('resume-theme-dark')).toBe(true);
+    expect(document.documentElement.classList.contains('resume-profile-theme-dark')).toBe(true);
     expect(document.documentElement.classList.contains(transitionClass)).toBe(false);
   });
 
@@ -213,7 +213,7 @@ describe('ThemeService', () => {
     service.setTheme('dark');
 
     expect(service.theme()).toBe('dark');
-    expect(document.documentElement.classList.contains('resume-theme-dark')).toBe(true);
+    expect(document.documentElement.classList.contains('resume-profile-theme-dark')).toBe(true);
     expect(document.documentElement.classList.contains(transitionClass)).toBe(false);
     expect(localStorage.getItem(RESUME_THEME_STORAGE_KEY)).toBeNull();
     expect(vi.getTimerCount()).toBe(0);

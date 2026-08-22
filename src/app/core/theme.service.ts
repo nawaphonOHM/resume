@@ -5,13 +5,13 @@ import { DestroyRef, Injectable, PLATFORM_ID, computed, inject, signal } from '@
 export type ResumeTheme = 'light' | 'dark';
 
 /** Browser storage key containing the reader's explicit theme preference. */
-export const RESUME_THEME_STORAGE_KEY = 'resume-theme';
+export const RESUME_THEME_STORAGE_KEY = 'resume-profile-theme';
 
 /** Mutually exclusive root classes managed by the service. */
-const THEME_CLASSES = ['resume-theme-light', 'resume-theme-dark'] as const;
+const THEME_CLASSES = ['resume-profile-theme-light', 'resume-profile-theme-dark'] as const;
 
 /** Root marker that enables the stylesheet's animated token transition. */
-const THEME_TRANSITION_CLASS = 'resume-theme-transitioning';
+const THEME_TRANSITION_CLASS = 'resume-profile-theme-transitioning';
 
 /** Time after which the transient theme-transition marker is removed. */
 const THEME_TRANSITION_DURATION_MS = 250;

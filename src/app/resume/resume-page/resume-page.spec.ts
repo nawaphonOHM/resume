@@ -27,7 +27,7 @@ import { routes } from '../../app.routes';
 import { RESUME_THEME_STORAGE_KEY } from '../../core/theme.service';
 import { IMAGE_ASSET_ORIGIN } from '../../data/image-assets';
 import { RESUME } from '../../data/resume/resume.data';
-import type { BrandLogo } from '../../helper/resume/resume.model';
+import type { BrandLogo } from '../../helper/resume-profile/resume-profile.interface.ts';
 import {
   TechnologyIconContrastService,
   type TechnologyIconPresentation,
@@ -178,9 +178,9 @@ describe('ResumePage', () => {
 
     localStorage.clear();
     document.documentElement.classList.remove(
-      'resume-theme-light',
-      'resume-theme-dark',
-      'resume-theme-transitioning',
+      'resume-profile-theme-light',
+      'resume-profile-theme-dark',
+      'resume-profile-theme-transitioning',
     );
 
     optimize = vi.fn<TechnologyIconContrastService['optimize']>((icon) =>
@@ -227,9 +227,9 @@ describe('ResumePage', () => {
     localStorage.clear();
     history.replaceState(null, '', location.pathname);
     document.documentElement.classList.remove(
-      'resume-theme-light',
-      'resume-theme-dark',
-      'resume-theme-transitioning',
+      'resume-profile-theme-light',
+      'resume-profile-theme-dark',
+      'resume-profile-theme-transitioning',
     );
   });
 
@@ -239,15 +239,17 @@ describe('ResumePage', () => {
     const deferBlocks = await fixture.getDeferBlocks();
     const element = fixture.nativeElement as HTMLElement;
     const placeholderRoots = Array.from(
-      element.querySelectorAll<HTMLElement>('[data-resume-defer-placeholder]'),
+      element.querySelectorAll<HTMLElement>('[data-resume-profile-defer-placeholder]'),
     );
-    const anchors = Array.from(element.querySelectorAll<HTMLElement>('[data-resume-section]'));
+    const anchors = Array.from(
+      element.querySelectorAll<HTMLElement>('[data-resume-profile-section]'),
+    );
     const groupedPlaceholder = element.querySelector<HTMLElement>(
-      '.resume-defer-placeholder--education-profile',
+      '.resume-profile-defer-placeholder--education-profile',
     );
 
     expect(deferBlocks).toHaveLength(3);
-    expect(element.querySelector('app-resume-navigation')).not.toBeNull();
+    expect(element.querySelector('app-resume-profile-navigation')).not.toBeNull();
     expect(element.querySelector('app-hero-section')).not.toBeNull();
     expect(element.querySelector('main#main-content')).not.toBeNull();
     expect(element.querySelector('footer')).not.toBeNull();
@@ -272,7 +274,7 @@ describe('ResumePage', () => {
     expect(anchors.every((anchor) => anchor.getAttribute('tabindex') === '-1')).toBe(true);
     expect(anchors.every((anchor) => anchor.hasAttribute('aria-labelledby'))).toBe(true);
     expect(groupedPlaceholder?.querySelectorAll(':scope > section')).toHaveLength(3);
-    expect(element.querySelectorAll('[data-resume-defer-settled]')).toHaveLength(0);
+    expect(element.querySelectorAll('[data-resume-profile-defer-settled]')).toHaveLength(0);
   });
 
   it('renders every deferred boundary once and marks complete content as settled', async () => {
@@ -285,7 +287,7 @@ describe('ResumePage', () => {
       ),
     );
     const settledHosts = Array.from(
-      element.querySelectorAll<HTMLElement>('[data-resume-defer-settled]'),
+      element.querySelectorAll<HTMLElement>('[data-resume-profile-defer-settled]'),
     );
 
     expect(hosts.map(({ tagName }) => tagName.toLowerCase())).toEqual([
@@ -294,19 +296,19 @@ describe('ResumePage', () => {
       'app-education-section',
       'app-profile-sidebar',
     ]);
-    expect(settledHosts.map((host) => host.getAttribute('data-resume-defer-settled'))).toEqual(
-      Object.values(RESUME_DEFER_BOUNDARIES),
-    );
+    expect(
+      settledHosts.map((host) => host.getAttribute('data-resume-profile-defer-settled')),
+    ).toEqual(Object.values(RESUME_DEFER_BOUNDARIES));
     expect(settledHosts.map(({ tagName }) => tagName.toLowerCase())).toEqual([
       'app-summary-section',
       'app-experience-timeline',
       'app-profile-sidebar',
     ]);
-    expect(element.querySelectorAll('[data-resume-defer-placeholder]')).toHaveLength(0);
-    expect(element.querySelectorAll('[data-resume-section]')).toHaveLength(5);
+    expect(element.querySelectorAll('[data-resume-profile-defer-placeholder]')).toHaveLength(0);
+    expect(element.querySelectorAll('[data-resume-profile-section]')).toHaveLength(5);
 
     fixture.detectChanges();
-    expect(Array.from(element.querySelectorAll('[data-resume-defer-settled]'))).toEqual(
+    expect(Array.from(element.querySelectorAll('[data-resume-profile-defer-settled]'))).toEqual(
       settledHosts,
     );
   });
@@ -323,9 +325,11 @@ describe('ResumePage', () => {
 
     const element = fixture.nativeElement as HTMLElement;
     const errorRoots = Array.from(
-      element.querySelectorAll<HTMLElement>('[data-resume-defer-error]'),
+      element.querySelectorAll<HTMLElement>('[data-resume-profile-defer-error]'),
     );
-    const anchors = Array.from(element.querySelectorAll<HTMLElement>('[data-resume-section]'));
+    const anchors = Array.from(
+      element.querySelectorAll<HTMLElement>('[data-resume-profile-section]'),
+    );
 
     expect(errorRoots).toHaveLength(3);
     expect(errorRoots.map((root) => root.getAttribute('role'))).toEqual([
@@ -333,9 +337,9 @@ describe('ResumePage', () => {
       'alert',
       'alert',
     ]);
-    expect(errorRoots.map((root) => root.getAttribute('data-resume-defer-settled'))).toEqual(
-      Object.values(RESUME_DEFER_BOUNDARIES),
-    );
+    expect(
+      errorRoots.map((root) => root.getAttribute('data-resume-profile-defer-settled')),
+    ).toEqual(Object.values(RESUME_DEFER_BOUNDARIES));
     expect(anchors.map(({ id }) => id)).toEqual([
       'about',
       'experience',
@@ -347,7 +351,7 @@ describe('ResumePage', () => {
     expect(anchors.every((anchor) => anchor.textContent?.includes('unavailable'))).toBe(true);
     expect(
       element
-        .querySelector('.resume-defer-error--education-profile')
+        .querySelector('.resume-profile-defer-error--education-profile')
         ?.querySelectorAll(':scope > section'),
     ).toHaveLength(3);
     expect(element.querySelector('app-summary-section')).toBeNull();
@@ -362,7 +366,7 @@ describe('ResumePage', () => {
     const element = fixture.nativeElement as HTMLElement;
 
     const sectionIds = Array.from(
-      element.querySelectorAll<HTMLElement>('[data-resume-section]'),
+      element.querySelectorAll<HTMLElement>('[data-resume-profile-section]'),
     ).map((section) => section.id);
     const externalLinks = Array.from(
       element.querySelectorAll<HTMLAnchorElement>('a[target="_blank"]'),
@@ -449,7 +453,7 @@ describe('ResumePage', () => {
       true,
     );
     expect(getComputedStyle(githubLogoFrame!).backgroundColor).toBe('rgb(255, 255, 255)');
-    document.documentElement.classList.add('resume-theme-dark');
+    document.documentElement.classList.add('resume-profile-theme-dark');
     expect(getComputedStyle(githubLogoFrame!).backgroundColor).toBe('rgb(255, 255, 255)');
     expect(githubIdentity?.firstElementChild).toBe(githubLogoFrame);
     expect(githubLogoFrame?.nextElementSibling).toBe(githubLabel);
@@ -868,7 +872,7 @@ describe('ResumePage', () => {
     expect(print).toHaveBeenCalledOnce();
     expect(
       fixture.nativeElement.querySelectorAll(
-        '[data-resume-defer-error][data-resume-defer-settled]',
+        '[data-resume-profile-defer-error][data-resume-profile-defer-settled]',
       ),
     ).toHaveLength(3);
   });
@@ -913,8 +917,8 @@ describe('ResumePage', () => {
 
     expect(component.renderAllSections()).toBe(true);
     expect(print).not.toHaveBeenCalled();
-    expect(element.querySelectorAll('[data-resume-defer-placeholder]')).toHaveLength(3);
-    expect(element.querySelectorAll('[data-resume-defer-settled]')).toHaveLength(0);
+    expect(element.querySelectorAll('[data-resume-profile-defer-placeholder]')).toHaveLength(3);
+    expect(element.querySelectorAll('[data-resume-profile-defer-settled]')).toHaveLength(0);
   });
 
   it('disconnects a pending print wait when the page is destroyed', async () => {
@@ -945,8 +949,8 @@ describe('ResumePage', () => {
     switchToDark?.click();
     fixture.detectChanges();
 
-    expect(root.classList.contains('resume-theme-dark')).toBe(true);
-    expect(root.classList.contains('resume-theme-transitioning')).toBe(true);
+    expect(root.classList.contains('resume-profile-theme-dark')).toBe(true);
+    expect(root.classList.contains('resume-profile-theme-transitioning')).toBe(true);
     expect(localStorage.getItem(RESUME_THEME_STORAGE_KEY)).toBe('dark');
 
     const switchToLight = element.querySelector<HTMLButtonElement>(
@@ -956,9 +960,9 @@ describe('ResumePage', () => {
     switchToLight?.click();
     fixture.detectChanges();
 
-    expect(root.classList.contains('resume-theme-light')).toBe(true);
-    expect(root.classList.contains('resume-theme-dark')).toBe(false);
-    expect(root.classList.contains('resume-theme-transitioning')).toBe(true);
+    expect(root.classList.contains('resume-profile-theme-light')).toBe(true);
+    expect(root.classList.contains('resume-profile-theme-dark')).toBe(false);
+    expect(root.classList.contains('resume-profile-theme-transitioning')).toBe(true);
     expect(localStorage.getItem(RESUME_THEME_STORAGE_KEY)).toBe('light');
     expect(
       element.querySelector<HTMLButtonElement>('[aria-label="Switch to dark theme"]')?.textContent,

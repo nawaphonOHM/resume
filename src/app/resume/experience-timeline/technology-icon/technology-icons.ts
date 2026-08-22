@@ -1,5 +1,5 @@
 import { imageAssetUrl } from '../../../data/image-assets.ts';
-import type { BrandLogo } from '../../../helper/resume/resume.model.ts';
+import { BrandLogo } from '../../../helper/brand-logo/brand-logo.interface.ts';
 
 /** Remote SVG metadata used to decorate a technology label. */
 export interface TechnologyIconMetadata extends BrandLogo {

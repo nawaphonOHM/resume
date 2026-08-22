@@ -6,7 +6,7 @@ import {
   type TechnologyIconPresentation,
 } from './service/technology-icon-contrast/technology-icon-contrast.service.ts';
 import type { TechnologyIconMetadata } from './technology-icons.ts';
-import {NgOptimizedImage} from '@angular/common';
+import { NgOptimizedImage } from '@angular/common';
 
 /** Presents one decorative technology mark and upgrades it after deferred contrast processing. */
 @Component({
@@ -15,7 +15,7 @@ import {NgOptimizedImage} from '@angular/common';
   templateUrl: './technology-icon.html',
   host: {
     class:
-      'technology-icon-container technology-icon-frame inline-grid h-5 w-5 shrink-0 place-items-center overflow-hidden rounded-[0.3rem] border border-solid border-[color:var(--resume-border)] p-px',
+      'technology-icon-container technology-icon-frame inline-grid h-5 w-5 shrink-0 place-items-center overflow-hidden rounded-[0.3rem] border border-solid border-[color:var(--resume-profile-border)] p-px',
     '[class.technology-icon-frame--light]': "presentation()?.backgroundColor === '#ffffff'",
     '[class.technology-icon-frame--dark]': "presentation()?.backgroundColor === '#0d1b2d'",
     '[style.background-color]': 'presentation()?.backgroundColor',

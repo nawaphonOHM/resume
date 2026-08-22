@@ -1,7 +1,7 @@
 ////
 /// Defines the résumé's global design-token, theme, accessibility, and print foundation.
 ///
-/// Tailwind tokens and application styles consume the semantic `--resume-*` properties.
+/// Tailwind tokens and application styles consume the semantic `--resume-profile-*` properties.
 /// Explicit theme classes take precedence over system color preference, while reduced-motion
 /// and A4 print rules normalize interactions and presentation outside the screen experience.
 ////
@@ -144,7 +144,7 @@
 
 /// Core surfaces and text colors for an explicitly selected dark theme.
 ///
-/// Every key is emitted as a `--resume-*` custom property by `.resume-theme-dark`.
+/// Every key is emitted as a `--resume-profile-*` custom property by `.resume-profile-theme-dark`.
 ///
 /// @type Map
 /// @prop {Color} page - Browser canvas behind the résumé.
@@ -165,7 +165,7 @@ $resume-dark-colors: (
 
 /// Brand and interaction colors for an explicitly selected dark theme.
 ///
-/// Every key is emitted as a `--resume-*` custom property by `.resume-theme-dark`.
+/// Every key is emitted as a `--resume-profile-*` custom property by `.resume-profile-theme-dark`.
 ///
 /// @type Map
 /// @prop {Color} brand - Primary branded foreground.
@@ -184,7 +184,7 @@ $resume-dark-brand-colors: (
 
 /// Dark-theme colors reserved for the persistent sidebar-style regions.
 ///
-/// Every key is emitted as a `--resume-*` custom property by `.resume-theme-dark`.
+/// Every key is emitted as a `--resume-profile-*` custom property by `.resume-profile-theme-dark`.
 ///
 /// @type Map
 /// @prop {Color} sidebar - High-contrast panel background.
@@ -197,7 +197,7 @@ $resume-dark-layout-colors: (
 
 /// Dark-theme elevation values shared by raised résumé panels.
 ///
-/// Every key is emitted as a `--resume-*` custom property by `.resume-theme-dark`.
+/// Every key is emitted as a `--resume-profile-*` custom property by `.resume-profile-theme-dark`.
 ///
 /// @type Map
 /// @prop {Color} shadow-color - Tint used to compose elevation shadows.

@@ -1,7 +1,7 @@
 import { Component, InjectionToken, inject } from '@angular/core';
 
-import type { BrandLogo } from '../../helper/resume/resume.model';
-import {NgOptimizedImage} from '@angular/common';
+import { NgOptimizedImage } from '@angular/common';
+import { BrandLogo } from '../../helper/brand-logo/brand-logo.interface.ts';
 
 /** Immutable content supplied to an overlay-hosted image preview. */
 export interface ImageZoomPreviewData {
@@ -33,9 +33,7 @@ export const IMAGE_ZOOM_PREVIEW_DATA = new InjectionToken<ImageZoomPreviewData>(
   host: {
     'aria-hidden': 'true',
   },
-  imports: [
-    NgOptimizedImage
-  ]
+  imports: [NgOptimizedImage],
 })
 export class ImageZoomPreview {
   /** Content scoped to this component's overlay injector. */

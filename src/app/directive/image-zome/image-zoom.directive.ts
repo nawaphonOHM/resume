@@ -10,12 +10,12 @@ import {
   signal,
 } from '@angular/core';
 
-import type { BrandLogo } from '../../helper/resume/resume.model.ts';
 import {
   ImageZoomService,
   type ImageZoomActivation,
   type ImageZoomRequest,
 } from '../../resume/image-zoom/image-zoom.service.ts';
+import { BrandLogo } from '../../helper/brand-logo/brand-logo.interface.ts';
 
 /** Pixel dimensions used to compare an image's intrinsic and rendered content boxes. */
 interface ImageSize {
