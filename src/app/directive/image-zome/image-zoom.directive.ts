@@ -15,7 +15,7 @@ import {
   type ImageZoomActivation,
   type ImageZoomRequest,
 } from '../../resume/image-zoom/image-zoom.service.ts';
-import { BrandLogo } from '../../helper/brand-logo/brand-logo.interface.ts';
+import type { BrandLogo } from '../../helper/brand-logo/brand-logo.interface.ts';
 
 /** Pixel dimensions used to compare an image's intrinsic and rendered content boxes. */
 interface ImageSize {

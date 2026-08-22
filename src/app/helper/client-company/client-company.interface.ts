@@ -1,4 +1,4 @@
-import { CompanyLogo } from '../brand-logo/company-logo/compant-logo.interface.ts';
+import type { CompanyLogo } from '../brand-logo/company-logo/compant-logo.interface.ts';
 
 /** Client represented by the candidate during an outsourced engagement. */
 export interface ClientCompany {

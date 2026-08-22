@@ -1,7 +1,7 @@
 import { Component, InjectionToken, inject } from '@angular/core';
 
 import { NgOptimizedImage } from '@angular/common';
-import { BrandLogo } from '../../helper/brand-logo/brand-logo.interface.ts';
+import type { BrandLogo } from '../../helper/brand-logo/brand-logo.interface.ts';
 
 /** Immutable content supplied to an overlay-hosted image preview. */
 export interface ImageZoomPreviewData {

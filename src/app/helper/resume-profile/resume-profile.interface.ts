@@ -1,7 +1,7 @@
-import { ResumeLinkInterface } from '../ressume-link/resume-link.interface.ts';
-import { ResumeDetailsInterface } from '../resume-details/resume-details.interface.ts';
-import { ResumeEducation } from '../resume-education/resume-education.interface.ts';
-import { Experience } from '../experience/experience.interface.ts';
+import type { ResumeLinkInterface } from '../ressume-link/resume-link.interface.ts';
+import type { ResumeDetailsInterface } from '../resume-details/resume-details.interface.ts';
+import type { ResumeEducation } from '../resume-education/resume-education.interface.ts';
+import type { Experience } from '../experience/experience.interface.ts';
 
 /** Canonical data contract consumed by the résumé's presentation sections. */
 export interface ResumeProfile {

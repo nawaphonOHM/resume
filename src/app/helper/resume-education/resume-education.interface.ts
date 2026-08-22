@@ -1,5 +1,5 @@
-import { BrandLogo } from '../brand-logo/brand-logo.interface.ts';
-import { ResumeProjectInterface } from '../resume-project/resume-project.interface.ts';
+import type { BrandLogo } from '../brand-logo/brand-logo.interface.ts';
+import type { ResumeProjectInterface } from '../resume-project/resume-project.interface.ts';
 
 /** Highest-education record presented in the résumé. */
 export interface ResumeEducation {

@@ -1,6 +1,6 @@
-import { CompanyLogo } from '../brand-logo/company-logo/compant-logo.interface.ts';
-import { ClientCompany } from '../client-company/client-company.interface.ts';
-import { EmploymentType } from '../employment-type/employment-type.type.ts';
+import type { CompanyLogo } from '../brand-logo/company-logo/compant-logo.interface.ts';
+import type { ClientCompany } from '../client-company/client-company.interface.ts';
+import type { EmploymentType } from '../employment-type/employment-type.type.ts';
 
 /** A single employment engagement and its résumé-ready presentation data. */
 export interface Experience {

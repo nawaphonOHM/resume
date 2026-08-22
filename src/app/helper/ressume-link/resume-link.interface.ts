@@ -1,4 +1,4 @@
-import { BrandLogo } from '../brand-logo/brand-logo.interface.ts';
+import type { BrandLogo } from '../brand-logo/brand-logo.interface.ts';
 
 /** A secure external destination displayed with optional brand artwork. */
 export interface ResumeLinkInterface {
