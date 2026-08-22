@@ -6,7 +6,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 
-import type { ResumeProfile } from '../../helper/resume-profile/resume-profile.interface.ts';
+import type { ResumeProfile } from '../../helper/interface/resume-profile/resume-profile.interface.ts';
 import { ImageZoomDirective } from '../../directive/image-zome/image-zoom.directive.ts';
 
 /** Presents the candidate's skills, public details, and external profile links. */

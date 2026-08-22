@@ -1,5 +1,5 @@
 import { RESUME } from '../../data/resume/resume.data';
-import type { ResumeProfile } from '../../helper/resume-profile/resume-profile.interface.ts';
+import type { ResumeProfile } from '../../helper/interface/resume-profile/resume-profile.interface.ts';
 import {
   buildResumeDocumentDefinition,
   validateResumePdfBytes,

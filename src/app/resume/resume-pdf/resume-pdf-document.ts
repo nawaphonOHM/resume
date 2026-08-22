@@ -1,6 +1,6 @@
-import type { Experience } from '../../helper/experience/experience.interface.ts';
-import type { ResumeEducation } from '../../helper/resume-education/resume-education.interface.ts';
-import type { ResumeProfile } from '../../helper/resume-profile/resume-profile.interface.ts';
+import type { Experience } from '../../helper/interface/experience/experience.interface.ts';
+import type { ResumeEducation } from '../../helper/interface/resume-education/resume-education.interface.ts';
+import type { ResumeProfile } from '../../helper/interface/resume-profile/resume-profile.interface.ts';
 
 const COLORS = {
   navy: '#102a43',

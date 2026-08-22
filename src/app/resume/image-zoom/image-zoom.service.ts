@@ -13,7 +13,7 @@ import {
   ImageZoomPreview,
   type ImageZoomPreviewData,
 } from './image-zoom-preview';
-import type { BrandLogo } from '../../helper/brand-logo/brand-logo.interface.ts';
+import type { BrandLogo } from '../../helper/interface/brand-logo/brand-logo.interface.ts';
 
 /** Interaction mode that owns an open preview and controls its pointer behavior. */
 export type ImageZoomActivation = 'hover' | 'touch';
