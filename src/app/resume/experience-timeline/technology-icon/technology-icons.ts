@@ -94,7 +94,7 @@ export const TECHNOLOGY_ICONS = {
     surface: 'light',
   },
   Gin: {
-    src: imageAssetUrl('/technology-icons/gin.svg'),
+    src: imageAssetUrl('/technology-icons/gin.webp'),
     width: 24,
     height: 24,
     surface: 'light',
