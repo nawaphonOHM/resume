@@ -12,8 +12,8 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
-import type { BrandLogo } from '../../helper/interface/resume-profile/resume-profile.interface.ts';
 import { ImageZoomService, type ImageZoomRequest } from './image-zoom.service';
+import {BrandLogo} from '../../helper/interface/brand-logo/brand-logo.interface.ts';
 
 /** Runtime CDK strategy state inspected to verify fluent positioning configuration. */
 interface PositionStrategyState {

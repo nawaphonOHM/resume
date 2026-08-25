@@ -27,10 +27,8 @@ import { routes } from '../../app.routes';
 import { RESUME_THEME_STORAGE_KEY } from '../../core/theme.service';
 import { IMAGE_ASSET_ORIGIN } from '../../data/image-assets';
 import { RESUME } from '../../data/resume/resume.data';
-import type { BrandLogo } from '../../helper/interface/resume-profile/resume-profile.interface.ts';
 import {
   TechnologyIconContrastService,
-  type TechnologyIconPresentation,
 } from '../experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts';
 import { TechnologyIconComponent } from '../experience-timeline/technology-icon/technology-icon.ts';
 import {
@@ -40,8 +38,12 @@ import {
 } from '../experience-timeline/technology-icon/technology-icons.ts';
 import { ImageZoomDirective } from '../../directive/image-zome/image-zoom.directive.ts';
 import { ResumeNavigation, type ResumeSectionId } from '../resume-navigation/resume-navigation';
-import { ResumePdfService } from '../resume-pdf/resume-pdf.service';
 import { RESUME_DEFER_BOUNDARIES, ResumePage } from './resume-page';
+import {
+  TechnologyIconPresentation
+} from '../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
+import ResumePdfService from '../resume-pdf/resume-pdf.service.ts';
+import {BrandLogo} from '../../helper/interface/brand-logo/brand-logo.interface.ts';
 
 const OPTIMIZED_ICON_SOURCE = 'data:image/png;base64,b3B0aW1pemVk';
 const OPTIMIZED_ICON_BACKGROUND = '#0d1b2d';

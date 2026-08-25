@@ -1,5 +1,5 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { Injectable, InjectionToken, PLATFORM_ID, inject } from '@angular/core';
+import {Injectable, InjectionToken, PLATFORM_ID, inject, Service} from '@angular/core';
 
 import { RESUME } from '../../data/resume/resume.data';
 import {
@@ -289,7 +289,7 @@ export const RESUME_PDF_RUNTIME_LOADER = new InjectionToken<ResumePdfRuntimeLoad
 );
 
 /** Lazily generates, validates, and downloads the canonical résumé PDF. */
-@Injectable({ providedIn: 'root' })
+@Service()
 export default class ResumePdfService {
   private readonly document = inject(DOCUMENT);
   private readonly platformId = inject(PLATFORM_ID);

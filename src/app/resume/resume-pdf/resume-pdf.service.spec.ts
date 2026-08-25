@@ -1,16 +1,15 @@
-import { PLATFORM_ID } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import {PLATFORM_ID} from '@angular/core';
+import {TestBed} from '@angular/core/testing';
 import pdfMakeModule from 'pdfmake/build/pdfmake.js';
 import virtualFileSystemModule from 'pdfmake/build/vfs_fonts.js';
-import { vi } from 'vitest';
+import {vi} from 'vitest';
 
-import { RESUME } from '../../data/resume/resume.data';
-import type { ResumePdfDocumentDefinition } from './resume-pdf-document';
-import {
+import {RESUME} from '../../data/resume/resume.data';
+import type {ResumePdfDocumentDefinition} from './resume-pdf-document';
+import ResumePdfService, {
   RESUME_PDF_CDN_SCRIPT_LOADER,
   RESUME_PDF_FILENAME,
   RESUME_PDF_RUNTIME_LOADER,
-  ResumePdfService,
   type ResumePdfCdnAsset,
   type ResumePdfCdnScriptLoader,
   type ResumePdfRuntime,
@@ -38,6 +37,7 @@ const REQUIRED_ROBOTO_FONTS = [
 
 interface TestBrowserPdfRuntime extends ResumePdfRuntime {
   readonly virtualfs: { readonly storage: Record<string, unknown> };
+
   addVirtualFileSystem(virtualFileSystem: Readonly<Record<string, unknown>>): void;
 }
 
@@ -50,7 +50,7 @@ function validPdfBytes(additionalText = ''): Uint8Array {
       '/ToUnicode',
       `mailto:${RESUME.details.email}`,
       RESUME.education.seniorProject.url,
-      ...RESUME.links.map(({ url }) => url),
+      ...RESUME.links.map(({url}) => url),
       additionalText,
     ]
       .join('\n')
@@ -60,10 +60,10 @@ function validPdfBytes(additionalText = ''): Uint8Array {
 
 function createFakeRuntime(initialBytes: unknown = validPdfBytes()) {
   const getBuffer = vi.fn(async (): Promise<unknown> => initialBytes);
-  const createPdf = vi.fn((_definition: ResumePdfDocumentDefinition) => ({ getBuffer }));
-  const runtime: ResumePdfRuntime = { createPdf };
+  const createPdf = vi.fn((_definition: ResumePdfDocumentDefinition) => ({getBuffer}));
+  const runtime: ResumePdfRuntime = {createPdf};
 
-  return { runtime, createPdf, getBuffer };
+  return {runtime, createPdf, getBuffer};
 }
 
 function createFakeBrowserRuntime(initialBytes: unknown = validPdfBytes()) {
@@ -74,15 +74,15 @@ function createFakeBrowserRuntime(initialBytes: unknown = validPdfBytes()) {
   });
   const runtime: TestBrowserPdfRuntime = Object.assign(fake.runtime, {
     addVirtualFileSystem,
-    virtualfs: { storage },
+    virtualfs: {storage},
   });
 
-  return { ...fake, addVirtualFileSystem, runtime, storage };
+  return {...fake, addVirtualFileSystem, runtime, storage};
 }
 
 function registerRobotoFonts(runtime: TestBrowserPdfRuntime): void {
   for (const font of REQUIRED_ROBOTO_FONTS) {
-    runtime.virtualfs.storage[font] = { data: font };
+    runtime.virtualfs.storage[font] = {data: font};
   }
 }
 
@@ -135,8 +135,8 @@ function createService(
 ): ResumePdfService {
   TestBed.configureTestingModule({
     providers: [
-      { provide: PLATFORM_ID, useValue: platformId },
-      { provide: RESUME_PDF_RUNTIME_LOADER, useValue: loader },
+      {provide: PLATFORM_ID, useValue: platformId},
+      {provide: RESUME_PDF_RUNTIME_LOADER, useValue: loader},
     ],
   });
   return TestBed.inject(ResumePdfService);
@@ -145,8 +145,8 @@ function createService(
 function createServiceWithCdnLoader(loader?: ResumePdfCdnScriptLoader): ResumePdfService {
   TestBed.configureTestingModule({
     providers: [
-      { provide: PLATFORM_ID, useValue: 'browser' },
-      ...(loader ? [{ provide: RESUME_PDF_CDN_SCRIPT_LOADER, useValue: loader }] : []),
+      {provide: PLATFORM_ID, useValue: 'browser'},
+      ...(loader ? [{provide: RESUME_PDF_CDN_SCRIPT_LOADER, useValue: loader}] : []),
     ],
   });
   return TestBed.inject(ResumePdfService);
@@ -198,8 +198,8 @@ describe('ResumePdfService', () => {
     createObjectUrl = vi.fn((_blob: Blob) => 'blob:resume-pdf');
     revokeObjectUrl = vi.fn((_url: string) => undefined);
     Object.defineProperties(window.URL, {
-      createObjectURL: { configurable: true, value: createObjectUrl },
-      revokeObjectURL: { configurable: true, value: revokeObjectUrl },
+      createObjectURL: {configurable: true, value: createObjectUrl},
+      revokeObjectURL: {configurable: true, value: revokeObjectUrl},
     });
   });
 
@@ -257,7 +257,7 @@ describe('ResumePdfService', () => {
   });
 
   it('deduplicates script loads and removes failed elements and listeners before retrying', async () => {
-    TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'browser' }] });
+    TestBed.configureTestingModule({providers: [{provide: PLATFORM_ID, useValue: 'browser'}]});
     const loader = TestBed.inject(RESUME_PDF_CDN_SCRIPT_LOADER);
 
     const firstLoad = loader.load(PDFMAKE_CORE_ASSET);
@@ -297,7 +297,7 @@ describe('ResumePdfService', () => {
         registerRobotoFonts(fake.runtime);
       }
     });
-    const loader: ResumePdfCdnScriptLoader = { load, invalidate: vi.fn() };
+    const loader: ResumePdfCdnScriptLoader = {load, invalidate: vi.fn()};
     const service = createServiceWithCdnLoader(loader);
 
     expect(load).not.toHaveBeenCalled();
@@ -381,14 +381,14 @@ describe('ResumePdfService', () => {
       'createPdf is missing',
       () => ({
         addVirtualFileSystem: vi.fn(),
-        virtualfs: { storage: {} },
+        virtualfs: {storage: {}},
       }),
     ],
     [
       'addVirtualFileSystem is missing',
       () => ({
         createPdf: createFakeRuntime().runtime.createPdf,
-        virtualfs: { storage: {} },
+        virtualfs: {storage: {}},
       }),
     ],
   ])('invalidates a loaded core when %s and permits a clean retry', async (_label, malformed) => {
@@ -435,7 +435,7 @@ describe('ResumePdfService', () => {
     const firstScripts = await waitForCdnScripts(2);
     const failedFontScript = firstScripts[1];
     for (const font of REQUIRED_ROBOTO_FONTS.slice(0, -1)) {
-      fake.storage[font] = { data: font };
+      fake.storage[font] = {data: font};
     }
     const rejectedDownload = expect(failedDownload).rejects.toThrow(/font bundle is unavailable/i);
     failedFontScript?.dispatchEvent(new Event('load'));
@@ -476,8 +476,8 @@ describe('ResumePdfService', () => {
     expect(fake.createPdf).toHaveBeenCalledOnce();
     expect(fake.getBuffer).toHaveBeenCalledOnce();
     expect(fake.createPdf.mock.calls[0]?.[0]).toMatchObject({
-      info: { title: `${RESUME.name} — ${RESUME.title}` },
-      defaultStyle: { font: 'Roboto' },
+      info: {title: `${RESUME.name} — ${RESUME.title}`},
+      defaultStyle: {font: 'Roboto'},
     });
     expect(createObjectUrl).toHaveBeenCalledOnce();
 
@@ -635,7 +635,7 @@ describe('ResumePdfService', () => {
     expect(pdfSource).toMatch(/\/ToUnicode\b/);
     expect(pdfSource).toContain(`mailto:${RESUME.details.email}`);
     expect(pdfSource).toContain(RESUME.education.seniorProject.url);
-    for (const { url } of RESUME.links) {
+    for (const {url} of RESUME.links) {
       expect(pdfSource).toContain(url);
     }
     expect(pdfSource).not.toMatch(/tel:/i);

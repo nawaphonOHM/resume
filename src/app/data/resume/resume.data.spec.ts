@@ -1,7 +1,7 @@
 /** Guards the canonical résumé content, ordering, privacy, and asset metadata. */
-import type { ResumeLink } from '../../helper/interface/resume-profile/resume-profile.interface.ts';
 import { IMAGE_ASSET_ORIGIN, imageAssetUrl } from '../image-assets';
 import { RESUME } from './resume.data';
+import {ResumeLink} from '../../helper/interface/ressume-link/resume-link.interface.ts';
 
 describe('RESUME', () => {
   it('builds image URLs from the fixed HTTPS Space origin', () => {

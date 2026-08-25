@@ -1,7 +1,7 @@
 import type { BrandLogo } from '../brand-logo/brand-logo.interface.ts';
 
 /** A secure external destination displayed with optional brand artwork. */
-export interface ResumeLinkInterface {
+export interface ResumeLink {
   /** Human-readable text that identifies the destination. */
   readonly label: string;
 

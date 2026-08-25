@@ -1,5 +1,5 @@
-import type { ResumeLinkInterface } from '../ressume-link/resume-link.interface.ts';
-import type { ResumeDetailsInterface } from '../resume-details/resume-details.interface.ts';
+import type {ResumeLink} from '../ressume-link/resume-link.interface.ts';
+import type {ResumeDetails} from '../resume-details/resume-details.interface.ts';
 import type { ResumeEducation } from '../resume-education/resume-education.interface.ts';
 import type { Experience } from '../experience/experience.interface.ts';
 
@@ -15,10 +15,10 @@ export interface ResumeProfile {
   readonly summary: readonly string[];
 
   /** Public personal and contact details. */
-  readonly details: ResumeDetailsInterface;
+  readonly details: ResumeDetails;
 
   /** Ordered external profile and portfolio destinations. */
-  readonly links: readonly ResumeLinkInterface[];
+  readonly links: readonly ResumeLink[];
 
   /** Curated skill labels shown in display order. */
   readonly skills: readonly string[];

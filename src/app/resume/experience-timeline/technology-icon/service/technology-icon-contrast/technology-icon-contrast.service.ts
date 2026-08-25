@@ -1,244 +1,50 @@
-import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { Injectable, InjectionToken, PLATFORM_ID, inject } from '@angular/core';
+import {DOCUMENT, isPlatformBrowser} from '@angular/common';
+import {PLATFORM_ID, inject, Service} from '@angular/core';
 
-import type { TechnologyIconMetadata } from '../../technology-icons.ts';
-import type { BrandLogo } from '../../../../../helper/interface/brand-logo/brand-logo.interface.ts';
-
-const OPEN_CV_CDN_URL = 'https://cdn.jsdelivr.net/npm/@techstark/opencv-js/+esm';
-const OPEN_CV_RETRY_COUNT = 3;
-const OPEN_CV_RETRY_DELAY_MS = 1_000;
-const OPEN_CV_RETRY_DELAY_MULTIPLIER = 1.0;
-const OPEN_CV_RETRY_JITTER_MS = 0;
-
-/** Exact card colors considered for every technology icon. */
-export type TechnologyIconBackgroundColor = '#ffffff' | '#0d1b2d';
-
-/** Resolved artwork and the exact card surface on which it was evaluated. */
-export interface TechnologyIconPresentation {
-  readonly logo: BrandLogo;
-  readonly backgroundColor: TechnologyIconBackgroundColor;
-}
-
-/** Deferred OpenCV module loader, replaceable at the browser boundary in tests. */
-export type TechnologyIconOpenCvLoader = (sourceUrl: string) => Promise<unknown>;
-
-/**
- * Loader whose factory keeps OpenCV out of the initial bundle and does no work
- * until the returned function is called from a scheduled enhancement.
- */
-export const TECHNOLOGY_ICON_OPEN_CV_LOADER = new InjectionToken<TechnologyIconOpenCvLoader>(
-  'TECHNOLOGY_ICON_OPEN_CV_LOADER',
-  {
-    providedIn: 'root',
-    factory: () => (sourceUrl) => import(sourceUrl) as Promise<unknown>,
-  },
-);
-
-interface CardSurface {
-  readonly backgroundColor: TechnologyIconBackgroundColor;
-  readonly rgb: readonly [number, number, number];
-  readonly tone: 'light' | 'dark';
-}
-
-interface Candidate {
-  readonly pixels: Uint8ClampedArray;
-  readonly score: number;
-  readonly surface: CardSurface;
-}
-
-interface RasterizedIcon {
-  readonly canvas: HTMLCanvasElement;
-  readonly context: CanvasRenderingContext2D;
-  readonly pixels: Uint8ClampedArray;
-}
-
-interface Disposable {
-  delete?(): unknown;
-}
-
-interface Deletable extends Disposable {
-  delete(): unknown;
-}
-
-interface OpenCvMat extends Deletable {
-  readonly data: ArrayLike<number>;
-}
-
-interface OpenCvMatVector extends Deletable {
-  get(index: number): OpenCvMat;
-  push_back(mat: OpenCvMat): unknown;
-}
-
-interface OpenCvSize extends Disposable {}
-
-interface OpenCvClahe extends Deletable {
-  apply(source: OpenCvMat, destination: OpenCvMat): void;
-  collectGarbage?(): void;
-}
-
-interface OpenCvRuntime {
-  readonly Mat: new () => OpenCvMat;
-  readonly MatVector: new () => OpenCvMatVector;
-  readonly Size: new (width: number, height: number) => OpenCvSize;
-  readonly CLAHE: new (clipLimit: number, tileGridSize: OpenCvSize) => OpenCvClahe;
-  readonly COLOR_RGBA2RGB: number;
-  readonly COLOR_RGB2Lab: number;
-  readonly COLOR_Lab2RGB: number;
-  matFromImageData(imageData: ImageData): OpenCvMat;
-  cvtColor(source: OpenCvMat, destination: OpenCvMat, code: number): void;
-  split(source: OpenCvMat, destination: OpenCvMatVector): void;
-  merge(source: OpenCvMatVector, destination: OpenCvMat): void;
-}
-
-interface InitializingOpenCvExport {
-  Mat?: unknown;
-  onAbort?: (reason: unknown) => void;
-  onRuntimeInitialized?: () => void;
-}
-
-const LIGHT_SURFACE: CardSurface = {
-  backgroundColor: '#ffffff',
-  rgb: [255, 255, 255],
-  tone: 'light',
-};
-
-const DARK_SURFACE: CardSurface = {
-  backgroundColor: '#0d1b2d',
-  rgb: [13, 27, 45],
-  tone: 'dark',
-};
-
-const CARD_SURFACES = [LIGHT_SURFACE, DARK_SURFACE] as const;
-const CLAHE_CLIP_LIMIT = 2;
-const CLAHE_TILE_PIXEL_TARGET = 16;
-const MIN_CLAHE_TILES = 2;
-const MAX_CLAHE_TILES = 8;
-const IDLE_TIMEOUT_MS = 1_000;
-const RUNTIME_INITIALIZATION_TIMEOUT_MS = 15_000;
-
-/** Returns whether an unknown module value is promise-like. */
-function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
-  return (
-    ((typeof value === 'object' && value !== null) || typeof value === 'function') &&
-    typeof (value as PromiseLike<unknown>).then === 'function'
-  );
-}
-
-/** Unwraps a default value exposed by an imported module. */
-function unwrapDefaultExport(value: unknown): unknown {
-  if (typeof value !== 'object' || value === null || !('default' in value)) {
-    return value;
-  }
-
-  const defaultExport = (value as { readonly default?: unknown }).default;
-  return defaultExport === undefined || defaultExport === value ? value : defaultExport;
-}
-
-/** A constructed `Mat` class marks a fully initialized OpenCV runtime. */
-function isOpenCvRuntime(value: unknown): value is OpenCvRuntime {
-  return (
-    ((typeof value === 'object' && value !== null) || typeof value === 'function') &&
-    typeof (value as { readonly Mat?: unknown }).Mat === 'function'
-  );
-}
-
-/** Waits for the callback-style Emscripten runtime without leaking failures. */
-function waitForRuntimeInitialization(candidate: InitializingOpenCvExport): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    let settled = false;
-    const previousInitialized = candidate.onRuntimeInitialized;
-    const previousAbort = candidate.onAbort;
-    const timer = setTimeout(() => {
-      finish(() => reject(new Error('OpenCV runtime initialization timed out')));
-    }, RUNTIME_INITIALIZATION_TIMEOUT_MS);
-
-    const finish = (completion: () => void): void => {
-      if (settled) {
-        return;
-      }
-      settled = true;
-      clearTimeout(timer);
-      completion();
-    };
-
-    candidate.onRuntimeInitialized = () => {
-      try {
-        previousInitialized?.call(candidate);
-        finish(resolve);
-      } catch (error) {
-        finish(() => reject(error));
-      }
-    };
-    candidate.onAbort = (reason: unknown) => {
-      try {
-        previousAbort?.call(candidate, reason);
-      } finally {
-        finish(() => reject(new Error('OpenCV runtime initialization aborted')));
-      }
-    };
-
-    if (isOpenCvRuntime(candidate)) {
-      finish(resolve);
-    }
-  });
-}
-
-/** Normalizes namespace, promise, and callback-initialized package exports. */
-async function normalizeOpenCvExport(moduleValue: unknown): Promise<OpenCvRuntime> {
-  let candidate = moduleValue;
-
-  for (let attempt = 0; attempt < 4; attempt++) {
-    candidate = unwrapDefaultExport(candidate);
-    if (!isPromiseLike(candidate)) {
-      break;
-    }
-    candidate = await candidate;
-  }
-
-  candidate = unwrapDefaultExport(candidate);
-  if (isOpenCvRuntime(candidate)) {
-    return candidate;
-  }
-  if ((typeof candidate !== 'object' || candidate === null) && typeof candidate !== 'function') {
-    throw new Error('OpenCV module did not expose a runtime');
-  }
-
-  await waitForRuntimeInitialization(candidate as InitializingOpenCvExport);
-  if (!isOpenCvRuntime(candidate)) {
-    throw new Error('OpenCV runtime initialized without Mat support');
-  }
-  return candidate;
-}
-
-/** Best-effort native allocation cleanup that cannot mask the usable fallback. */
-function dispose(allocation: Disposable | undefined): void {
-  try {
-    allocation?.delete?.();
-  } catch {
-    // A failed native cleanup must not surface as an application error.
-  }
-}
-
-/** Converts one sRGB channel to its linear-light value. */
-function linearizeChannel(channel: number): number {
-  const normalized = channel / 255;
-  return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
-}
-
-/** Calculates WCAG relative luminance for an RGB pixel. */
-function relativeLuminance(red: number, green: number, blue: number): number {
-  return (
-    0.2126 * linearizeChannel(red) +
-    0.7152 * linearizeChannel(green) +
-    0.0722 * linearizeChannel(blue)
-  );
-}
+import type {TechnologyIconMetadata} from '../../technology-icons.ts';
+import type {OpenCvRuntime} from '../../../../../helper/interface/open-cv-runtime/open-cv-runtime.interface.ts';
+import {OPEN_CV_RETRY_COUNT} from '../../../../../helper/injection-token/open-cv-retry-count.variable.ts';
+import {OPEN_CV_CDN_URL} from '../../../../../helper/injection-token/open-cv-cdn-url.variable.ts';
+import {
+  TECHNOLOGY_ICON_OPEN_CV_LOADER
+} from '../../../../../helper/injection-token/technology-icon-open-cv-loader.function.ts';
+import type {
+  TechnologyIconPresentation
+} from '../../../../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
+import {LightSurface} from '../../../../../helper/interface/card-surface/light-surface/light-surface.ts';
+import {IDLE_TIMEOUT_MS} from '../../../../../helper/injection-token/idle-timeout-ms.variable.ts';
+import {normalizeOpenCvExport} from '../../../../../helper/injection-token/normalize-open-cv-export.function.ts';
+import {OPEN_CV_RETRY_DELAY_MS} from '../../../../../helper/injection-token/open-cv-retry-delay-ms.variable.ts';
+import {
+  OPEN_CV_RETRY_DELAY_MULTIPLIER
+} from '../../../../../helper/injection-token/open-cv-retry-delay-multiplier.variable.ts';
+import {OPEN_CV_RETRY_JITTER_MS} from '../../../../../helper/injection-token/open-cv-retry-jitter-ms.variable.ts';
+import type {RasterizedIcon} from '../../../../../helper/interface/rasterized-icon/rasterized-icon.interface.ts';
+import type {CardSurface} from '../../../../../helper/interface/card-surface/card-surface.interface.ts';
+import type {Candidate} from '../../../../../helper/interface/candidate/candidate.interface.ts';
+import {DarkSurface} from '../../../../../helper/interface/card-surface/dark-surface/dark-surface.ts';
+import type {
+  OpenCvMat
+} from '../../../../../helper/interface/disposable/deletable/open-cv-mat/open-cv-mat.interface.ts';
+import type {
+  OpenCvMatVector
+} from '../../../../../helper/interface/disposable/deletable/open-cv-mat-vector/open-cv-mat-vector.interface.ts';
+import type {OpenCvSize} from '../../../../../helper/interface/disposable/open-cv-size/open-cv-size.interface.ts';
+import type {
+  OpenCvClahe
+} from '../../../../../helper/interface/disposable/deletable/open-cv-clahe/open-cv-clahe.interface.ts';
+import {CLAHE_CLIP_LIMIT} from '../../../../../helper/injection-token/clahe-clip-limit.variable.ts';
+import {dispose} from '../../../../../helper/injection-token/dispose.function.ts';
+import {MIN_CLAHE_TILES} from '../../../../../helper/injection-token/min-clahe-tiles.variable.ts';
+import {MAX_CLAHE_TILES} from '../../../../../helper/injection-token/max-clahe-titles.variable.ts';
+import {CLAHE_TILE_PIXEL_TARGET} from '../../../../../helper/injection-token/clahe-tile-pixel-target.variable.ts';
+import { relativeLuminance } from "../../../../../helper/injection-token/relative-luminance.function.ts";
 
 /**
  * Lazily rasterizes and contrast-optimizes technology artwork once per unique
  * source and intrinsic size for the lifetime of the root service.
  */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class TechnologyIconContrastService {
   private readonly document = inject(DOCUMENT);
   private readonly platformId = inject(PLATFORM_ID);
@@ -246,6 +52,21 @@ export class TechnologyIconContrastService {
   private readonly view = isPlatformBrowser(this.platformId) ? this.document.defaultView : null;
   private readonly presentations = new Map<string, Promise<TechnologyIconPresentation>>();
   private openCvRuntime: Promise<OpenCvRuntime> | undefined;
+  private readonly openCvCdnUrl = inject(OPEN_CV_CDN_URL);
+  private readonly lightSurface = inject(LightSurface);
+  private readonly darkSurface = inject(DarkSurface);
+  private readonly idealTimeout = inject(IDLE_TIMEOUT_MS);
+  private readonly openCvRetryCount = inject(OPEN_CV_RETRY_COUNT);
+  private readonly normalizeOpenCvExport = inject(normalizeOpenCvExport);
+  private readonly openCvRetryDelayMs = inject(OPEN_CV_RETRY_DELAY_MS);
+  private readonly openCvRetryDelayMultiplier = inject(OPEN_CV_RETRY_DELAY_MULTIPLIER);
+  private readonly openCvRetryJitterMs = inject(OPEN_CV_RETRY_JITTER_MS);
+  private readonly claheClipLimit = inject(CLAHE_CLIP_LIMIT)
+  private readonly dispose = inject(dispose);
+  private readonly minClaheTiles = inject(MIN_CLAHE_TILES)
+  private readonly maxClaheTiles = inject(MAX_CLAHE_TILES)
+  private readonly claheTilePixelTarget = inject(CLAHE_TILE_PIXEL_TARGET)
+  private readonly relativeLuminance = inject(relativeLuminance)
 
   /**
    * Returns cached optimized artwork, resolving safely to the original SVG and
@@ -261,8 +82,8 @@ export class TechnologyIconContrastService {
     const fallback = this.createFallback(icon);
     const pending = this.view
       ? this.waitForIdle()
-          .then(() => this.enhance(icon))
-          .catch(() => fallback)
+        .then(() => this.enhance(icon))
+        .catch(() => fallback)
       : Promise.resolve(fallback);
     this.presentations.set(cacheKey, pending);
     return pending;
@@ -270,14 +91,14 @@ export class TechnologyIconContrastService {
 
   /** Preserves the current usable SVG and frame when enhancement is unavailable. */
   private createFallback(icon: TechnologyIconMetadata): TechnologyIconPresentation {
-    return { logo: icon, backgroundColor: LIGHT_SURFACE.backgroundColor };
+    return {logo: icon, backgroundColor: this.lightSurface.backgroundColor};
   }
 
   /** Schedules heavy runtime and canvas work after the initial render. */
   private waitForIdle(): Promise<void> {
     return new Promise<void>((resolve) => {
       if (this.view?.requestIdleCallback) {
-        this.view.requestIdleCallback(() => resolve(), { timeout: IDLE_TIMEOUT_MS });
+        this.view.requestIdleCallback(() => resolve(), {timeout: this.idealTimeout});
       } else {
         this.view?.setTimeout(resolve, 0);
       }
@@ -294,15 +115,15 @@ export class TechnologyIconContrastService {
   private async initializeOpenCv(): Promise<OpenCvRuntime> {
     let finalError: unknown;
 
-    for (let retry = 0; retry <= OPEN_CV_RETRY_COUNT; retry++) {
+    for (let retry = 0; retry <= this.openCvRetryCount; retry++) {
       if (retry > 0) {
         await this.waitForOpenCvRetry(retry);
       }
 
-      const sourceUrl = retry === 0 ? OPEN_CV_CDN_URL : `${OPEN_CV_CDN_URL}?retry=${retry}`;
+      const sourceUrl = retry === 0 ? this.openCvCdnUrl : `${(this.openCvCdnUrl)}?retry=${retry}`;
       try {
         const moduleValue = await this.openCvLoader(sourceUrl);
-        return await normalizeOpenCvExport(moduleValue);
+        return await this.normalizeOpenCvExport(moduleValue);
       } catch (error) {
         finalError = error;
       }
@@ -310,7 +131,7 @@ export class TechnologyIconContrastService {
 
     const exhaustedError = finalError ?? new Error('OpenCV initialization failed');
     this.view?.console.warn(
-      `OpenCV initialization failed after ${OPEN_CV_RETRY_COUNT + 1} attempts; using original technology icons.`,
+      `OpenCV initialization failed after ${this.openCvRetryCount + 1} attempts; using original technology icons.`,
       exhaustedError,
     );
     throw exhaustedError;
@@ -324,8 +145,8 @@ export class TechnologyIconContrastService {
     }
 
     const delay =
-      OPEN_CV_RETRY_DELAY_MS * OPEN_CV_RETRY_DELAY_MULTIPLIER ** (retry - 1) +
-      OPEN_CV_RETRY_JITTER_MS;
+      this.openCvRetryDelayMs * this.openCvRetryDelayMultiplier ** (retry - 1) +
+      this.openCvRetryJitterMs;
     return new Promise<void>((resolve) => view.setTimeout(resolve, delay));
   }
 
@@ -342,7 +163,7 @@ export class TechnologyIconContrastService {
 
     const cv = await this.loadOpenCv();
     const rasterized = await this.rasterize(icon);
-    const candidates = CARD_SURFACES.map((surface) =>
+    const candidates = [this.darkSurface, this.lightSurface].map((surface) =>
       this.evaluateCandidate(cv, rasterized.context, rasterized.pixels, icon, surface),
     );
     const winner = candidates[1].score > candidates[0].score ? candidates[1] : candidates[0];
@@ -383,7 +204,7 @@ export class TechnologyIconContrastService {
     const canvas = this.document.createElement('canvas');
     canvas.width = icon.width;
     canvas.height = icon.height;
-    const context = canvas.getContext('2d', { willReadFrequently: true });
+    const context = canvas.getContext('2d', {willReadFrequently: true});
     if (!context) {
       throw new Error('Technology icon canvas is unavailable');
     }
@@ -415,8 +236,8 @@ export class TechnologyIconContrastService {
     const enhancedScore = this.scoreContrast(enhanced, source, surface.rgb);
 
     return enhancedScore > originalScore
-      ? { pixels: enhanced, score: enhancedScore, surface }
-      : { pixels: original, score: originalScore, surface };
+      ? {pixels: enhanced, score: enhancedScore, surface}
+      : {pixels: original, score: originalScore, surface};
   }
 
   /** Composites original SVG pixels over an opaque card color. */
@@ -473,7 +294,7 @@ export class TechnologyIconContrastService {
       secondChroma = channels.get(2);
       enhancedLuminance = new cv.Mat();
       tileGrid = new cv.Size(this.tileCount(width), this.tileCount(height));
-      clahe = new cv.CLAHE(CLAHE_CLIP_LIMIT, tileGrid);
+      clahe = new cv.CLAHE(this.claheClipLimit, tileGrid);
       clahe.apply(luminance, enhancedLuminance);
 
       enhancedChannels = new cv.MatVector();
@@ -496,27 +317,27 @@ export class TechnologyIconContrastService {
       } catch {
         // Continue releasing every allocation when CLAHE cleanup itself fails.
       }
-      dispose(enhancedRgb);
-      dispose(enhancedLab);
-      dispose(enhancedChannels);
-      dispose(clahe);
-      dispose(tileGrid);
-      dispose(enhancedLuminance);
-      dispose(secondChroma);
-      dispose(firstChroma);
-      dispose(luminance);
-      dispose(channels);
-      dispose(lab);
-      dispose(rgb);
-      dispose(rgba);
+      this.dispose(enhancedRgb);
+      this.dispose(enhancedLab);
+      this.dispose(enhancedChannels);
+      this.dispose(clahe);
+      this.dispose(tileGrid);
+      this.dispose(enhancedLuminance);
+      this.dispose(secondChroma);
+      this.dispose(firstChroma);
+      this.dispose(luminance);
+      this.dispose(channels);
+      this.dispose(lab);
+      this.dispose(rgb);
+      this.dispose(rgba);
     }
   }
 
   /** Chooses an adaptive tile count independently for each intrinsic dimension. */
   private tileCount(dimension: number): number {
     return Math.max(
-      MIN_CLAHE_TILES,
-      Math.min(MAX_CLAHE_TILES, Math.ceil(dimension / CLAHE_TILE_PIXEL_TARGET)),
+      this.minClaheTiles,
+      Math.min(this.maxClaheTiles, Math.ceil(dimension / this.claheTilePixelTarget)),
     );
   }
 
@@ -551,7 +372,7 @@ export class TechnologyIconContrastService {
     source: Uint8ClampedArray,
     background: readonly [number, number, number],
   ): number {
-    const backgroundLuminance = relativeLuminance(...background);
+    const backgroundLuminance = this.relativeLuminance(...background);
     let weightedContrast = 0;
     let totalAlpha = 0;
 
@@ -560,7 +381,7 @@ export class TechnologyIconContrastService {
       if (alpha === 0) {
         continue;
       }
-      const foregroundLuminance = relativeLuminance(
+      const foregroundLuminance = this.relativeLuminance(
         pixels[index],
         pixels[index + 1],
         pixels[index + 2],

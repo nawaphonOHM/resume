@@ -1,5 +1,5 @@
 /** Public personal details rendered in the profile sidebar. */
-export interface ResumeDetailsInterface {
+export interface ResumeDetails {
   /** Display-ready city and country of residence. */
   readonly location: string;
 

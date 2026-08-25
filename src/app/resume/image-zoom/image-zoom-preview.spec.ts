@@ -4,12 +4,12 @@
  */
 import { TestBed } from '@angular/core/testing';
 
-import type { BrandLogo } from '../../helper/interface/resume-profile/resume-profile.interface.ts';
 import {
   IMAGE_ZOOM_PREVIEW_DATA,
   ImageZoomPreview,
   type ImageZoomPreviewData,
 } from './image-zoom-preview';
+import {BrandLogo} from '../../helper/interface/brand-logo/brand-logo.interface.ts';
 
 describe('ImageZoomPreview', () => {
   afterEach(() => TestBed.resetTestingModule());

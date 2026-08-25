@@ -9,10 +9,12 @@ import { vi } from 'vitest';
 import { ImageZoomDirective } from '../../../directive/image-zome/image-zoom.directive.ts';
 import {
   TechnologyIconContrastService,
-  type TechnologyIconPresentation,
 } from './service/technology-icon-contrast/technology-icon-contrast.service.ts';
 import { TechnologyIconComponent } from './technology-icon.ts';
 import type { TechnologyIconMetadata } from './technology-icons.ts';
+import {
+  TechnologyIconPresentation
+} from '../../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
 
 const ICON: TechnologyIconMetadata = {
   src: '/images/technology-icons/oracle.svg',
