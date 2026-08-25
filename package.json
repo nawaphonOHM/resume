@@ -37,7 +37,7 @@
     "skott": "^0.35.11",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
-    "vitest": "^4.0.8"
+    "vitest": "^4.1.11"
   },
   "engines": {
     "node": ">=22.22.3"
