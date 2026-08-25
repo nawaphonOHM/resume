@@ -1,5 +1,5 @@
-import type {ResumeLink} from '../ressume-link/resume-link.interface.ts';
-import type {ResumeDetails} from '../resume-details/resume-details.interface.ts';
+import type { ResumeLink } from '../ressume-link/resume-link.interface.ts';
+import type { ResumeDetails } from '../resume-details/resume-details.interface.ts';
 import type { ResumeEducation } from '../resume-education/resume-education.interface.ts';
 import type { Experience } from '../experience/experience.interface.ts';
 

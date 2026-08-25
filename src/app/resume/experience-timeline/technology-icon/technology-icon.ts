@@ -1,14 +1,10 @@
 import { Component, computed, inject, input, resource } from '@angular/core';
 
 import { ImageZoomDirective } from '../../../directive/image-zome/image-zoom.directive.ts';
-import {
-  TechnologyIconContrastService
-} from './service/technology-icon-contrast/technology-icon-contrast.service.ts';
+import { TechnologyIconContrastService } from './service/technology-icon-contrast/technology-icon-contrast.service.ts';
 import type { TechnologyIconMetadata } from './technology-icons.ts';
+import type { TechnologyIconPresentation } from '../../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
 import { NgOptimizedImage } from '@angular/common';
-import type {
-  TechnologyIconPresentation
-} from '../../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
 
 /** Presents one decorative technology mark and upgrades it after deferred contrast processing. */
 @Component({
@@ -17,7 +13,7 @@ import type {
   templateUrl: './technology-icon.html',
   host: {
     class:
-      'technology-icon-container technology-icon-frame inline-grid h-5 w-5 shrink-0 place-items-center overflow-hidden rounded-[0.3rem] border border-solid border-[color:var(--resume-profile-border)] p-px',
+      'technology-icon-container technology-icon-frame inline-grid h-5 w-5 shrink-0 place-items-center overflow-hidden rounded-[0.3rem] border border-solid border-[color:var(--resume-border)] p-px',
     '[class.technology-icon-frame--light]': "presentation()?.backgroundColor === '#ffffff'",
     '[class.technology-icon-frame--dark]': "presentation()?.backgroundColor === '#0d1b2d'",
     '[style.background-color]': 'presentation()?.backgroundColor',

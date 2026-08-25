@@ -4,13 +4,9 @@ import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
 import type { TechnologyIconMetadata } from '../../technology-icons.ts';
-import {
-  TechnologyIconContrastService,
-} from './technology-icon-contrast.service.ts';
-import {TechnologyIconOpenCvLoader} from '../../../../../helper/type/technology-icon-open-cv-loader.type.ts';
-import {
-  TECHNOLOGY_ICON_OPEN_CV_LOADER
-} from '../../../../../helper/injection-token/technology-icon-open-cv-loader.function.ts';
+import { TechnologyIconContrastService } from './technology-icon-contrast.service.ts';
+import { TechnologyIconOpenCvLoader } from '../../../../../helper/type/technology-icon-open-cv-loader.type.ts';
+import { TECHNOLOGY_ICON_OPEN_CV_LOADER } from '../../../../../helper/injection-token/technology-icon-open-cv-loader.function.ts';
 
 const OPEN_CV_CDN_URL = 'https://cdn.jsdelivr.net/npm/@techstark/opencv-js/+esm';
 const REMOTE_ICON_URL = 'https://resume-images.ohm-mho.space/technology-icons/test.svg';

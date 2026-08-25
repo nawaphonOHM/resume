@@ -1,7 +1,6 @@
-import {InjectionToken} from '@angular/core';
+import { InjectionToken } from '@angular/core';
 
-
-export const MAX_CLAHE_TILES = new InjectionToken(
-  'MAX_CLAHE_TILES',
-  {providedIn: 'root', factory: () => 8}
-)
+export const MAX_CLAHE_TILES = new InjectionToken('MAX_CLAHE_TILES', {
+  providedIn: 'root',
+  factory: () => 8,
+});

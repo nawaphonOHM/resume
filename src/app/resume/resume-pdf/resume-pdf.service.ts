@@ -1,5 +1,5 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import {Injectable, InjectionToken, PLATFORM_ID, inject, Service} from '@angular/core';
+import { Injectable, InjectionToken, PLATFORM_ID, inject, Service } from '@angular/core';
 
 import { RESUME } from '../../data/resume/resume.data';
 import {

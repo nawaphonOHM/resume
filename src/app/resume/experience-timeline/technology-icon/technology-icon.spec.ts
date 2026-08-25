@@ -7,14 +7,10 @@ import { By } from '@angular/platform-browser';
 import { vi } from 'vitest';
 
 import { ImageZoomDirective } from '../../../directive/image-zome/image-zoom.directive.ts';
-import {
-  TechnologyIconContrastService,
-} from './service/technology-icon-contrast/technology-icon-contrast.service.ts';
+import { TechnologyIconContrastService } from './service/technology-icon-contrast/technology-icon-contrast.service.ts';
 import { TechnologyIconComponent } from './technology-icon.ts';
 import type { TechnologyIconMetadata } from './technology-icons.ts';
-import {
-  TechnologyIconPresentation
-} from '../../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
+import { TechnologyIconPresentation } from '../../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
 
 const ICON: TechnologyIconMetadata = {
   src: '/images/technology-icons/oracle.svg',
@@ -25,8 +21,8 @@ const ICON: TechnologyIconMetadata = {
 
 const REPLACEMENT_ICON: TechnologyIconMetadata = {
   src: '/images/technology-icons/angular.svg',
-  width: 32,
-  height: 32,
+  width: 64,
+  height: 64,
   surface: 'dark',
 };
 
@@ -43,8 +39,8 @@ const OPTIMIZED_PRESENTATION: TechnologyIconPresentation = {
 const REPLACEMENT_PRESENTATION: TechnologyIconPresentation = {
   logo: {
     src: 'data:image/png;base64,replacement',
-    width: 32,
-    height: 32,
+    width: 64,
+    height: 64,
     surface: 'light',
   },
   backgroundColor: '#ffffff',
@@ -92,6 +88,8 @@ describe('TechnologyIconComponent', () => {
     expect(optimize).toHaveBeenCalledWith(ICON);
     expect(host.classList.contains('technology-icon-container')).toBe(true);
     expect(host.classList.contains('technology-icon-frame')).toBe(true);
+    expect(host.classList.contains('border-[color:var(--resume-border)]')).toBe(true);
+    expect(host.classList.contains('border-[color:var(--resume-profile-border)]')).toBe(false);
     expect(host.classList.contains('technology-icon-frame--light')).toBe(true);
     expect(host.classList.contains('technology-icon-frame--dark')).toBe(false);
     expect(host.style.backgroundColor).toBe('rgb(255, 255, 255)');
@@ -151,8 +149,8 @@ describe('TechnologyIconComponent', () => {
     expect(optimize).toHaveBeenCalledTimes(2);
     expect(optimize).toHaveBeenNthCalledWith(2, REPLACEMENT_ICON);
     expect(image.getAttribute('src')).toBe(REPLACEMENT_ICON.src);
-    expect(image.getAttribute('width')).toBe('32');
-    expect(image.getAttribute('height')).toBe('32');
+    expect(image.getAttribute('width')).toBe('64');
+    expect(image.getAttribute('height')).toBe('64');
     expect(host.classList.contains('technology-icon-frame--light')).toBe(true);
     expect(host.classList.contains('technology-icon-frame--dark')).toBe(false);
     expect(host.style.backgroundColor).toBe('rgb(255, 255, 255)');

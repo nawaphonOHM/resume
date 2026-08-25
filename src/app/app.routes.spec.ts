@@ -119,15 +119,13 @@ describe('application routes', () => {
 
     expect(router.url).toBe('/#experience');
     expect(fragmentTarget).not.toBeNull();
-    expect(fragmentTarget?.hasAttribute('data-resume-profile-defer-placeholder')).toBe(true);
+    expect(fragmentTarget?.hasAttribute('data-resume-defer-placeholder')).toBe(true);
     expect(fragmentTarget?.getAttribute('role')).toBe('status');
     expect(placeholderTargets.every((target) => target !== null)).toBe(true);
     expect(
-      placeholderTargets.every((target) =>
-        target?.closest('[data-resume-profile-defer-placeholder]'),
-      ),
+      placeholderTargets.every((target) => target?.closest('[data-resume-defer-placeholder]')),
     ).toBe(true);
-    expect(element.querySelectorAll('[data-resume-profile-defer-placeholder]')).toHaveLength(3);
+    expect(element.querySelectorAll('[data-resume-defer-placeholder]')).toHaveLength(3);
     expect(element.querySelector('app-experience-timeline')).toBeNull();
     expect(setOffset).toHaveBeenCalledWith([0, 88]);
     expect(scrollToAnchor).toHaveBeenCalledWith('experience');

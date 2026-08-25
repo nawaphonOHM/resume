@@ -1,44 +1,32 @@
-import {DOCUMENT, isPlatformBrowser} from '@angular/common';
-import {PLATFORM_ID, inject, Service} from '@angular/core';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { PLATFORM_ID, inject, Service } from '@angular/core';
 
-import type {TechnologyIconMetadata} from '../../technology-icons.ts';
-import type {OpenCvRuntime} from '../../../../../helper/interface/open-cv-runtime/open-cv-runtime.interface.ts';
-import {OPEN_CV_RETRY_COUNT} from '../../../../../helper/injection-token/open-cv-retry-count.variable.ts';
-import {OPEN_CV_CDN_URL} from '../../../../../helper/injection-token/open-cv-cdn-url.variable.ts';
-import {
-  TECHNOLOGY_ICON_OPEN_CV_LOADER
-} from '../../../../../helper/injection-token/technology-icon-open-cv-loader.function.ts';
-import type {
-  TechnologyIconPresentation
-} from '../../../../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
-import {LightSurface} from '../../../../../helper/interface/card-surface/light-surface/light-surface.ts';
-import {IDLE_TIMEOUT_MS} from '../../../../../helper/injection-token/idle-timeout-ms.variable.ts';
-import {normalizeOpenCvExport} from '../../../../../helper/injection-token/normalize-open-cv-export.function.ts';
-import {OPEN_CV_RETRY_DELAY_MS} from '../../../../../helper/injection-token/open-cv-retry-delay-ms.variable.ts';
-import {
-  OPEN_CV_RETRY_DELAY_MULTIPLIER
-} from '../../../../../helper/injection-token/open-cv-retry-delay-multiplier.variable.ts';
-import {OPEN_CV_RETRY_JITTER_MS} from '../../../../../helper/injection-token/open-cv-retry-jitter-ms.variable.ts';
-import type {RasterizedIcon} from '../../../../../helper/interface/rasterized-icon/rasterized-icon.interface.ts';
-import type {CardSurface} from '../../../../../helper/interface/card-surface/card-surface.interface.ts';
-import type {Candidate} from '../../../../../helper/interface/candidate/candidate.interface.ts';
-import {DarkSurface} from '../../../../../helper/interface/card-surface/dark-surface/dark-surface.ts';
-import type {
-  OpenCvMat
-} from '../../../../../helper/interface/disposable/deletable/open-cv-mat/open-cv-mat.interface.ts';
-import type {
-  OpenCvMatVector
-} from '../../../../../helper/interface/disposable/deletable/open-cv-mat-vector/open-cv-mat-vector.interface.ts';
-import type {OpenCvSize} from '../../../../../helper/interface/disposable/open-cv-size/open-cv-size.interface.ts';
-import type {
-  OpenCvClahe
-} from '../../../../../helper/interface/disposable/deletable/open-cv-clahe/open-cv-clahe.interface.ts';
-import {CLAHE_CLIP_LIMIT} from '../../../../../helper/injection-token/clahe-clip-limit.variable.ts';
-import {dispose} from '../../../../../helper/injection-token/dispose.function.ts';
-import {MIN_CLAHE_TILES} from '../../../../../helper/injection-token/min-clahe-tiles.variable.ts';
-import {MAX_CLAHE_TILES} from '../../../../../helper/injection-token/max-clahe-titles.variable.ts';
-import {CLAHE_TILE_PIXEL_TARGET} from '../../../../../helper/injection-token/clahe-tile-pixel-target.variable.ts';
-import { relativeLuminance } from "../../../../../helper/injection-token/relative-luminance.function.ts";
+import type { TechnologyIconMetadata } from '../../technology-icons.ts';
+import type { OpenCvRuntime } from '../../../../../helper/interface/open-cv-runtime/open-cv-runtime.interface.ts';
+import { OPEN_CV_RETRY_COUNT } from '../../../../../helper/injection-token/open-cv-retry-count.variable.ts';
+import { OPEN_CV_CDN_URL } from '../../../../../helper/injection-token/open-cv-cdn-url.variable.ts';
+import { TECHNOLOGY_ICON_OPEN_CV_LOADER } from '../../../../../helper/injection-token/technology-icon-open-cv-loader.function.ts';
+import type { TechnologyIconPresentation } from '../../../../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
+import { LightSurface } from '../../../../../helper/interface/card-surface/light-surface/light-surface.ts';
+import { IDLE_TIMEOUT_MS } from '../../../../../helper/injection-token/idle-timeout-ms.variable.ts';
+import { normalizeOpenCvExport } from '../../../../../helper/injection-token/normalize-open-cv-export.function.ts';
+import { OPEN_CV_RETRY_DELAY_MS } from '../../../../../helper/injection-token/open-cv-retry-delay-ms.variable.ts';
+import { OPEN_CV_RETRY_DELAY_MULTIPLIER } from '../../../../../helper/injection-token/open-cv-retry-delay-multiplier.variable.ts';
+import { OPEN_CV_RETRY_JITTER_MS } from '../../../../../helper/injection-token/open-cv-retry-jitter-ms.variable.ts';
+import type { RasterizedIcon } from '../../../../../helper/interface/rasterized-icon/rasterized-icon.interface.ts';
+import type { CardSurface } from '../../../../../helper/interface/card-surface/card-surface.interface.ts';
+import type { Candidate } from '../../../../../helper/interface/candidate/candidate.interface.ts';
+import { DarkSurface } from '../../../../../helper/interface/card-surface/dark-surface/dark-surface.ts';
+import type { OpenCvMat } from '../../../../../helper/interface/disposable/deletable/open-cv-mat/open-cv-mat.interface.ts';
+import type { OpenCvMatVector } from '../../../../../helper/interface/disposable/deletable/open-cv-mat-vector/open-cv-mat-vector.interface.ts';
+import type { OpenCvSize } from '../../../../../helper/interface/disposable/open-cv-size/open-cv-size.interface.ts';
+import type { OpenCvClahe } from '../../../../../helper/interface/disposable/deletable/open-cv-clahe/open-cv-clahe.interface.ts';
+import { CLAHE_CLIP_LIMIT } from '../../../../../helper/injection-token/clahe-clip-limit.variable.ts';
+import { dispose } from '../../../../../helper/injection-token/dispose.function.ts';
+import { MIN_CLAHE_TILES } from '../../../../../helper/injection-token/min-clahe-tiles.variable.ts';
+import { MAX_CLAHE_TILES } from '../../../../../helper/injection-token/max-clahe-titles.variable.ts';
+import { CLAHE_TILE_PIXEL_TARGET } from '../../../../../helper/injection-token/clahe-tile-pixel-target.variable.ts';
+import { relativeLuminance } from '../../../../../helper/injection-token/relative-luminance.function.ts';
 
 /**
  * Lazily rasterizes and contrast-optimizes technology artwork once per unique
@@ -61,12 +49,12 @@ export class TechnologyIconContrastService {
   private readonly openCvRetryDelayMs = inject(OPEN_CV_RETRY_DELAY_MS);
   private readonly openCvRetryDelayMultiplier = inject(OPEN_CV_RETRY_DELAY_MULTIPLIER);
   private readonly openCvRetryJitterMs = inject(OPEN_CV_RETRY_JITTER_MS);
-  private readonly claheClipLimit = inject(CLAHE_CLIP_LIMIT)
+  private readonly claheClipLimit = inject(CLAHE_CLIP_LIMIT);
   private readonly dispose = inject(dispose);
-  private readonly minClaheTiles = inject(MIN_CLAHE_TILES)
-  private readonly maxClaheTiles = inject(MAX_CLAHE_TILES)
-  private readonly claheTilePixelTarget = inject(CLAHE_TILE_PIXEL_TARGET)
-  private readonly relativeLuminance = inject(relativeLuminance)
+  private readonly minClaheTiles = inject(MIN_CLAHE_TILES);
+  private readonly maxClaheTiles = inject(MAX_CLAHE_TILES);
+  private readonly claheTilePixelTarget = inject(CLAHE_TILE_PIXEL_TARGET);
+  private readonly relativeLuminance = inject(relativeLuminance);
 
   /**
    * Returns cached optimized artwork, resolving safely to the original SVG and
@@ -82,8 +70,8 @@ export class TechnologyIconContrastService {
     const fallback = this.createFallback(icon);
     const pending = this.view
       ? this.waitForIdle()
-        .then(() => this.enhance(icon))
-        .catch(() => fallback)
+          .then(() => this.enhance(icon))
+          .catch(() => fallback)
       : Promise.resolve(fallback);
     this.presentations.set(cacheKey, pending);
     return pending;
@@ -91,14 +79,14 @@ export class TechnologyIconContrastService {
 
   /** Preserves the current usable SVG and frame when enhancement is unavailable. */
   private createFallback(icon: TechnologyIconMetadata): TechnologyIconPresentation {
-    return {logo: icon, backgroundColor: this.lightSurface.backgroundColor};
+    return { logo: icon, backgroundColor: this.lightSurface.backgroundColor };
   }
 
   /** Schedules heavy runtime and canvas work after the initial render. */
   private waitForIdle(): Promise<void> {
     return new Promise<void>((resolve) => {
       if (this.view?.requestIdleCallback) {
-        this.view.requestIdleCallback(() => resolve(), {timeout: this.idealTimeout});
+        this.view.requestIdleCallback(() => resolve(), { timeout: this.idealTimeout });
       } else {
         this.view?.setTimeout(resolve, 0);
       }
@@ -120,7 +108,7 @@ export class TechnologyIconContrastService {
         await this.waitForOpenCvRetry(retry);
       }
 
-      const sourceUrl = retry === 0 ? this.openCvCdnUrl : `${(this.openCvCdnUrl)}?retry=${retry}`;
+      const sourceUrl = retry === 0 ? this.openCvCdnUrl : `${this.openCvCdnUrl}?retry=${retry}`;
       try {
         const moduleValue = await this.openCvLoader(sourceUrl);
         return await this.normalizeOpenCvExport(moduleValue);
@@ -163,7 +151,7 @@ export class TechnologyIconContrastService {
 
     const cv = await this.loadOpenCv();
     const rasterized = await this.rasterize(icon);
-    const candidates = [this.darkSurface, this.lightSurface].map((surface) =>
+    const candidates = [this.lightSurface, this.darkSurface].map((surface) =>
       this.evaluateCandidate(cv, rasterized.context, rasterized.pixels, icon, surface),
     );
     const winner = candidates[1].score > candidates[0].score ? candidates[1] : candidates[0];
@@ -204,7 +192,7 @@ export class TechnologyIconContrastService {
     const canvas = this.document.createElement('canvas');
     canvas.width = icon.width;
     canvas.height = icon.height;
-    const context = canvas.getContext('2d', {willReadFrequently: true});
+    const context = canvas.getContext('2d', { willReadFrequently: true });
     if (!context) {
       throw new Error('Technology icon canvas is unavailable');
     }
@@ -236,8 +224,8 @@ export class TechnologyIconContrastService {
     const enhancedScore = this.scoreContrast(enhanced, source, surface.rgb);
 
     return enhancedScore > originalScore
-      ? {pixels: enhanced, score: enhancedScore, surface}
-      : {pixels: original, score: originalScore, surface};
+      ? { pixels: enhanced, score: enhancedScore, surface }
+      : { pixels: original, score: originalScore, surface };
   }
 
   /** Composites original SVG pixels over an opaque card color. */

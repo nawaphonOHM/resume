@@ -1,6 +1,5 @@
-import {InjectionToken} from '@angular/core';
-import type {OpenCvRuntime} from '../interface/open-cv-runtime/open-cv-runtime.interface.ts';
-
+import { InjectionToken } from '@angular/core';
+import type { OpenCvRuntime } from '../interface/open-cv-runtime/open-cv-runtime.interface.ts';
 
 /** A constructed `Mat` class marks a fully initialized OpenCV runtime. */
 export const isOpenCvRuntime = new InjectionToken<(value: unknown) => value is OpenCvRuntime>(
@@ -15,5 +14,5 @@ export const isOpenCvRuntime = new InjectionToken<(value: unknown) => value is O
         );
       };
     },
-  }
-)
+  },
+);

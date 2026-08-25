@@ -1,5 +1,4 @@
-import {InjectionToken} from '@angular/core';
-
+import { InjectionToken } from '@angular/core';
 
 /** Unwraps a default value exposed by an imported module. */
 export const unwrapDefaultExport = new InjectionToken<(value: unknown) => unknown>(
@@ -16,5 +15,5 @@ export const unwrapDefaultExport = new InjectionToken<(value: unknown) => unknow
         return defaultExport === undefined || defaultExport === value ? value : defaultExport;
       };
     },
-  }
-)
+  },
+);

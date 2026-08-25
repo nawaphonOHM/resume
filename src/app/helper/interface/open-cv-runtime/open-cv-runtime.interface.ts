@@ -1,8 +1,7 @@
-import type {OpenCvMat} from '../disposable/deletable/open-cv-mat/open-cv-mat.interface.ts';
-import type {OpenCvMatVector} from '../disposable/deletable/open-cv-mat-vector/open-cv-mat-vector.interface.ts';
-import type {OpenCvSize} from '../disposable/open-cv-size/open-cv-size.interface.ts';
-import type {OpenCvClahe} from '../disposable/deletable/open-cv-clahe/open-cv-clahe.interface.ts';
-
+import type { OpenCvMat } from '../disposable/deletable/open-cv-mat/open-cv-mat.interface.ts';
+import type { OpenCvMatVector } from '../disposable/deletable/open-cv-mat-vector/open-cv-mat-vector.interface.ts';
+import type { OpenCvSize } from '../disposable/open-cv-size/open-cv-size.interface.ts';
+import type { OpenCvClahe } from '../disposable/deletable/open-cv-clahe/open-cv-clahe.interface.ts';
 
 export interface OpenCvRuntime {
   readonly Mat: new () => OpenCvMat;

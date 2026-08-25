@@ -1,6 +1,5 @@
-import {InjectionToken} from '@angular/core';
-import type {TechnologyIconOpenCvLoader} from '../type/technology-icon-open-cv-loader.type.ts';
-
+import { InjectionToken } from '@angular/core';
+import type { TechnologyIconOpenCvLoader } from '../type/technology-icon-open-cv-loader.type.ts';
 
 /**
  * Loader whose factory keeps OpenCV out of the initial bundle and does no work

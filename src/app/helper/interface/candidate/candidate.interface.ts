@@ -1,5 +1,4 @@
-import type {CardSurface} from '../card-surface/card-surface.interface.ts';
-
+import type { CardSurface } from '../card-surface/card-surface.interface.ts';
 
 export interface Candidate {
   readonly pixels: Uint8ClampedArray;

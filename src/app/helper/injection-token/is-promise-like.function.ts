@@ -1,4 +1,4 @@
-import {InjectionToken} from '@angular/core';
+import { InjectionToken } from '@angular/core';
 
 /** Returns whether an unknown module value is promise-like. */
 export const isPromiseLike = new InjectionToken<(value: unknown) => value is PromiseLike<unknown>>(
@@ -11,7 +11,7 @@ export const isPromiseLike = new InjectionToken<(value: unknown) => value is Pro
           ((typeof value === 'object' && value !== null) || typeof value === 'function') &&
           typeof (value as PromiseLike<unknown>).then === 'function'
         );
-      }
+      };
     },
-  }
-)
+  },
+);

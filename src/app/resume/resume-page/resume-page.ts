@@ -36,7 +36,7 @@ export const RESUME_DEFER_BOUNDARIES = {
 
 const VIEWPORT_EVENT_THROTTLE_MS = 100;
 const SECTION_ACTIVATION_RATIO = 0.18;
-const DEFER_SETTLEMENT_ATTRIBUTE = 'data-resume-profile-defer-settled';
+const DEFER_SETTLEMENT_ATTRIBUTE = 'data-resume-defer-settled';
 const DEFER_BOUNDARY_IDS = Object.values(RESUME_DEFER_BOUNDARIES);
 
 /**

@@ -22,7 +22,7 @@ describe('technology icons', () => {
     Confluence: 'https://resume-images.ohm-mho.space/technology-icons/confluence.svg',
     React: 'https://resume-images.ohm-mho.space/technology-icons/react.svg',
     Go: 'https://resume-images.ohm-mho.space/technology-icons/go.svg',
-    Gin: 'https://resume-images.ohm-mho.space/technology-icons/gin.svg',
+    Gin: 'https://resume-images.ohm-mho.space/technology-icons/gin.webp',
     Oracle: 'https://resume-images.ohm-mho.space/technology-icons/oracle.svg',
     'Node.js': 'https://resume-images.ohm-mho.space/technology-icons/nodejs.svg',
     'MongoDB via internal API': 'https://resume-images.ohm-mho.space/technology-icons/mongodb.svg',
@@ -47,7 +47,7 @@ describe('technology icons', () => {
     for (const icon of Object.values(TECHNOLOGY_ICONS)) {
       const url = new URL(icon.src);
       expect(url.origin).toBe(IMAGE_ASSET_ORIGIN);
-      expect(url.pathname).toMatch(/^\/technology-icons\/[a-z0-9-]+\.svg$/);
+      expect(url.pathname).toMatch(/^\/technology-icons\/[a-z0-9-]+\.(?:svg|webp)$/);
       expect(Number.isInteger(icon.width)).toBe(true);
       expect(Number.isInteger(icon.height)).toBe(true);
       expect(icon.width).toBeGreaterThan(0);

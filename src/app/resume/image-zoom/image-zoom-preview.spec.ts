@@ -9,7 +9,7 @@ import {
   ImageZoomPreview,
   type ImageZoomPreviewData,
 } from './image-zoom-preview';
-import {BrandLogo} from '../../helper/interface/brand-logo/brand-logo.interface.ts';
+import { BrandLogo } from '../../helper/interface/brand-logo/brand-logo.interface.ts';
 
 describe('ImageZoomPreview', () => {
   afterEach(() => TestBed.resetTestingModule());
@@ -93,5 +93,40 @@ describe('ImageZoomPreview', () => {
     expect(panel?.classList.contains('image-zoom-preview--dark')).toBe(true);
     expect(panel?.getAttribute('data-image-zoom-surface')).toBe('dark');
     expect(panel?.style.backgroundColor).toBe('rgb(13, 27, 45)');
+  });
+
+  it('renders URL-backed PNG artwork with its intrinsic and accessibility metadata', async () => {
+    const generatedSource = '/images/enhanced-mark.png';
+    const data: ImageZoomPreviewData = {
+      logo: {
+        src: generatedSource,
+        width: 96,
+        height: 48,
+        surface: 'light',
+      },
+      label: 'URL-backed brand',
+      background: '#ffffff',
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [ImageZoomPreview],
+      providers: [{ provide: IMAGE_ZOOM_PREVIEW_DATA, useValue: data }],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ImageZoomPreview);
+    await fixture.whenStable();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const panel = host.querySelector<HTMLElement>('.image-zoom-preview');
+    const image = host.querySelector<HTMLImageElement>('img');
+
+    expect(host.getAttribute('aria-hidden')).toBe('true');
+    expect(panel?.classList.contains('image-zoom-preview--light')).toBe(true);
+    expect(panel?.getAttribute('data-image-zoom-surface')).toBe('light');
+    expect(image?.getAttribute('src')).toBe(generatedSource);
+    expect(image?.getAttribute('width')).toBe('96');
+    expect(image?.getAttribute('height')).toBe('48');
+    expect(image?.getAttribute('alt')).toBe(data.label);
+    expect(image?.getAttribute('draggable')).toBe('false');
   });
 });

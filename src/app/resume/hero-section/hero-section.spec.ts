@@ -105,14 +105,17 @@ describe('HeroSection', () => {
     return fixture;
   }
 
-  it('renders the full kicker with an immediate zero-padded UTC+7 timestamp', () => {
+  it('renders separate profile and UTC+7 kicker lines with an immediate timestamp', () => {
     vi.setSystemTime(new Date('2026-01-02T01:04:05.000Z'));
 
     const element = renderHero().nativeElement as HTMLElement;
+    const kickerCopies = element.querySelectorAll('.hero-kicker-copy');
 
-    expect(normalizedText(element.querySelector('.hero-kicker-copy'))).toBe(
-      'Backend Software Engineer · Bangkok, Thailand · UTC+7 · 2026-01-02 08:04:05',
+    expect(kickerCopies).toHaveLength(2);
+    expect(normalizedText(kickerCopies.item(0))).toBe(
+      'Backend Software Engineer · Bangkok, Thailand',
     );
+    expect(normalizedText(kickerCopies.item(1))).toBe('UTC+7 · 2026-01-02 08:04:05');
     expect(normalizedText(element.querySelector('.hero-clock'))).toBe('2026-01-02 08:04:05');
   });
 
