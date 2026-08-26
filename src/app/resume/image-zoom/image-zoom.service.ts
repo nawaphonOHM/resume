@@ -5,7 +5,7 @@ import {
   type OverlayRef,
 } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
-import { DestroyRef, Injectable, Injector, inject } from '@angular/core';
+import { DestroyRef, Injector, inject, Service } from '@angular/core';
 import { Subscription } from 'rxjs';
 
 import {
@@ -89,7 +89,7 @@ const IMAGE_ZOOM_POSITIONS: readonly ConnectedPosition[] = [
  * dismiss either mode. Optional origin and activation guards prevent unrelated directives from
  * closing a preview they do not own.
  */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class ImageZoomService {
   private readonly overlay = inject(Overlay);
   private readonly viewportRuler = inject(ViewportRuler);

@@ -1,5 +1,12 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { DestroyRef, Injectable, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import {
+  DestroyRef,
+  PLATFORM_ID,
+  computed,
+  inject,
+  signal,
+  Service,
+} from '@angular/core';
 
 /** Color schemes that can be selected and persisted for the résumé. */
 export type ResumeTheme = 'light' | 'dark';
@@ -27,7 +34,7 @@ const THEME_TRANSITION_DURATION_MS = 250;
  * are released when the service is destroyed. Unavailable browser storage is
  * treated as optional rather than as an application error.
  */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class ThemeService {
   private readonly document = inject(DOCUMENT);
   private readonly platformId = inject(PLATFORM_ID);
