@@ -27,7 +27,7 @@ export const IMAGE_ZOOM_PREVIEW_DATA = new InjectionToken<ImageZoomPreviewData>(
  * original image remains the semantic and interactive owner; the enlarged image is visual only.
  */
 @Component({
-  selector: 'app-image-zoom-preview',
+  selector: 'app-image-zoom-preview-preview',
   templateUrl: './image-zoom-preview.html',
   styleUrl: './image-zoom-preview.scss',
   host: {

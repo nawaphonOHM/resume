@@ -45,7 +45,7 @@ const IMAGE_MAX_VIEWPORT_RATIO = 0.2;
 /** Preferred visual separation between an origin and its connected preview. */
 const ORIGIN_GAP = 12;
 
-/** Panel padding (0.75rem * 2) + border (1px * 2), matching `image-zoom-preview.scss`. */
+/** Panel padding (0.75rem * 2) + border (1px * 2), matching `image-zoom-preview-preview.scss`. */
 const PANEL_CHROME_PX = 26;
 
 /** Connected placement fallbacks tried in right, left, below, then above order. */
@@ -136,8 +136,8 @@ export class ImageZoomService {
       scrollStrategy: this.overlay.scrollStrategies.reposition({ scrollThrottle: 0 }),
       panelClass:
         request.activation === 'hover'
-          ? ['image-zoom-overlay-pane', 'image-zoom-overlay-pane--pointer-transparent']
-          : ['image-zoom-overlay-pane'],
+          ? ['image-zoom-preview-overlay-pane', 'image-zoom-preview-overlay-pane--pointer-transparent']
+          : ['image-zoom-preview-overlay-pane'],
       maxWidth: `calc(100vw - ${VIEWPORT_MARGIN * 2}px)`,
       maxHeight: `calc(100vh - ${VIEWPORT_MARGIN * 2}px)`,
       disposeOnNavigation: true,
@@ -281,10 +281,10 @@ export class ImageZoomService {
 
     pane.style.maxWidth = `${maxWidth}px`;
     pane.style.maxHeight = `${maxHeight}px`;
-    pane.style.setProperty('--image-zoom-viewport-max-width', `${maxWidth}px`);
-    pane.style.setProperty('--image-zoom-viewport-max-height', `${maxHeight}px`);
-    pane.style.setProperty('--image-zoom-image-max-width', `${imageMaxWidth}px`);
-    pane.style.setProperty('--image-zoom-image-max-height', `${imageMaxHeight}px`);
+    pane.style.setProperty('--image-zoom-preview-viewport-max-width', `${maxWidth}px`);
+    pane.style.setProperty('--image-zoom-preview-viewport-max-height', `${maxHeight}px`);
+    pane.style.setProperty('--image-zoom-preview-image-max-width', `${imageMaxWidth}px`);
+    pane.style.setProperty('--image-zoom-preview-image-max-height', `${imageMaxHeight}px`);
   }
 
   /**

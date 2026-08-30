@@ -1,5 +1,5 @@
 /**
- * Verifies image-zoom eligibility, pointer modes, dimension fallbacks, failure recovery, and
+ * Verifies image-zoom-preview eligibility, pointer modes, dimension fallbacks, failure recovery, and
  * lifecycle cleanup against deterministic DOM geometry.
  */
 import { Component, signal } from '@angular/core';
@@ -10,7 +10,7 @@ import { ImageZoomDirective } from './image-zoom.directive.ts';
 import {
   ImageZoomService,
   type ImageZoomRequest,
-} from '../../resume/image-zoom/image-zoom.service.ts';
+} from '../../resume/image-zoom-preview/image-zoom.service.ts';
 import { BrandLogo } from '../../helper/interface/brand-logo/brand-logo.interface.ts';
 
 /** Intrinsic logo fixture shared by host input and expected service requests. */

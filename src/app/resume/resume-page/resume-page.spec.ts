@@ -1,6 +1,6 @@
 /**
  * Exercises the composed résumé, section accessibility, navigation orchestration, theme, print,
- * download controls, image-zoom bindings, and viewport-tracking lifecycle.
+ * download controls, image-zoom-preview bindings, and viewport-tracking lifecycle.
  */
 import { ScrollDispatcher, ViewportRuler } from '@angular/cdk/scrolling';
 import { APP_BOOTSTRAP_LISTENER, ApplicationRef, ErrorHandler } from '@angular/core';

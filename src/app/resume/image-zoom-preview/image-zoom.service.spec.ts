@@ -80,9 +80,9 @@ describe('ImageZoomService', () => {
 
     const config = create.mock.calls[0]?.[0];
     const position = config?.positionStrategy as unknown as PositionStrategyState;
-    const preview = overlayContainer().querySelector<HTMLElement>('app-image-zoom-preview');
+    const preview = overlayContainer().querySelector<HTMLElement>('app-image-zoom-preview-preview');
     const image = preview?.querySelector<HTMLImageElement>('img');
-    const pane = overlayContainer().querySelector<HTMLElement>('.image-zoom-overlay-pane');
+    const pane = overlayContainer().querySelector<HTMLElement>('.image-zoom-preview-overlay-pane');
 
     expect(create).toHaveBeenCalledTimes(1);
     expect(reposition).toHaveBeenCalledWith({ scrollThrottle: 0 });
@@ -90,7 +90,7 @@ describe('ImageZoomService', () => {
       disposeOnNavigation: true,
       maxWidth: 'calc(100vw - 32px)',
       maxHeight: 'calc(100vh - 32px)',
-      panelClass: ['image-zoom-overlay-pane', 'image-zoom-overlay-pane--pointer-transparent'],
+      panelClass: ['image-zoom-preview-overlay-pane', 'image-zoom-preview-overlay-pane--pointer-transparent'],
     });
     expect(position._origin).toBe(origin);
     expect(position._viewportMargin).toBe(16);
@@ -128,10 +128,10 @@ describe('ImageZoomService', () => {
         offsetY: -12,
       },
     ]);
-    expect(pane?.style.getPropertyValue('--image-zoom-viewport-max-width')).toBe('1168px');
-    expect(pane?.style.getPropertyValue('--image-zoom-viewport-max-height')).toBe('768px');
-    expect(pane?.style.getPropertyValue('--image-zoom-image-max-width')).toBe('240px');
-    expect(pane?.style.getPropertyValue('--image-zoom-image-max-height')).toBe('160px');
+    expect(pane?.style.getPropertyValue('--image-zoom-preview-viewport-max-width')).toBe('1168px');
+    expect(pane?.style.getPropertyValue('--image-zoom-preview-viewport-max-height')).toBe('768px');
+    expect(pane?.style.getPropertyValue('--image-zoom-preview-image-max-width')).toBe('240px');
+    expect(pane?.style.getPropertyValue('--image-zoom-preview-image-max-height')).toBe('160px');
     expect(preview?.getAttribute('aria-hidden')).toBe('true');
     expect(image?.getAttribute('src')).toBe(lightLogo.src);
     expect(image?.getAttribute('alt')).toBe('Light brand');
@@ -144,10 +144,10 @@ describe('ImageZoomService', () => {
 
     service.open(request(origin, lightLogo, 'Enhanced brand', 'hover', '#0d1b2d'));
 
-    const panel = overlayContainer().querySelector<HTMLElement>('.image-zoom-preview');
+    const panel = overlayContainer().querySelector<HTMLElement>('.image-zoom-preview-preview');
     const image = panel?.querySelector<HTMLImageElement>('img');
 
-    expect(panel?.classList.contains('image-zoom-preview--light')).toBe(true);
+    expect(panel?.classList.contains('image-zoom-preview-preview--light')).toBe(true);
     expect(panel?.style.backgroundColor).toBe('rgb(13, 27, 45)');
     expect(image?.getAttribute('src')).toBe(lightLogo.src);
     expect(image?.getAttribute('alt')).toBe('Enhanced brand');
@@ -161,11 +161,11 @@ describe('ImageZoomService', () => {
 
     service.open(request(origin, lightLogo, 'Small viewport brand', 'hover'));
 
-    const pane = overlayContainer().querySelector<HTMLElement>('.image-zoom-overlay-pane');
-    expect(pane?.style.getPropertyValue('--image-zoom-viewport-max-width')).toBe('28px');
-    expect(pane?.style.getPropertyValue('--image-zoom-viewport-max-height')).toBe('38px');
-    expect(pane?.style.getPropertyValue('--image-zoom-image-max-width')).toBe('2px');
-    expect(pane?.style.getPropertyValue('--image-zoom-image-max-height')).toBe('12px');
+    const pane = overlayContainer().querySelector<HTMLElement>('.image-zoom-preview-overlay-pane');
+    expect(pane?.style.getPropertyValue('--image-zoom-preview-viewport-max-width')).toBe('28px');
+    expect(pane?.style.getPropertyValue('--image-zoom-preview-viewport-max-height')).toBe('38px');
+    expect(pane?.style.getPropertyValue('--image-zoom-preview-image-max-width')).toBe('2px');
+    expect(pane?.style.getPropertyValue('--image-zoom-preview-image-max-height')).toBe('12px');
   });
 
   it('marks only hover overlay panes as pointer-transparent', () => {
@@ -177,20 +177,20 @@ describe('ImageZoomService', () => {
 
     service.open(request(hoverOrigin, lightLogo, 'Hover brand', 'hover'));
 
-    const hoverPane = overlayContainer().querySelector<HTMLElement>('.image-zoom-overlay-pane');
+    const hoverPane = overlayContainer().querySelector<HTMLElement>('.image-zoom-preview-overlay-pane');
     expect(create.mock.calls[0]?.[0]?.panelClass).toEqual([
-      'image-zoom-overlay-pane',
-      'image-zoom-overlay-pane--pointer-transparent',
+      'image-zoom-preview-overlay-pane',
+      'image-zoom-preview-overlay-pane--pointer-transparent',
     ]);
-    expect(hoverPane?.classList.contains('image-zoom-overlay-pane--pointer-transparent')).toBe(
+    expect(hoverPane?.classList.contains('image-zoom-preview-overlay-pane--pointer-transparent')).toBe(
       true,
     );
 
     service.open(request(touchOrigin, darkLogo, 'Touch brand', 'touch'));
 
-    const touchPane = overlayContainer().querySelector<HTMLElement>('.image-zoom-overlay-pane');
-    expect(create.mock.calls[1]?.[0]?.panelClass).toEqual(['image-zoom-overlay-pane']);
-    expect(touchPane?.classList.contains('image-zoom-overlay-pane--pointer-transparent')).toBe(
+    const touchPane = overlayContainer().querySelector<HTMLElement>('.image-zoom-preview-overlay-pane');
+    expect(create.mock.calls[1]?.[0]?.panelClass).toEqual(['image-zoom-preview-overlay-pane']);
+    expect(touchPane?.classList.contains('image-zoom-preview-overlay-pane--pointer-transparent')).toBe(
       false,
     );
   });
@@ -208,13 +208,13 @@ describe('ImageZoomService', () => {
 
     service.open(request(secondOrigin, darkLogo, 'Second brand', 'touch'));
 
-    const previews = overlayContainer().querySelectorAll('app-image-zoom-preview');
-    const panel = previews[0]?.querySelector<HTMLElement>('.image-zoom-preview');
+    const previews = overlayContainer().querySelectorAll('app-image-zoom-preview-preview');
+    const panel = previews[0]?.querySelector<HTMLElement>('.image-zoom-preview-preview');
     const image = previews[0]?.querySelector<HTMLImageElement>('img');
 
     expect(dispose).toHaveBeenCalledOnce();
     expect(previews).toHaveLength(1);
-    expect(panel?.classList.contains('image-zoom-preview--dark')).toBe(true);
+    expect(panel?.classList.contains('image-zoom-preview-preview--dark')).toBe(true);
     expect(image?.getAttribute('src')).toBe(darkLogo.src);
     expect(image?.getAttribute('alt')).toBe('Second brand');
     expect(service.isOpenFor(firstOrigin)).toBe(false);
@@ -235,7 +235,7 @@ describe('ImageZoomService', () => {
     service.toggle(touchRequest);
 
     expect(service.isOpenFor(origin)).toBe(false);
-    expect(overlayContainer().querySelector('app-image-zoom-preview')).toBeNull();
+    expect(overlayContainer().querySelector('app-image-zoom-preview-preview')).toBeNull();
   });
 
   it('keeps inside and origin interactions open while dismissing outside pointer interaction', () => {
@@ -244,7 +244,7 @@ describe('ImageZoomService', () => {
 
     service.open(request(origin, lightLogo, 'Outside brand', 'touch'));
 
-    const panel = overlayContainer().querySelector<HTMLElement>('.image-zoom-preview')!;
+    const panel = overlayContainer().querySelector<HTMLElement>('.image-zoom-preview-preview')!;
     dispatchPointerClick(panel);
     expect(service.isOpenFor(origin)).toBe(true);
 
@@ -273,7 +273,7 @@ describe('ImageZoomService', () => {
     TestBed.resetTestingModule();
 
     expect(dispose).toHaveBeenCalledOnce();
-    expect(overlayContainer().querySelector('app-image-zoom-preview')).toBeNull();
+    expect(overlayContainer().querySelector('app-image-zoom-preview-preview')).toBeNull();
   });
 
   /** Creates, mounts, and tracks an image suitable for CDK connected positioning. */
