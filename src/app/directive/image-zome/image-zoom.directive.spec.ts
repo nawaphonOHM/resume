@@ -10,7 +10,7 @@ import { ImageZoomDirective } from './image-zoom.directive.ts';
 import {
   ImageZoomService,
   type ImageZoomRequest,
-} from '../../resume/image-zoom-preview/image-zoom.service.ts';
+} from '../../resume/image-zoom-preview/service/image-zoom.service.ts';
 import { BrandLogo } from '../../helper/interface/brand-logo/brand-logo.interface.ts';
 
 /** Intrinsic logo fixture shared by host input and expected service requests. */
