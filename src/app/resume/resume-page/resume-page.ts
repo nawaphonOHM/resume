@@ -19,13 +19,13 @@ import { EducationSection } from '../education-section/education-section';
 import { ExperienceTimeline } from '../experience-timeline/experience-timeline';
 import { HeroSection } from '../hero-section/hero-section';
 import { ProfileSidebar } from '../profile-sidebar/profile-sidebar';
-import { RESUME } from '../../data/resume/resume.data';
 import {
   RESUME_SECTIONS,
   ResumeNavigation,
   type ResumeSectionId,
 } from '../resume-navigation/resume-navigation';
 import { SummarySection } from '../summary-section/summary-section';
+import { resumeData } from '../../helper/injection-token/resume.data.ts';
 
 /** Stable identifiers shared by deferred content and its printable fallback states. */
 export const RESUME_DEFER_BOUNDARIES = {
@@ -75,7 +75,7 @@ export class ResumePage {
   private destroyed = false;
 
   /** Canonical profile distributed to the presentational section components. */
-  protected readonly resume = RESUME;
+  protected readonly resume = inject(resumeData);
 
   /** Section currently represented as active in responsive navigation. */
   protected readonly activeSection = signal<ResumeSectionId>('about');

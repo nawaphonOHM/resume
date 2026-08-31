@@ -1,12 +1,12 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { Injectable, InjectionToken, PLATFORM_ID, inject, Service } from '@angular/core';
+import { InjectionToken, PLATFORM_ID, inject, Service } from '@angular/core';
 
-import { RESUME } from '../../data/resume/resume.data';
 import {
   buildResumeDocumentDefinition,
   validateResumePdfBytes,
   type ResumePdfDocumentDefinition,
 } from './resume-pdf-document';
+import { resumeData } from '../../helper/injection-token/resume.data.ts';
 
 export const RESUME_PDF_FILENAME = 'nawaphon-isarathanachaikul-resume-profile.pdf';
 
@@ -297,6 +297,8 @@ export default class ResumePdfService {
   private readonly view = isPlatformBrowser(this.platformId) ? this.document.defaultView : null;
   private runtime: Promise<ResumePdfRuntime> | undefined;
 
+  private readonly resumeDataToken = inject(resumeData);
+
   /** Generates one PDF only after a browser caller explicitly requests it. */
   async download(): Promise<void> {
     const view = this.view;
@@ -304,10 +306,10 @@ export default class ResumePdfService {
       return;
     }
 
-    const definition = buildResumeDocumentDefinition(RESUME);
+    const definition = buildResumeDocumentDefinition(this.resumeDataToken);
     const runtime = await this.loadRuntime();
     const pdf = await runtime.createPdf(definition).getBuffer();
-    validateResumePdfBytes(pdf, RESUME);
+    validateResumePdfBytes(pdf, this.resumeDataToken);
 
     const blob = new view.Blob([pdf as BlobPart], { type: 'application/pdf' });
     this.downloadBlob(view, blob);

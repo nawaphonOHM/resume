@@ -4,9 +4,7 @@ import { ImageZoomDirective } from '../../../directive/image-zome/image-zoom.dir
 import { TechnologyIconContrastService } from './service/technology-icon-contrast/technology-icon-contrast.service.ts';
 import type { TechnologyIconPresentation } from '../../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
 import { NgOptimizedImage } from '@angular/common';
-import type {
-  TechnologyIconMetadata
-} from '../../../helper/interface/brand-logo/technology-icon-meta-data/technology-icon-meta-data.interface.ts';
+import type { TechnologyIconMetadata } from '../../../helper/interface/brand-logo/technology-icon-meta-data/technology-icon-meta-data.interface.ts';
 
 /** Presents one decorative technology mark and upgrades it after deferred contrast processing. */
 @Component({

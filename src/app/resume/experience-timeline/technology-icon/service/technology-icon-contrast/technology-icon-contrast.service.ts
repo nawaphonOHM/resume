@@ -26,9 +26,7 @@ import { MIN_CLAHE_TILES } from '../../../../../helper/injection-token/min-clahe
 import { MAX_CLAHE_TILES } from '../../../../../helper/injection-token/max-clahe-titles.variable.ts';
 import { CLAHE_TILE_PIXEL_TARGET } from '../../../../../helper/injection-token/clahe-tile-pixel-target.variable.ts';
 import { relativeLuminance } from '../../../../../helper/injection-token/relative-luminance.function.ts';
-import type {
-  TechnologyIconMetadata
-} from '../../../../../helper/interface/brand-logo/technology-icon-meta-data/technology-icon-meta-data.interface.ts';
+import type { TechnologyIconMetadata } from '../../../../../helper/interface/brand-logo/technology-icon-meta-data/technology-icon-meta-data.interface.ts';
 
 /**
  * Lazily rasterizes and contrast-optimizes technology artwork once per unique

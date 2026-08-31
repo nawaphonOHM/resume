@@ -1,5 +1,5 @@
 import { NgOptimizedImage } from '@angular/common';
-import { Component, input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
@@ -7,8 +7,9 @@ import { MatIconModule } from '@angular/material/icon';
 
 import { ImageZoomDirective } from '../../directive/image-zome/image-zoom.directive.ts';
 import { TechnologyIconComponent } from './technology-icon/technology-icon.ts';
-import { resolveTechnologyIcon } from './technology-icon/technology-icons.ts';
 import type { Experience } from '../../helper/interface/experience/experience.interface.ts';
+import { TECHNOLOGY_ICONS } from '../../helper/injection-token/technology-icons.variable.ts';
+import { resolveTechnologyIcon } from '../../helper/injection-token/resolve-technology-icon.function.ts';
 
 /** Renders ordered employment records with client relationships and technology metadata. */
 @Component({
@@ -30,5 +31,5 @@ export class ExperienceTimeline {
   readonly experience = input.required<readonly Experience[]>();
 
   /** Exact-label icon lookup exposed to the template; absence selects its generic fallback. */
-  protected readonly resolveTechnologyIcon = resolveTechnologyIcon;
+  protected readonly resolveTechnologyIcon = inject(resolveTechnologyIcon);
 }
