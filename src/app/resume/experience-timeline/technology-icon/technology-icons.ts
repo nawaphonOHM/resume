@@ -1,12 +1,6 @@
 import { imageAssetUrl } from '../../../data/image-assets.ts';
 import type { BrandLogo } from '../../../helper/interface/brand-logo/brand-logo.interface.ts';
 
-/** Remote SVG metadata used to decorate a technology label. */
-export interface TechnologyIconMetadata extends BrandLogo {
-  /** Absolute Space URL generated from a compile-time constrained image path. */
-  readonly src: string;
-}
-
 /** Shared artwork metadata for Spring products that use the same brand mark. */
 const SPRING_ICON = {
   src: imageAssetUrl('/technology-icons/spring.svg'),
