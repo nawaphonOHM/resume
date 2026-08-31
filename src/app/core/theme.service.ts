@@ -1,12 +1,5 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import {
-  DestroyRef,
-  PLATFORM_ID,
-  computed,
-  inject,
-  signal,
-  Service,
-} from '@angular/core';
+import { DestroyRef, PLATFORM_ID, computed, inject, signal, Service } from '@angular/core';
 
 /** Color schemes that can be selected and persisted for the résumé. */
 export type ResumeTheme = 'light' | 'dark';

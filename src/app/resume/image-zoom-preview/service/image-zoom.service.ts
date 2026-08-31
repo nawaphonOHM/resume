@@ -136,7 +136,10 @@ export class ImageZoomService {
       scrollStrategy: this.overlay.scrollStrategies.reposition({ scrollThrottle: 0 }),
       panelClass:
         request.activation === 'hover'
-          ? ['image-zoom-preview-overlay-pane', 'image-zoom-preview-overlay-pane--pointer-transparent']
+          ? [
+              'image-zoom-preview-overlay-pane',
+              'image-zoom-preview-overlay-pane--pointer-transparent',
+            ]
           : ['image-zoom-preview-overlay-pane'],
       maxWidth: `calc(100vw - ${VIEWPORT_MARGIN * 2}px)`,
       maxHeight: `calc(100vh - ${VIEWPORT_MARGIN * 2}px)`,
