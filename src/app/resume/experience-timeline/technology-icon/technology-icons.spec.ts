@@ -53,9 +53,7 @@ describe('technology icons', () => {
 
   it('maps every branded résumé technology to validated remote metadata', () => {
     expect(
-      Object.fromEntries(
-        Object.entries(technologyIcons).map(([label, icon]) => [label, icon.src]),
-      ),
+      Object.fromEntries(Object.entries(technologyIcons).map(([label, icon]) => [label, icon.src])),
     ).toEqual(expectedIconPaths);
 
     for (const icon of Object.values(technologyIcons)) {

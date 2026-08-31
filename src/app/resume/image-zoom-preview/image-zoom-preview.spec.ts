@@ -9,7 +9,7 @@ import {
   ImageZoomPreview,
   type ImageZoomPreviewData,
 } from './image-zoom-preview';
-import { BrandLogo } from '../../helper/interface/brand-logo/brand-logo.interface.ts';
+import type { BrandLogo } from '../../helper/interface/brand-logo/brand-logo.interface.ts';
 
 describe('ImageZoomPreview', () => {
   afterEach(() => TestBed.resetTestingModule());

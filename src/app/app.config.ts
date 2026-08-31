@@ -1,11 +1,7 @@
 import { DOCUMENT, ViewportScroller } from '@angular/common';
-import {
-  ApplicationConfig,
-  inject,
-  provideAppInitializer,
-  provideBrowserGlobalErrorListeners,
-} from '@angular/core';
+import { inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, withInMemoryScrolling, withRouterConfig } from '@angular/router';
+import type { ApplicationConfig } from '@angular/core';
 
 import { routes } from './app.routes';
 

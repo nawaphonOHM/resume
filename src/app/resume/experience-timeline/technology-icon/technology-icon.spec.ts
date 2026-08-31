@@ -2,7 +2,8 @@
  * Verifies immediate technology artwork, asynchronous enhancement, exact frame surfaces, and
  * propagation of resolved presentation metadata to image zoom.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import type { ComponentFixture } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { vi } from 'vitest';
 
@@ -10,7 +11,7 @@ import { ImageZoomDirective } from '../../../directive/image-zome/image-zoom.dir
 import { TechnologyIconContrastService } from './service/technology-icon-contrast/technology-icon-contrast.service.ts';
 import { TechnologyIconComponent } from './technology-icon.ts';
 import type { TechnologyIconMetadata } from '../../../helper/interface/brand-logo/technology-icon-meta-data/technology-icon-meta-data.interface.ts';
-import { TechnologyIconPresentation } from '../../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
+import type { TechnologyIconPresentation } from '../../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
 
 const ICON: TechnologyIconMetadata = {
   src: '/images/technology-icons/oracle.svg',

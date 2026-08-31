@@ -1,6 +1,6 @@
 import { inject, InjectionToken } from '@angular/core';
-import { OpenCvRuntime } from '../interface/open-cv-runtime/open-cv-runtime.interface.ts';
-import { InitializingOpenCvExport } from '../interface/initialzing-open-cv-export/initializing-open-cv-export.interface.ts';
+import type { OpenCvRuntime } from '../interface/open-cv-runtime/open-cv-runtime.interface.ts';
+import type { InitializingOpenCvExport } from '../interface/initialzing-open-cv-export/initializing-open-cv-export.interface.ts';
 import { RUNTIME_INITIALIZATION_TIMEOUT_MS } from './runtime-initialization-timeout-ms.variable.ts';
 import { isOpenCvRuntime } from './is-open-cv-runtime.function.ts';
 

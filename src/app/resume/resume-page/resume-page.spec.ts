@@ -4,12 +4,8 @@
  */
 import { ScrollDispatcher, ViewportRuler } from '@angular/cdk/scrolling';
 import { APP_BOOTSTRAP_LISTENER, ApplicationRef, ErrorHandler } from '@angular/core';
-import {
-  ComponentFixture,
-  DeferBlockBehavior,
-  DeferBlockState,
-  TestBed,
-} from '@angular/core/testing';
+import type { ComponentFixture } from '@angular/core/testing';
+import { DeferBlockBehavior, DeferBlockState, TestBed } from '@angular/core/testing';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { By } from '@angular/platform-browser';
 import {
@@ -35,9 +31,9 @@ import type { ResumeProfile } from '../../helper/interface/resume-profile/resume
 import { ImageZoomDirective } from '../../directive/image-zome/image-zoom.directive.ts';
 import { ResumeNavigation, type ResumeSectionId } from '../resume-navigation/resume-navigation';
 import { RESUME_DEFER_BOUNDARIES, ResumePage } from './resume-page';
-import { TechnologyIconPresentation } from '../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
+import type { TechnologyIconPresentation } from '../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
 import ResumePdfService from '../resume-pdf/resume-pdf.service.ts';
-import { BrandLogo } from '../../helper/interface/brand-logo/brand-logo.interface.ts';
+import type { BrandLogo } from '../../helper/interface/brand-logo/brand-logo.interface.ts';
 
 const TECHNOLOGY_ICON_FALLBACK_LABELS = ['REST APIs', 'Caffeine'] as const;
 

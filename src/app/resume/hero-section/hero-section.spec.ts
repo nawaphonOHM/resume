@@ -1,5 +1,6 @@
 /** Verifies fixed UTC+7 clock and availability rendering, updates, and timer lifecycle. */
-import { type ComponentFixture, TestBed } from '@angular/core/testing';
+import type { ComponentFixture } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { vi } from 'vitest';
 

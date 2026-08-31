@@ -1,5 +1,5 @@
 import { inject, InjectionToken } from '@angular/core';
-import { TechnologyIconMetadata } from '../interface/brand-logo/technology-icon-meta-data/technology-icon-meta-data.interface.ts';
+import type { TechnologyIconMetadata } from '../interface/brand-logo/technology-icon-meta-data/technology-icon-meta-data.interface.ts';
 import { imageAssetUrl } from './image-asset-url.function.ts';
 import { SPRING_ICON } from './spring-icon.variable.ts';
 

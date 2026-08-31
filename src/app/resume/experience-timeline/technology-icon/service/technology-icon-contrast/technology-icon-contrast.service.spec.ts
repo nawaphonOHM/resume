@@ -5,7 +5,7 @@ import { vi } from 'vitest';
 
 import type { TechnologyIconMetadata } from '../../../../../helper/interface/brand-logo/technology-icon-meta-data/technology-icon-meta-data.interface.ts';
 import { TechnologyIconContrastService } from './technology-icon-contrast.service.ts';
-import { TechnologyIconOpenCvLoader } from '../../../../../helper/type/technology-icon-open-cv-loader.type.ts';
+import type { TechnologyIconOpenCvLoader } from '../../../../../helper/type/technology-icon-open-cv-loader.type.ts';
 import { TECHNOLOGY_ICON_OPEN_CV_LOADER } from '../../../../../helper/injection-token/technology-icon-open-cv-loader.function.ts';
 
 const OPEN_CV_CDN_URL = 'https://cdn.jsdelivr.net/npm/@techstark/opencv-js/+esm';
