@@ -3,7 +3,7 @@ import { PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
-import type { TechnologyIconMetadata } from '../../technology-icons.ts';
+import type { TechnologyIconMetadata } from '../../../../../helper/interface/brand-logo/technology-icon-meta-data/technology-icon-meta-data.interface.ts';
 import { TechnologyIconContrastService } from './technology-icon-contrast.service.ts';
 import { TechnologyIconOpenCvLoader } from '../../../../../helper/type/technology-icon-open-cv-loader.type.ts';
 import { TECHNOLOGY_ICON_OPEN_CV_LOADER } from '../../../../../helper/injection-token/technology-icon-open-cv-loader.function.ts';

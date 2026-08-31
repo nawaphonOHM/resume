@@ -147,10 +147,10 @@ describe('ImageZoomService', () => {
 
     service.open(request(origin, lightLogo, 'Enhanced brand', 'hover', '#0d1b2d'));
 
-    const panel = overlayContainer().querySelector<HTMLElement>('.image-zoom-preview-preview');
+    const panel = overlayContainer().querySelector<HTMLElement>('.image-zoom-preview');
     const image = panel?.querySelector<HTMLImageElement>('img');
 
-    expect(panel?.classList.contains('image-zoom-preview-preview--light')).toBe(true);
+    expect(panel?.classList.contains('image-zoom-preview--light')).toBe(true);
     expect(panel?.style.backgroundColor).toBe('rgb(13, 27, 45)');
     expect(image?.getAttribute('src')).toBe(lightLogo.src);
     expect(image?.getAttribute('alt')).toBe('Enhanced brand');
@@ -216,12 +216,12 @@ describe('ImageZoomService', () => {
     service.open(request(secondOrigin, darkLogo, 'Second brand', 'touch'));
 
     const previews = overlayContainer().querySelectorAll('app-image-zoom-preview-preview');
-    const panel = previews[0]?.querySelector<HTMLElement>('.image-zoom-preview-preview');
+    const panel = previews[0]?.querySelector<HTMLElement>('.image-zoom-preview');
     const image = previews[0]?.querySelector<HTMLImageElement>('img');
 
     expect(dispose).toHaveBeenCalledOnce();
     expect(previews).toHaveLength(1);
-    expect(panel?.classList.contains('image-zoom-preview-preview--dark')).toBe(true);
+    expect(panel?.classList.contains('image-zoom-preview--dark')).toBe(true);
     expect(image?.getAttribute('src')).toBe(darkLogo.src);
     expect(image?.getAttribute('alt')).toBe('Second brand');
     expect(service.isOpenFor(firstOrigin)).toBe(false);
@@ -251,7 +251,7 @@ describe('ImageZoomService', () => {
 
     service.open(request(origin, lightLogo, 'Outside brand', 'touch'));
 
-    const panel = overlayContainer().querySelector<HTMLElement>('.image-zoom-preview-preview')!;
+    const panel = overlayContainer().querySelector<HTMLElement>('.image-zoom-preview')!;
     dispatchPointerClick(panel);
     expect(service.isOpenFor(origin)).toBe(true);
 

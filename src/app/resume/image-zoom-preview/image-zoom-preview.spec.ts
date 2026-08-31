@@ -35,28 +35,28 @@ describe('ImageZoomPreview', () => {
     await fixture.whenStable();
 
     const host = fixture.nativeElement as HTMLElement;
-    const panel = host.querySelector<HTMLElement>('.image-zoom-preview-preview');
+    const panel = host.querySelector<HTMLElement>('.image-zoom-preview');
     const image = host.querySelector<HTMLImageElement>('img');
     const imageStyle = getComputedStyle(image!);
 
     expect(host.getAttribute('aria-hidden')).toBe('true');
     expect(host.getAttribute('tabindex')).toBeNull();
     expect(panel?.classList.contains(`image-zoom-preview--${surface}`)).toBe(true);
-    expect(panel?.getAttribute('data-image-zoom-preview-surface')).toBe(surface);
-    expect(panel?.style.getPropertyValue('--image-zoom-preview-intrinsic-width')).toBe('640px');
-    expect(panel?.style.getPropertyValue('--image-zoom-preview-intrinsic-height')).toBe('320px');
+    expect(panel?.getAttribute('data-image-zoom-surface')).toBe(surface);
+    expect(panel?.style.getPropertyValue('--image-zoom-intrinsic-width')).toBe('640px');
+    expect(panel?.style.getPropertyValue('--image-zoom-intrinsic-height')).toBe('320px');
     expect(getComputedStyle(panel!).backgroundColor).toBe(expectedSurface);
     expect(imageStyle.contain).toBe('size');
     expect(imageStyle.getPropertyValue('contain-intrinsic-size')).toBe(
-      'var(--image-zoom-preview-intrinsic-width) var(--image-zoom-preview-intrinsic-height)',
+      'var(--image-zoom-intrinsic-width) var(--image-zoom-intrinsic-height)',
     );
     expect(imageStyle.width).toBe('auto');
     expect(imageStyle.height).toBe('auto');
     expect(imageStyle.maxWidth).toBe(
-      'var(--image-zoom-preview-image-max-width, min(20vw, 100vw - 3.5rem))',
+      'var(--image-zoom-image-max-width, min(20vw, 100vw - 3.5rem))',
     );
     expect(imageStyle.maxHeight).toBe(
-      'var(--image-zoom-preview-image-max-height, min(20vh, 100vh - 3.5rem))',
+      'var(--image-zoom-image-max-height, min(20vh, 100vh - 3.5rem))',
     );
     expect(imageStyle.objectFit).toBe('contain');
     expect(image?.getAttribute('src')).toBe(logo.src);
@@ -88,10 +88,10 @@ describe('ImageZoomPreview', () => {
     await fixture.whenStable();
 
     const host = fixture.nativeElement as HTMLElement;
-    const panel = host.querySelector<HTMLElement>('.image-zoom-preview-preview');
+    const panel = host.querySelector<HTMLElement>('.image-zoom-preview');
 
-    expect(panel?.classList.contains('image-zoom-preview-preview--dark')).toBe(true);
-    expect(panel?.getAttribute('data-image-zoom-preview-surface')).toBe('dark');
+    expect(panel?.classList.contains('image-zoom-preview--dark')).toBe(true);
+    expect(panel?.getAttribute('data-image-zoom-surface')).toBe('dark');
     expect(panel?.style.backgroundColor).toBe('rgb(13, 27, 45)');
   });
 
@@ -117,12 +117,12 @@ describe('ImageZoomPreview', () => {
     await fixture.whenStable();
 
     const host = fixture.nativeElement as HTMLElement;
-    const panel = host.querySelector<HTMLElement>('.image-zoom-preview-preview');
+    const panel = host.querySelector<HTMLElement>('.image-zoom-preview');
     const image = host.querySelector<HTMLImageElement>('img');
 
     expect(host.getAttribute('aria-hidden')).toBe('true');
-    expect(panel?.classList.contains('image-zoom-preview-preview--light')).toBe(true);
-    expect(panel?.getAttribute('data-image-zoom-preview-surface')).toBe('light');
+    expect(panel?.classList.contains('image-zoom-preview--light')).toBe(true);
+    expect(panel?.getAttribute('data-image-zoom-surface')).toBe('light');
     expect(image?.getAttribute('src')).toBe(generatedSource);
     expect(image?.getAttribute('width')).toBe('96');
     expect(image?.getAttribute('height')).toBe('48');

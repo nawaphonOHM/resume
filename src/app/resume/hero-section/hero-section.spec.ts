@@ -3,7 +3,7 @@ import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { vi } from 'vitest';
 
-import { RESUME } from '../../data/resume/resume.data';
+import { resumeData } from '../../helper/injection-token/resume.data.ts';
 import { HeroSection } from './hero-section';
 
 const AVAILABLE_COLOR = '#92C353';
@@ -99,8 +99,9 @@ describe('HeroSection', () => {
   });
 
   function renderHero(): ComponentFixture<HeroSection> {
+    const profile = TestBed.inject(resumeData);
     fixture = TestBed.createComponent(HeroSection);
-    fixture.componentRef.setInput('profile', RESUME);
+    fixture.componentRef.setInput('profile', profile);
     fixture.detectChanges();
     return fixture;
   }

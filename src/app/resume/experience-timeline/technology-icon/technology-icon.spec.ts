@@ -9,7 +9,7 @@ import { vi } from 'vitest';
 import { ImageZoomDirective } from '../../../directive/image-zome/image-zoom.directive.ts';
 import { TechnologyIconContrastService } from './service/technology-icon-contrast/technology-icon-contrast.service.ts';
 import { TechnologyIconComponent } from './technology-icon.ts';
-import type { TechnologyIconMetadata } from './technology-icons.ts';
+import type { TechnologyIconMetadata } from '../../../helper/interface/brand-logo/technology-icon-meta-data/technology-icon-meta-data.interface.ts';
 import { TechnologyIconPresentation } from '../../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
 
 const ICON: TechnologyIconMetadata = {

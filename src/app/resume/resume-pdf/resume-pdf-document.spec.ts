@@ -1,4 +1,5 @@
-import { RESUME } from '../../data/resume/resume.data';
+import { TestBed } from '@angular/core/testing';
+import { resumeData } from '../../helper/injection-token/resume.data.ts';
 import type { ResumeProfile } from '../../helper/interface/resume-profile/resume-profile.interface.ts';
 import {
   buildResumeDocumentDefinition,
@@ -7,6 +8,7 @@ import {
 } from './resume-pdf-document';
 
 const METADATA_DATE = '2026-01-01T00:00:00.000Z';
+const RESUME: ResumeProfile = TestBed.runInInjectionContext(() => TestBed.inject(resumeData));
 
 function collectProperty(value: unknown, propertyName: string): string[] {
   if (Array.isArray(value)) {
@@ -52,12 +54,12 @@ function pdfBytes(body: string, header = '%PDF-1.7'): Uint8Array {
   return new TextEncoder().encode(`${header}\n${body}`.padEnd(10_001, 'x'));
 }
 
-function validPdfBytes(additionalText = ''): Uint8Array {
+function validPdfBytes(profile: ResumeProfile, additionalText = ''): Uint8Array {
   return pdfBytes(
     [
-      `mailto:${RESUME.details.email}`,
-      RESUME.education.seniorProject.url,
-      ...RESUME.links.map(({ url }) => url),
+      `mailto:${profile.details.email}`,
+      profile.education.seniorProject.url,
+      ...profile.links.map(({ url }) => url),
       additionalText,
     ].join('\n'),
   );
@@ -283,7 +285,7 @@ describe('résumé profile validation', () => {
 
 describe('generated résumé PDF byte validation', () => {
   it('accepts a sufficiently large PDF with all required annotations', () => {
-    expect(() => validateResumePdfBytes(validPdfBytes(), RESUME)).not.toThrow();
+    expect(() => validateResumePdfBytes(validPdfBytes(RESUME), RESUME)).not.toThrow();
   });
 
   it('rejects non-PDF and unexpectedly small output', () => {
@@ -305,7 +307,7 @@ describe('generated résumé PDF byte validation', () => {
     expect(() => validateResumePdfBytes(missingProjectLink, RESUME)).toThrow(
       /missing a link annotation/i,
     );
-    expect(() => validateResumePdfBytes(validPdfBytes('tel:private'), RESUME)).toThrow(
+    expect(() => validateResumePdfBytes(validPdfBytes(RESUME, 'tel:private'), RESUME)).toThrow(
       /telephone link/i,
     );
   });

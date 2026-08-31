@@ -25,21 +25,21 @@ import { vi } from 'vitest';
 
 import { routes } from '../../app.routes';
 import { RESUME_THEME_STORAGE_KEY } from '../../core/theme.service';
-import { IMAGE_ASSET_ORIGIN } from '../../data/image-assets';
-import { RESUME } from '../../data/resume/resume.data';
+import { resumeData } from '../../helper/injection-token/resume.data.ts';
+import { IMAGE_ASSET_ORIGIN as IMAGE_ASSET_ORIGIN_TOKEN } from '../../helper/injection-token/image-asset-origin.variable.ts';
+import { resolveTechnologyIcon as resolveTechnologyIconToken } from '../../helper/injection-token/resolve-technology-icon.function.ts';
 import { TechnologyIconContrastService } from '../experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts';
 import { TechnologyIconComponent } from '../experience-timeline/technology-icon/technology-icon.ts';
-import {
-  TECHNOLOGY_ICON_FALLBACK_LABELS,
-  resolveTechnologyIcon,
-  type TechnologyIconMetadata,
-} from '../experience-timeline/technology-icon/technology-icons.ts';
+import type { TechnologyIconMetadata } from '../../helper/interface/brand-logo/technology-icon-meta-data/technology-icon-meta-data.interface.ts';
+import type { ResumeProfile } from '../../helper/interface/resume-profile/resume-profile.interface.ts';
 import { ImageZoomDirective } from '../../directive/image-zome/image-zoom.directive.ts';
 import { ResumeNavigation, type ResumeSectionId } from '../resume-navigation/resume-navigation';
 import { RESUME_DEFER_BOUNDARIES, ResumePage } from './resume-page';
 import { TechnologyIconPresentation } from '../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
 import ResumePdfService from '../resume-pdf/resume-pdf.service.ts';
 import { BrandLogo } from '../../helper/interface/brand-logo/brand-logo.interface.ts';
+
+const TECHNOLOGY_ICON_FALLBACK_LABELS = ['REST APIs', 'Caffeine'] as const;
 
 const OPTIMIZED_ICON_SOURCE = 'data:image/png;base64,b3B0aW1pemVk';
 const OPTIMIZED_ICON_BACKGROUND = '#0d1b2d';
@@ -135,6 +135,10 @@ async function openMobileMenu(fixture: ComponentFixture<ResumePage>): Promise<HT
 }
 
 describe('ResumePage', () => {
+  let RESUME: ResumeProfile;
+  let IMAGE_ASSET_ORIGIN: string;
+  let resolveTechnologyIcon: (label: string) => TechnologyIconMetadata | undefined;
+
   /** Synthetic document-scroll stream returned by the CDK dispatcher fixture. */
   let scrollEvents: Subject<void>;
 
@@ -204,6 +208,10 @@ describe('ResumePage', () => {
         { provide: ErrorHandler, useValue: { handleError } },
       ],
     }).compileComponents();
+
+    RESUME = TestBed.inject(resumeData);
+    IMAGE_ASSET_ORIGIN = TestBed.inject(IMAGE_ASSET_ORIGIN_TOKEN);
+    resolveTechnologyIcon = TestBed.inject(resolveTechnologyIconToken);
 
     scrolled = vi.spyOn(TestBed.inject(ScrollDispatcher), 'scrolled').mockReturnValue(scrollEvents);
     viewportChanged = vi
@@ -438,12 +446,12 @@ describe('ResumePage', () => {
     const githubExternalIcon = githubLink?.querySelector<HTMLElement>('mat-icon');
 
     expect(githubLabel?.textContent?.trim()).toBe(github.label);
-    expect(githubLogo?.getAttribute('src')).toBe(github.logo.src);
-    expect(githubLogo?.getAttribute('width')).toBe(String(github.logo.width));
-    expect(githubLogo?.getAttribute('height')).toBe(String(github.logo.height));
+    expect(githubLogo?.getAttribute('src')).toBe(github.logo!.src);
+    expect(githubLogo?.getAttribute('width')).toBe(String(github.logo!.width));
+    expect(githubLogo?.getAttribute('height')).toBe(String(github.logo!.height));
     expect(githubLogo?.getAttribute('alt')).toBe('');
     expect(githubLogo?.getAttribute('loading')).toBe('lazy');
-    expect(githubLogoFrame?.classList.contains(`link-logo-frame--${github.logo.surface}`)).toBe(
+    expect(githubLogoFrame?.classList.contains(`link-logo-frame--${github.logo!.surface}`)).toBe(
       true,
     );
     expect(getComputedStyle(githubLogoFrame!).backgroundColor).toBe('rgb(255, 255, 255)');
@@ -495,7 +503,7 @@ describe('ResumePage', () => {
     for (const job of RESUME.experience) {
       expectedBindings.push({ logo: job.companyLogo, label: job.company, touch: true });
 
-      if ('client' in job) {
+      if ('client' in job && job.client) {
         expectedBindings.push({ logo: job.client.logo, label: job.client.name, touch: true });
       }
 
@@ -521,7 +529,7 @@ describe('ResumePage', () => {
     });
 
     for (const link of RESUME.links) {
-      if ('logo' in link) {
+      if ('logo' in link && link.logo) {
         expectedBindings.push({
           logo: link.logo,
           label: link.label,
@@ -547,7 +555,7 @@ describe('ResumePage', () => {
     );
     expect(actualBindings).toEqual(expectedBindings);
     expect(actualBindings.filter(({ touch }) => !touch)).toEqual([
-      { logo: RESUME.links[0].logo, label: 'GitHub', touch: false },
+      { logo: RESUME.links[0].logo!, label: 'GitHub', touch: false },
     ]);
   });
 

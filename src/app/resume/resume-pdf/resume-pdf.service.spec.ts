@@ -4,7 +4,8 @@ import pdfMakeModule from 'pdfmake/build/pdfmake.js';
 import virtualFileSystemModule from 'pdfmake/build/vfs_fonts.js';
 import { vi } from 'vitest';
 
-import { RESUME } from '../../data/resume/resume.data';
+import { resumeData } from '../../helper/injection-token/resume.data.ts';
+import type { ResumeProfile } from '../../helper/interface/resume-profile/resume-profile.interface.ts';
 import type { ResumePdfDocumentDefinition } from './resume-pdf-document';
 import ResumePdfService, {
   RESUME_PDF_CDN_SCRIPT_LOADER,
@@ -43,14 +44,14 @@ interface TestBrowserPdfRuntime extends ResumePdfRuntime {
 
 type PdfMakeWindow = Window & typeof globalThis & { pdfMake?: unknown };
 
-function validPdfBytes(additionalText = ''): Uint8Array {
+function validPdfBytes(profile: ResumeProfile, additionalText = ''): Uint8Array {
   return new TextEncoder().encode(
     [
       '%PDF-1.7',
       '/ToUnicode',
-      `mailto:${RESUME.details.email}`,
-      RESUME.education.seniorProject.url,
-      ...RESUME.links.map(({ url }) => url),
+      `mailto:${profile.details.email}`,
+      profile.education.seniorProject.url,
+      ...profile.links.map(({ url }) => url),
       additionalText,
     ]
       .join('\n')
@@ -58,15 +59,20 @@ function validPdfBytes(additionalText = ''): Uint8Array {
   );
 }
 
-function createFakeRuntime(initialBytes: unknown = validPdfBytes()) {
-  const getBuffer = vi.fn(async (): Promise<unknown> => initialBytes);
+function createFakeRuntime(initialBytes?: unknown) {
+  const getBuffer = vi.fn(async (): Promise<unknown> => {
+    if (initialBytes !== undefined) {
+      return initialBytes;
+    }
+    return validPdfBytes(TestBed.inject(resumeData));
+  });
   const createPdf = vi.fn((_definition: ResumePdfDocumentDefinition) => ({ getBuffer }));
   const runtime: ResumePdfRuntime = { createPdf };
 
   return { runtime, createPdf, getBuffer };
 }
 
-function createFakeBrowserRuntime(initialBytes: unknown = validPdfBytes()) {
+function createFakeBrowserRuntime(initialBytes?: unknown) {
   const fake = createFakeRuntime(initialBytes);
   const storage: Record<string, unknown> = {};
   const addVirtualFileSystem = vi.fn((virtualFileSystem: Readonly<Record<string, unknown>>) => {
@@ -460,11 +466,12 @@ describe('ResumePdfService', () => {
   });
 
   it('defers all work until requested and downloads the same validated bytes once', async () => {
-    const bytes = validPdfBytes();
-    const fake = createFakeRuntime(bytes);
+    const fake = createFakeRuntime();
     const loader = vi.fn(async () => fake.runtime);
     const anchors = trackAnchorClicks();
     const service = createService(loader);
+    const resume = TestBed.inject(resumeData);
+    const bytes = validPdfBytes(resume);
 
     expect(loader).not.toHaveBeenCalled();
     expect(fake.createPdf).not.toHaveBeenCalled();
@@ -476,7 +483,7 @@ describe('ResumePdfService', () => {
     expect(fake.createPdf).toHaveBeenCalledOnce();
     expect(fake.getBuffer).toHaveBeenCalledOnce();
     expect(fake.createPdf.mock.calls[0]?.[0]).toMatchObject({
-      info: { title: `${RESUME.name} — ${RESUME.title}` },
+      info: { title: `${resume.name} — ${resume.title}` },
       defaultStyle: { font: 'Roboto' },
     });
     expect(createObjectUrl).toHaveBeenCalledOnce();
@@ -617,6 +624,7 @@ describe('ResumePdfService', () => {
     const anchors = trackAnchorClicks();
     const loader = vi.fn(async () => createLocalPdfMakeRuntime());
     const service = createService(loader);
+    const resume = TestBed.inject(resumeData);
 
     await service.download();
     await service.download();
@@ -633,9 +641,9 @@ describe('ResumePdfService', () => {
     expect(firstPdf.byteLength).toBeGreaterThan(10_000);
     expect(Array.from(firstPdf)).toEqual(Array.from(secondPdf));
     expect(pdfSource).toMatch(/\/ToUnicode\b/);
-    expect(pdfSource).toContain(`mailto:${RESUME.details.email}`);
-    expect(pdfSource).toContain(RESUME.education.seniorProject.url);
-    for (const { url } of RESUME.links) {
+    expect(pdfSource).toContain(`mailto:${resume.details.email}`);
+    expect(pdfSource).toContain(resume.education.seniorProject.url);
+    for (const { url } of resume.links) {
       expect(pdfSource).toContain(url);
     }
     expect(pdfSource).not.toMatch(/tel:/i);
