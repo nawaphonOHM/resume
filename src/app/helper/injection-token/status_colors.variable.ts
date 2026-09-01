@@ -5,18 +5,9 @@ import {InjectionToken} from '@angular/core';
 export type StatusColor = (typeof STATUS_COLORS)[keyof typeof STATUS_COLORS];
 
 
+/** Confirmed colors for available, limited, and unavailable UTC+7 periods. */
 export const STATUS_COLORS = {
   available: '#92C353',
   limited: '#F7A600',
   unavailable: '#D1D1D1',
 } as const
-
-
-/** Confirmed colors for available, limited, and unavailable UTC+7 periods. */
-export const STATUS_COLORS_TOKEN = new InjectionToken(
-  'STATUS_COLORS_TOKEN',
-  {
-    providedIn: 'root',
-    factory: () => STATUS_COLORS
-  }
-)
