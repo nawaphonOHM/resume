@@ -1,6 +1,10 @@
 import {InjectionToken} from '@angular/core';
 
 
+/** One of the normalized colors supported by the availability indicator. */
+type StatusColor = (typeof STATUS_COLORS)[keyof typeof STATUS_COLORS];
+
+
 export const STATUS_COLORS = {
   available: '#92C353',
   limited: '#F7A600',
