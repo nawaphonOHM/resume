@@ -14,3 +14,9 @@ export const STATUS_COLORS_TOKEN = new InjectionToken(
     })
   }
 )
+
+export type STATUS_COLORS = {
+  available: string;
+  limited: string;
+  unavailable: string;
+}
