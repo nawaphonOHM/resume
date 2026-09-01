@@ -1,0 +1,16 @@
+import {InjectionToken} from '@angular/core';
+
+
+
+/** Confirmed colors for available, limited, and unavailable UTC+7 periods. */
+export const STATUS_COLORS = new InjectionToken(
+  'STATUS_COLORS',
+  {
+    providedIn: 'root',
+    factory: () => ({
+      available: '#92C353',
+      limited: '#F7A600',
+      unavailable: '#D1D1D1',
+    })
+  }
+)
