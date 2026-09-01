@@ -1,7 +1,7 @@
 import {InjectionToken} from '@angular/core';
 
 
-const STATUS_COLORS = {
+export const STATUS_COLORS = {
   available: '#92C353',
   limited: '#F7A600',
   unavailable: '#D1D1D1',
