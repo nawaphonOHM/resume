@@ -3,8 +3,8 @@ import {InjectionToken} from '@angular/core';
 
 
 /** Confirmed colors for available, limited, and unavailable UTC+7 periods. */
-export const STATUS_COLORS_TOKEN = new InjectionToken(
-  'STATUS_COLORS',
+export const STATUS_COLORS_TOKEN = new InjectionToken<STATUS_COLORS>(
+  'STATUS_COLORS_TOKEN',
   {
     providedIn: 'root',
     factory: () => ({
