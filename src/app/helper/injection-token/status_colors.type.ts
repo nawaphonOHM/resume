@@ -1,7 +1,4 @@
-import { InjectionToken } from '@angular/core';
 
-/** One of the normalized colors supported by the availability indicator. */
-export type StatusColor = (STATUS_COLORS)[keyof STATUS_COLORS];
 
 /** Confirmed colors for available, limited, and unavailable UTC+7 periods. */
 // export const STATUS_COLORS = {
