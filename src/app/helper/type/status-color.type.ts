@@ -1,4 +1,4 @@
-import type {STATUS_COLORS} from './status_colors.type.ts';
+import type {STATUS_COLORS} from '../injection-token/status_colors.type.ts';
 
 
 /** One of the normalized colors supported by the availability indicator. */
