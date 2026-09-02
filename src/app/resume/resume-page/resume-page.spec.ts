@@ -30,7 +30,7 @@ import type { TechnologyIconMetadata } from '../../helper/interface/brand-logo/t
 import type { ResumeProfile } from '../../helper/interface/resume-profile/resume-profile.interface.ts';
 import { ImageZoomDirective } from '../../directive/image-zome/image-zoom.directive.ts';
 import { ResumeNavigation, type ResumeSectionId } from '../resume-navigation/resume-navigation';
-import { RESUME_DEFER_BOUNDARIES, ResumePage } from './resume-page';
+import ResumePage, { RESUME_DEFER_BOUNDARIES } from './resume-page';
 import type { TechnologyIconPresentation } from '../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
 import ResumePdfService from '../resume-pdf/resume-pdf.service.ts';
 import type { BrandLogo } from '../../helper/interface/brand-logo/brand-logo.interface.ts';

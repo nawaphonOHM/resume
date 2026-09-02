@@ -59,7 +59,7 @@ const DEFER_BOUNDARY_IDS = Object.values(RESUME_DEFER_BOUNDARIES);
   templateUrl: './resume-page.html',
   styleUrl: './resume-page.scss',
 })
-export class ResumePage {
+export default class ResumePage {
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);

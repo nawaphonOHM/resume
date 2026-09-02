@@ -9,7 +9,7 @@ import { vi } from 'vitest';
 import { appConfig } from './app.config';
 import { routes } from './app.routes';
 import { TechnologyIconContrastService } from './resume/experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts';
-import { ResumePage } from './resume/resume-page/resume-page';
+import ResumePage from './resume/resume-page/resume-page.ts';
 
 describe('application routes', () => {
   let router: Router;
@@ -96,8 +96,17 @@ describe('application routes', () => {
     return harness;
   }
 
-  it('defines only the eager root résumé route', () => {
-    expect(routes).toEqual([{ path: '', component: ResumePage, pathMatch: 'full' }]);
+  it('defines only the lazy root résumé route', async () => {
+    expect(routes).toEqual([
+      {
+        path: '',
+        loadComponent: expect.any(Function),
+        pathMatch: 'full',
+      },
+    ]);
+
+    const loadedComponent = await (routes[0].loadComponent as () => Promise<unknown>)();
+    expect(loadedComponent).toMatchObject({ default: ResumePage });
   });
 
   it('activates ResumePage at the root URL and enables history position restoration', async () => {

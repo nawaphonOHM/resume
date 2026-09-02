@@ -4,7 +4,7 @@ import type { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () => import('./resume/resume-page/resume-page').then((m) => m.ResumePage),
+    loadComponent: () => import('./resume/resume-page/resume-page'),
     pathMatch: 'full',
   },
 ];
