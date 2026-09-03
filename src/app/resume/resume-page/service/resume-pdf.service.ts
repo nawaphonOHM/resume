@@ -5,8 +5,8 @@ import {
   buildResumeDocumentDefinition,
   validateResumePdfBytes,
   type ResumePdfDocumentDefinition,
-} from './resume-pdf-document';
-import { resumeData } from '../../helper/injection-token/resume.data.ts';
+} from '../../resume-pdf/resume-pdf-document.ts';
+import { resumeData } from '../../../helper/injection-token/resume.data.ts';
 
 export const RESUME_PDF_FILENAME = 'nawaphon-isarathanachaikul-resume-profile.pdf';
 

@@ -4,9 +4,9 @@ import pdfMakeModule from 'pdfmake/build/pdfmake.js';
 import virtualFileSystemModule from 'pdfmake/build/vfs_fonts.js';
 import { vi } from 'vitest';
 
-import { resumeData } from '../../helper/injection-token/resume.data.ts';
-import type { ResumeProfile } from '../../helper/interface/resume-profile/resume-profile.interface.ts';
-import type { ResumePdfDocumentDefinition } from './resume-pdf-document';
+import { resumeData } from '../../../helper/injection-token/resume.data.ts';
+import type { ResumeProfile } from '../../../helper/interface/resume-profile/resume-profile.interface.ts';
+import type { ResumePdfDocumentDefinition } from '../../resume-pdf/resume-pdf-document.ts';
 import {
   RESUME_PDF_CDN_SCRIPT_LOADER,
   RESUME_PDF_FILENAME,
