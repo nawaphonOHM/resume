@@ -5,8 +5,13 @@ import {
   buildResumeDocumentDefinition,
   validateResumePdfBytes,
   type ResumePdfDocumentDefinition,
+<<<<<<<< HEAD:src/app/resume/resume-page/service/resume-pdf/resume-pdf.service.ts
 } from '../../../resume-pdf/resume-pdf-document.ts';
 import { resumeData } from '../../../../helper/injection-token/resume.data.ts';
+========
+} from '../../resume-pdf/resume-pdf-document.ts';
+import { resumeData } from '../../../helper/injection-token/resume.data.ts';
+>>>>>>>> 65005b4 (refactor(resume): reorganize `ResumePdfService` and update import paths for consistency):src/app/resume/resume-page/service/resume-pdf.service.ts
 
 export const RESUME_PDF_FILENAME = 'nawaphon-isarathanachaikul-resume-profile.pdf';
 
