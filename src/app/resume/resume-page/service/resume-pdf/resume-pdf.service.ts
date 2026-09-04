@@ -7,8 +7,7 @@ import {
   type ResumePdfDocumentDefinition,
 } from '../../../resume-pdf/resume-pdf-document.ts';
 import { resumeData } from '../../../../helper/injection-token/resume.data.ts';
-
-export const RESUME_PDF_FILENAME = 'nawaphon-isarathanachaikul-resume-profile.pdf';
+import { RESUME_PDF_FILENAME } from '../../../../helper/injection-token/resume-pdf-filename.variable.ts';
 
 /** Generated document handle exposed by the browser pdfmake runtime. */
 export interface ResumePdfGenerator {
@@ -299,6 +298,8 @@ export class ResumePdfService {
 
   private readonly resumeDataToken = inject(resumeData);
 
+  private readonly resumePdfFilenameToken = inject(RESUME_PDF_FILENAME);
+
   /** Generates one PDF only after a browser caller explicitly requests it. */
   async download(): Promise<void> {
     const view = this.view;
@@ -332,7 +333,7 @@ export class ResumePdfService {
     try {
       anchor = this.document.createElement('a');
       anchor.href = objectUrl;
-      anchor.download = RESUME_PDF_FILENAME;
+      anchor.download = this.resumePdfFilenameToken;
       anchor.hidden = true;
       this.document.body.append(anchor);
       anchor.click();

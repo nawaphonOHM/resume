@@ -33,7 +33,7 @@ import { ResumeNavigation, type ResumeSectionId } from '../resume-navigation/res
 import ResumePage, { RESUME_DEFER_BOUNDARIES } from './resume-page';
 import type { TechnologyIconPresentation } from '../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
 import type { BrandLogo } from '../../helper/interface/brand-logo/brand-logo.interface.ts';
-import {ResumePdfService} from './service/resume-pdf/resume-pdf.service.ts';
+import { ResumePdfService } from './service/resume-pdf/resume-pdf.service.ts';
 
 const TECHNOLOGY_ICON_FALLBACK_LABELS = ['REST APIs', 'Caffeine'] as const;
 

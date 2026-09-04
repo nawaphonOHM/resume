@@ -4,17 +4,18 @@ import pdfMakeModule from 'pdfmake/build/pdfmake.js';
 import virtualFileSystemModule from 'pdfmake/build/vfs_fonts.js';
 import { vi } from 'vitest';
 
+import { RESUME_PDF_FILENAME } from '../../../../helper/injection-token/resume-pdf-filename.variable.ts';
 import { resumeData } from '../../../../helper/injection-token/resume.data.ts';
 import type { ResumeProfile } from '../../../../helper/interface/resume-profile/resume-profile.interface.ts';
 import type { ResumePdfDocumentDefinition } from '../../../resume-pdf/resume-pdf-document.ts';
 import {
   RESUME_PDF_CDN_SCRIPT_LOADER,
-  RESUME_PDF_FILENAME,
   RESUME_PDF_RUNTIME_LOADER,
   type ResumePdfCdnAsset,
   type ResumePdfCdnScriptLoader,
   type ResumePdfRuntime,
-  type ResumePdfRuntimeLoader, ResumePdfService,
+  type ResumePdfRuntimeLoader,
+  ResumePdfService,
 } from './resume-pdf.service';
 
 const PDFMAKE_CORE_ASSET: ResumePdfCdnAsset = {
@@ -495,11 +496,31 @@ describe('ResumePdfService', () => {
     expect(Array.from(await readBlob(blob!))).toEqual(Array.from(bytes));
 
     expect(anchors).toHaveLength(1);
-    expect(anchors[0]?.download).toBe(RESUME_PDF_FILENAME);
+    expect(anchors[0]?.download).toBe(TestBed.inject(RESUME_PDF_FILENAME));
     expect(anchors[0]?.href).toBe('blob:resume-pdf');
     expect(anchors[0]?.isConnected).toBe(false);
     expect(revokeObjectUrl).toHaveBeenCalledOnce();
     expect(revokeObjectUrl).toHaveBeenCalledWith('blob:resume-pdf');
+  });
+
+  it('uses custom injected filename when provided via RESUME_PDF_FILENAME token', async () => {
+    const customFilename = 'custom-resume-file.pdf';
+    const fake = createFakeRuntime();
+    const loader = vi.fn(async () => fake.runtime);
+    const anchors = trackAnchorClicks();
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: PLATFORM_ID, useValue: 'browser' },
+        { provide: RESUME_PDF_RUNTIME_LOADER, useValue: loader },
+        { provide: RESUME_PDF_FILENAME, useValue: customFilename },
+      ],
+    });
+    const service = TestBed.inject(ResumePdfService);
+
+    await service.download();
+
+    expect(anchors).toHaveLength(1);
+    expect(anchors[0]?.download).toBe(customFilename);
   });
 
   it('shares an in-flight runtime load and reuses it for later generation', async () => {
@@ -555,7 +576,9 @@ describe('ResumePdfService', () => {
 
     await expect(service.download()).rejects.toBe(failure);
 
-    expect(document.querySelector(`a[download="${RESUME_PDF_FILENAME}"]`)).toBeNull();
+    expect(
+      document.querySelector(`a[download="${TestBed.inject(RESUME_PDF_FILENAME)}"]`),
+    ).toBeNull();
     expect(revokeObjectUrl).toHaveBeenCalledOnce();
     expect(revokeObjectUrl).toHaveBeenCalledWith('blob:resume-pdf');
   });
