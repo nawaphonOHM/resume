@@ -25,7 +25,7 @@ import {
 } from '../resume-navigation/resume-navigation';
 import { SummarySection } from '../summary-section/summary-section';
 import { resumeData } from '../../helper/injection-token/resume.data.ts';
-import ResumePdfService from '../resume-pdf/resume-pdf.service.ts';
+import { ResumePdfService } from '../resume-pdf/resume-pdf.service.ts';
 
 /** Stable identifiers shared by deferred content and its printable fallback states. */
 export const RESUME_DEFER_BOUNDARIES = {

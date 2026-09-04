@@ -7,14 +7,14 @@ import { vi } from 'vitest';
 import { resumeData } from '../../helper/injection-token/resume.data.ts';
 import type { ResumeProfile } from '../../helper/interface/resume-profile/resume-profile.interface.ts';
 import type { ResumePdfDocumentDefinition } from './resume-pdf-document';
-import ResumePdfService, {
+import {
   RESUME_PDF_CDN_SCRIPT_LOADER,
   RESUME_PDF_FILENAME,
   RESUME_PDF_RUNTIME_LOADER,
   type ResumePdfCdnAsset,
   type ResumePdfCdnScriptLoader,
   type ResumePdfRuntime,
-  type ResumePdfRuntimeLoader,
+  type ResumePdfRuntimeLoader, ResumePdfService,
 } from './resume-pdf.service';
 
 const PDFMAKE_CORE_ASSET: ResumePdfCdnAsset = {
