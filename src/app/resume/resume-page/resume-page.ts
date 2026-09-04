@@ -8,7 +8,6 @@ import {
   afterNextRender,
   inject,
   signal,
-  injectAsync,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -26,6 +25,7 @@ import {
 } from '../resume-navigation/resume-navigation';
 import { SummarySection } from '../summary-section/summary-section';
 import { resumeData } from '../../helper/injection-token/resume.data.ts';
+import ResumePdfService from '../resume-pdf/resume-pdf.service.ts';
 
 /** Stable identifiers shared by deferred content and its printable fallback states. */
 export const RESUME_DEFER_BOUNDARIES = {
@@ -46,15 +46,15 @@ const DEFER_BOUNDARY_IDS = Object.values(RESUME_DEFER_BOUNDARIES);
  * active navigation state, while the Router owns URL, history, scrolling, and target focus.
  */
 @Component({
-  selector: 'app-resume-profile-page',
+  selector: 'app-resume-page',
   imports: [
     EducationSection,
     ExperienceTimeline,
     HeroSection,
     ProfileSidebar,
+    ResumeNavigation,
     RouterLink,
     SummarySection,
-    ResumeNavigation,
   ],
   templateUrl: './resume-page.html',
   styleUrl: './resume-page.scss',
@@ -64,7 +64,7 @@ export default class ResumePage {
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
   private readonly errorHandler = inject(ErrorHandler);
-  private readonly resumePdfService = injectAsync(() => import('../resume-pdf/resume-pdf.service'));
+  private readonly resumePdfService = inject(ResumePdfService);
   private readonly scrollDispatcher = inject(ScrollDispatcher);
   private readonly themeService = inject(ThemeService);
   private readonly viewportRuler = inject(ViewportRuler);
@@ -152,8 +152,7 @@ export default class ResumePage {
 
     this.downloadPending.set(true);
     try {
-      const resumePdf = await this.resumePdfService();
-      await resumePdf.download();
+      await this.resumePdfService.download();
     } catch (error: unknown) {
       this.errorHandler.handleError(error);
     } finally {
