@@ -1,4 +1,5 @@
 import { InjectionToken } from '@angular/core';
+import type { PdfMakeWindow } from '../type/pdf-make-window.type.ts';
 
 export const clearPdfMake = new InjectionToken<(view: PdfMakeWindow) => void>('clearPdfMake', {
   providedIn: 'root',

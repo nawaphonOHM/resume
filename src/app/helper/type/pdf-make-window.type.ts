@@ -1,1 +1,1 @@
-type PdfMakeWindow = Window & typeof globalThis & { pdfMake?: unknown };
+export type PdfMakeWindow = Window & typeof globalThis & { pdfMake?: unknown };

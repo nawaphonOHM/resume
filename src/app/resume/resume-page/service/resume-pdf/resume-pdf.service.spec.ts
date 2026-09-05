@@ -4,46 +4,35 @@ import pdfMakeModule from 'pdfmake/build/pdfmake.js';
 import virtualFileSystemModule from 'pdfmake/build/vfs_fonts.js';
 import { vi } from 'vitest';
 
+import { clearPdfMake } from '../../../../helper/injection-token/clear-pdf-make.function.ts';
+import { clearRequiredRobotoFonts } from '../../../../helper/injection-token/clear-required-roboto-fonts.function.ts';
+import { createCdnScriptLoader } from '../../../../helper/injection-token/create-cdn-script-loader.function.ts';
+import { hasRequiredRobotoFonts } from '../../../../helper/injection-token/has-required-roboto-fonts.function.ts';
+import { loadBrowserPdfRuntime } from '../../../../helper/injection-token/load-browser-pdf-runtime.function.ts';
+import { normalizePdfMake } from '../../../../helper/injection-token/normalize-pdf-make.function.ts';
+import { PDFMAKE_CORE_ASSET } from '../../../../helper/injection-token/pdfmake-core-asset.variable.ts';
+import { PDFMAKE_FONT_ASSET } from '../../../../helper/injection-token/pdfmake-font-asset.variable.ts';
+import { REQUIRED_ROBOTO_FONTS } from '../../../../helper/injection-token/required-roboto-fonts.type.ts';
+import { RESUME_PDF_CDN_SCRIPT_LOADER } from '../../../../helper/injection-token/resume-pdf-con-script-loader.function.ts';
 import { RESUME_PDF_FILENAME } from '../../../../helper/injection-token/resume-pdf-filename.variable.ts';
+import { RESUME_PDF_RUNTIME_LOADER } from '../../../../helper/injection-token/resume-pdf-runtime-loader.function.ts';
 import { resumeData } from '../../../../helper/injection-token/resume.data.ts';
+import { unwrapDefaultExport } from '../../../../helper/injection-token/unwrap-default-export.function.ts';
+import type { ResumePdfCdnAsset } from '../../../../helper/interface/resume-pdf-cdn-asset/resume-pdf-cdn-asset.interface.ts';
+import type { ResumePdfCdnScriptLoader } from '../../../../helper/interface/resume-pdf-cdn-script-loader/resume-pdf-cdn-script-loader.interface.ts';
+import type { BrowserResumePdfRuntime } from '../../../../helper/interface/resume-pdf-runtime/browser-resume-pdf-runtime/browser-resume-pdf-runtime.interface.ts';
+import type { ResumePdfRuntime } from '../../../../helper/interface/resume-pdf-runtime/resume-pdf-runtime.interface.ts';
 import type { ResumeProfile } from '../../../../helper/interface/resume-profile/resume-profile.interface.ts';
+import type { PdfMakeWindow } from '../../../../helper/type/pdf-make-window.type.ts';
+import type { ResumePdfRuntimeLoader } from '../../../../helper/type/resume-pdf-runtime-loader.type.ts';
 import type { ResumePdfDocumentDefinition } from '../../../resume-pdf/resume-pdf-document.ts';
-import {
-  RESUME_PDF_CDN_SCRIPT_LOADER,
-  RESUME_PDF_RUNTIME_LOADER,
-  type ResumePdfCdnAsset,
-  type ResumePdfCdnScriptLoader,
-  type ResumePdfRuntime,
-  type ResumePdfRuntimeLoader,
-  ResumePdfService,
-} from './resume-pdf.service';
-
-const PDFMAKE_CORE_ASSET: ResumePdfCdnAsset = {
-  url: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.3/pdfmake.min.js',
-  integrity:
-    'sha512-EkS5jkn3vXRWIdphIy51xskMZggNip3Or8kpe/FlM5XaQeiK2GZJ9OwrIEbXl6txKWsHNtm4OXtxzkkz41Mspw==',
-};
-
-const PDFMAKE_FONT_ASSET: ResumePdfCdnAsset = {
-  url: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.3/vfs_fonts.min.js',
-  integrity:
-    'sha512-rpvsrDF7BNgiFOXqkKyyoJ46jZ8nwQ3NJJAmpYnYKuZHfzwR2wpz5cAaPX09RCj9un5E+ErATIqy4CZBcuNogA==',
-};
-
-const REQUIRED_ROBOTO_FONTS = [
-  'Roboto-Regular.ttf',
-  'Roboto-Medium.ttf',
-  'Roboto-Italic.ttf',
-  'Roboto-MediumItalic.ttf',
-] as const;
+import { ResumePdfService } from './resume-pdf.service';
 
 interface TestBrowserPdfRuntime extends ResumePdfRuntime {
   readonly virtualfs: { readonly storage: Record<string, unknown> };
 
   addVirtualFileSystem(virtualFileSystem: Readonly<Record<string, unknown>>): void;
 }
-
-type PdfMakeWindow = Window & typeof globalThis & { pdfMake?: unknown };
 
 function validPdfBytes(profile: ResumeProfile, additionalText = ''): Uint8Array {
   return new TextEncoder().encode(
@@ -88,23 +77,15 @@ function createFakeBrowserRuntime(initialBytes?: unknown) {
 }
 
 function registerRobotoFonts(runtime: TestBrowserPdfRuntime): void {
-  for (const font of REQUIRED_ROBOTO_FONTS) {
+  for (const font of TestBed.inject(REQUIRED_ROBOTO_FONTS)) {
     runtime.virtualfs.storage[font] = { data: font };
   }
 }
 
-function unwrapDefaultExport(value: unknown): unknown {
-  if (value && typeof value === 'object' && 'default' in value) {
-    return value.default;
-  }
-  return value;
-}
-
 function createLocalPdfMakeRuntime(): ResumePdfRuntime {
-  const runtime = unwrapDefaultExport(pdfMakeModule) as TestBrowserPdfRuntime;
-  const virtualFileSystem = unwrapDefaultExport(virtualFileSystemModule) as Readonly<
-    Record<string, unknown>
-  >;
+  const unwrap = TestBed.inject(unwrapDefaultExport);
+  const runtime = unwrap(pdfMakeModule) as TestBrowserPdfRuntime;
+  const virtualFileSystem = unwrap(virtualFileSystemModule) as Readonly<Record<string, unknown>>;
   runtime.addVirtualFileSystem(virtualFileSystem);
   return runtime;
 }
@@ -221,10 +202,35 @@ describe('ResumePdfService', () => {
     restoreProperty(window.URL, 'revokeObjectURL', originalRevokeObjectUrl);
   });
 
+  it('provides the expected injection token values for PDF assets and Roboto fonts', () => {
+    const coreAsset = TestBed.inject(PDFMAKE_CORE_ASSET);
+    const fontAsset = TestBed.inject(PDFMAKE_FONT_ASSET);
+    const robotoFonts = TestBed.inject(REQUIRED_ROBOTO_FONTS);
+
+    expect(coreAsset).toEqual({
+      url: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.3/pdfmake.min.js',
+      integrity:
+        'sha512-EkS5jkn3vXRWIdphIy51xskMZggNip3Or8kpe/FlM5XaQeiK2GZJ9OwrIEbXl6txKWsHNtm4OXtxzkkz41Mspw==',
+    });
+    expect(fontAsset).toEqual({
+      url: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.3/vfs_fonts.min.js',
+      integrity:
+        'sha512-rpvsrDF7BNgiFOXqkKyyoJ46jZ8nwQ3NJJAmpYnYKuZHfzwR2wpz5cAaPX09RCj9un5E+ErATIqy4CZBcuNogA==',
+    });
+    expect(robotoFonts).toEqual([
+      'Roboto-Regular.ttf',
+      'Roboto-Medium.ttf',
+      'Roboto-Italic.ttf',
+      'Roboto-MediumItalic.ttf',
+    ]);
+  });
+
   it('injects the exact secured CDN assets in order only after a download request', async () => {
     const fake = createFakeBrowserRuntime();
     const anchors = trackAnchorClicks();
     const service = createServiceWithCdnLoader();
+    const coreAsset = TestBed.inject(PDFMAKE_CORE_ASSET);
+    const fontAsset = TestBed.inject(PDFMAKE_FONT_ASSET);
 
     expect(cdnScripts()).toEqual([]);
     expect(fake.createPdf).not.toHaveBeenCalled();
@@ -234,8 +240,8 @@ describe('ResumePdfService', () => {
     const secondDownload = service.download();
     const [coreScript] = await waitForCdnScripts(1);
 
-    expect(coreScript?.src).toBe(PDFMAKE_CORE_ASSET.url);
-    expect(coreScript?.integrity).toBe(PDFMAKE_CORE_ASSET.integrity);
+    expect(coreScript?.src).toBe(coreAsset.url);
+    expect(coreScript?.integrity).toBe(coreAsset.integrity);
     expect(coreScript?.crossOrigin).toBe('anonymous');
     expect(coreScript?.referrerPolicy).toBe('no-referrer');
     expect(fake.createPdf).not.toHaveBeenCalled();
@@ -245,8 +251,8 @@ describe('ResumePdfService', () => {
     const scripts = await waitForCdnScripts(2);
     const fontScript = scripts[1];
 
-    expect(fontScript?.src).toBe(PDFMAKE_FONT_ASSET.url);
-    expect(fontScript?.integrity).toBe(PDFMAKE_FONT_ASSET.integrity);
+    expect(fontScript?.src).toBe(fontAsset.url);
+    expect(fontScript?.integrity).toBe(fontAsset.integrity);
     expect(fontScript?.crossOrigin).toBe('anonymous');
     expect(fontScript?.referrerPolicy).toBe('no-referrer');
     expect(coreScript?.compareDocumentPosition(fontScript!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
@@ -266,9 +272,10 @@ describe('ResumePdfService', () => {
   it('deduplicates script loads and removes failed elements and listeners before retrying', async () => {
     TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'browser' }] });
     const loader = TestBed.inject(RESUME_PDF_CDN_SCRIPT_LOADER);
+    const coreAsset = TestBed.inject(PDFMAKE_CORE_ASSET);
 
-    const firstLoad = loader.load(PDFMAKE_CORE_ASSET);
-    const secondLoad = loader.load(PDFMAKE_CORE_ASSET);
+    const firstLoad = loader.load(coreAsset);
+    const secondLoad = loader.load(coreAsset);
     const [failedScript] = await waitForCdnScripts(1);
     const removeEventListener = vi.spyOn(failedScript!, 'removeEventListener');
     const firstFailure = firstLoad.catch((error: unknown) => error);
@@ -284,21 +291,22 @@ describe('ResumePdfService', () => {
     expect(failedScript?.isConnected).toBe(false);
     expect(cdnScripts()).toEqual([]);
 
-    const retry = loader.load(PDFMAKE_CORE_ASSET);
+    const retry = loader.load(coreAsset);
     const [retryScript] = await waitForCdnScripts(1);
     expect(retryScript).not.toBe(failedScript);
     retryScript?.dispatchEvent(new Event('load'));
     await expect(retry).resolves.toBeUndefined();
-    expect(loader.load(PDFMAKE_CORE_ASSET)).toBe(retry);
+    expect(loader.load(coreAsset)).toBe(retry);
 
-    loader.invalidate(PDFMAKE_CORE_ASSET);
+    loader.invalidate(coreAsset);
     expect(retryScript?.isConnected).toBe(false);
   });
 
   it('uses the injectable CDN boundary with the exact sequential descriptors', async () => {
     const fake = createFakeBrowserRuntime();
     const load = vi.fn(async (asset: ResumePdfCdnAsset) => {
-      if (asset.url === PDFMAKE_CORE_ASSET.url) {
+      const core = TestBed.inject(PDFMAKE_CORE_ASSET);
+      if (asset.url === core.url) {
         setPdfMake(fake.runtime);
       } else {
         registerRobotoFonts(fake.runtime);
@@ -306,14 +314,13 @@ describe('ResumePdfService', () => {
     });
     const loader: ResumePdfCdnScriptLoader = { load, invalidate: vi.fn() };
     const service = createServiceWithCdnLoader(loader);
+    const coreAsset = TestBed.inject(PDFMAKE_CORE_ASSET);
+    const fontAsset = TestBed.inject(PDFMAKE_FONT_ASSET);
 
     expect(load).not.toHaveBeenCalled();
     await service.download();
 
-    expect(load.mock.calls.map(([asset]) => asset)).toEqual([
-      PDFMAKE_CORE_ASSET,
-      PDFMAKE_FONT_ASSET,
-    ]);
+    expect(load.mock.calls.map(([asset]) => asset)).toEqual([coreAsset, fontAsset]);
   });
 
   it('rejects a core script load error without a download and permits a clean retry', async () => {
@@ -441,7 +448,7 @@ describe('ResumePdfService', () => {
     coreScript?.dispatchEvent(new Event('load'));
     const firstScripts = await waitForCdnScripts(2);
     const failedFontScript = firstScripts[1];
-    for (const font of REQUIRED_ROBOTO_FONTS.slice(0, -1)) {
+    for (const font of TestBed.inject(REQUIRED_ROBOTO_FONTS).slice(0, -1)) {
       fake.storage[font] = { data: font };
     }
     const rejectedDownload = expect(failedDownload).rejects.toThrow(/font bundle is unavailable/i);
@@ -674,5 +681,154 @@ describe('ResumePdfService', () => {
     expect(anchors).toHaveLength(2);
     expect(revokeObjectUrl).toHaveBeenNthCalledWith(1, 'blob:first-resume-profile');
     expect(revokeObjectUrl).toHaveBeenNthCalledWith(2, 'blob:second-resume-profile');
+  });
+
+  it('throws and invalidates assets if window.pdfMake is swapped during font loading', async () => {
+    const firstFake = createFakeBrowserRuntime();
+    const secondFake = createFakeBrowserRuntime();
+    const service = createServiceWithCdnLoader();
+
+    const failedDownload = service.download();
+    const [coreScript] = await waitForCdnScripts(1);
+    setPdfMake(firstFake.runtime);
+    coreScript?.dispatchEvent(new Event('load'));
+    const scripts = await waitForCdnScripts(2);
+    setPdfMake(secondFake.runtime);
+    registerRobotoFonts(secondFake.runtime);
+    const rejectedDownload = expect(failedDownload).rejects.toThrow(/runtime is unavailable/i);
+    scripts[1]?.dispatchEvent(new Event('load'));
+    await rejectedDownload;
+  });
+
+  describe('helper functions and injection tokens', () => {
+    it('clearPdfMake removes pdfMake from the target window or assigns undefined if non-configurable', () => {
+      const clear = TestBed.inject(clearPdfMake);
+      const fakeWindow = { pdfMake: { createPdf: vi.fn() } } as unknown as PdfMakeWindow;
+      clear(fakeWindow);
+      expect(fakeWindow.pdfMake).toBeUndefined();
+
+      const nonConfigurableWindow = {} as unknown as PdfMakeWindow;
+      Object.defineProperty(nonConfigurableWindow, 'pdfMake', {
+        configurable: false,
+        writable: true,
+        value: { createPdf: vi.fn() },
+      });
+      clear(nonConfigurableWindow);
+      expect(nonConfigurableWindow.pdfMake).toBeUndefined();
+    });
+
+    it('clearRequiredRobotoFonts removes required fonts from virtualfs storage', () => {
+      const clearFonts = TestBed.inject(clearRequiredRobotoFonts);
+      const storage: Record<string, unknown> = {
+        'Roboto-Regular.ttf': 'data',
+        'Roboto-Medium.ttf': 'data',
+        'CustomFont.ttf': 'data',
+      };
+      const runtime = {
+        createPdf: vi.fn(),
+        addVirtualFileSystem: vi.fn(),
+        virtualfs: { storage },
+      } as unknown as BrowserResumePdfRuntime;
+
+      clearFonts(runtime);
+      expect(storage['Roboto-Regular.ttf']).toBeUndefined();
+      expect(storage['Roboto-Medium.ttf']).toBeUndefined();
+      expect(storage['CustomFont.ttf']).toBe('data');
+
+      expect(() => clearFonts({} as BrowserResumePdfRuntime)).not.toThrow();
+      expect(() =>
+        clearFonts({
+          virtualfs: { storage: [] as unknown as Record<string, unknown> },
+        } as unknown as BrowserResumePdfRuntime),
+      ).not.toThrow();
+    });
+
+    it('hasRequiredRobotoFonts validates presence of required fonts', () => {
+      const checkFonts = TestBed.inject(hasRequiredRobotoFonts);
+      const completeStorage: Record<string, unknown> = {};
+      for (const font of TestBed.inject(REQUIRED_ROBOTO_FONTS)) {
+        completeStorage[font] = { data: font };
+      }
+      const validRuntime = {
+        createPdf: vi.fn(),
+        addVirtualFileSystem: vi.fn(),
+        virtualfs: { storage: completeStorage },
+      } as unknown as BrowserResumePdfRuntime;
+
+      expect(checkFonts(validRuntime)).toBe(true);
+
+      const incompleteStorage: Record<string, unknown> = { ...completeStorage };
+      delete incompleteStorage['Roboto-Regular.ttf'];
+      const incompleteRuntime = {
+        ...validRuntime,
+        virtualfs: { storage: incompleteStorage },
+      } as unknown as BrowserResumePdfRuntime;
+      expect(checkFonts(incompleteRuntime)).toBe(false);
+
+      expect(checkFonts({} as BrowserResumePdfRuntime)).toBe(false);
+      expect(
+        checkFonts({
+          virtualfs: { storage: [] as unknown as Record<string, unknown> },
+        } as unknown as BrowserResumePdfRuntime),
+      ).toBe(false);
+    });
+
+    it('normalizePdfMake validates runtime structure and throws for invalid candidates', () => {
+      const normalize = TestBed.inject(normalizePdfMake);
+      const validRuntime = {
+        createPdf: vi.fn(),
+        addVirtualFileSystem: vi.fn(),
+      } as unknown as BrowserResumePdfRuntime;
+
+      expect(normalize(validRuntime)).toBe(validRuntime);
+      expect(() => normalize(null)).toThrow(/runtime is unavailable/);
+      expect(() => normalize(undefined)).toThrow(/runtime is unavailable/);
+      expect(() => normalize('invalid')).toThrow(/runtime is unavailable/);
+      expect(() => normalize({ createPdf: vi.fn() })).toThrow(/runtime is unavailable/);
+      expect(() => normalize({ addVirtualFileSystem: vi.fn() })).toThrow(/runtime is unavailable/);
+    });
+
+    it('unwrapDefaultExport handles ES module default export wrappers', () => {
+      const unwrap = TestBed.inject(unwrapDefaultExport);
+      expect(unwrap(null)).toBeNull();
+      expect(unwrap('plain string')).toBe('plain string');
+      expect(unwrap({ directProperty: 123 })).toEqual({ directProperty: 123 });
+      expect(unwrap({ default: 'unwrapped value' })).toBe('unwrapped value');
+
+      const selfReferential: { default?: unknown } = {};
+      selfReferential.default = selfReferential;
+      expect(unwrap(selfReferential)).toBe(selfReferential);
+
+      expect(unwrap({ default: undefined })).toEqual({ default: undefined });
+    });
+
+    it('createCdnScriptLoader handles non-browser environment and script append errors', async () => {
+      const factory = TestBed.inject(createCdnScriptLoader);
+      const serverLoader = factory(document, 'server' as unknown as object);
+      await expect(serverLoader.load(TestBed.inject(PDFMAKE_CORE_ASSET))).rejects.toThrow(
+        /CDN scripts require a browser/,
+      );
+
+      const appendSpy = vi.spyOn(document.head, 'append').mockImplementation(() => {
+        throw new Error('Synthetic append failure');
+      });
+      const browserLoader = factory(document, 'browser' as unknown as object);
+      await expect(browserLoader.load(TestBed.inject(PDFMAKE_CORE_ASSET))).rejects.toThrow(
+        /Synthetic append failure/,
+      );
+      appendSpy.mockRestore();
+    });
+
+    it('loadBrowserPdfRuntime handles missing view and script errors', async () => {
+      const loaderFactory = TestBed.inject(loadBrowserPdfRuntime);
+      const scriptLoader: ResumePdfCdnScriptLoader = {
+        load: vi.fn().mockRejectedValue(new Error('Load failed')),
+        invalidate: vi.fn(),
+      };
+      const fakeWindow = { pdfMake: undefined } as unknown as PdfMakeWindow;
+
+      await expect(loaderFactory(fakeWindow, scriptLoader)).rejects.toThrow('Load failed');
+      expect(scriptLoader.invalidate).toHaveBeenCalledWith(TestBed.inject(PDFMAKE_CORE_ASSET));
+    });
   });
 });

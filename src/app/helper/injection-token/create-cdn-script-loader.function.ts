@@ -2,6 +2,7 @@ import { InjectionToken } from '@angular/core';
 import type { ResumePdfCdnScriptLoader } from '../interface/resume-pdf-cdn-script-loader/resume-pdf-cdn-script-loader.interface.ts';
 import { isPlatformBrowser } from '@angular/common';
 import type { ResumePdfCdnAsset } from '../interface/resume-pdf-cdn-asset/resume-pdf-cdn-asset.interface.ts';
+import type { ResumePdfCdnScriptEntry } from '../interface/resume-pdf-cdn-script-entry/resume-pdf-cdn-script-entry.interface.ts';
 
 export const createCdnScriptLoader = new InjectionToken<
   (document: Document, platformId: object) => ResumePdfCdnScriptLoader

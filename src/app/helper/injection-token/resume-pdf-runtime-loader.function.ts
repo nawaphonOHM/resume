@@ -3,6 +3,7 @@ import type { ResumePdfRuntimeLoader } from '../type/resume-pdf-runtime-loader.t
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { RESUME_PDF_CDN_SCRIPT_LOADER } from './resume-pdf-con-script-loader.function.ts';
 import { loadBrowserPdfRuntime } from './load-browser-pdf-runtime.function.ts';
+import type { PdfMakeWindow } from '../type/pdf-make-window.type.ts';
 
 /**
  * Loader whose factory stays inert until an explicit download requests the
@@ -16,6 +17,7 @@ export const RESUME_PDF_RUNTIME_LOADER = new InjectionToken<ResumePdfRuntimeLoad
       const document = inject(DOCUMENT);
       const platformId = inject(PLATFORM_ID);
       const scriptLoader = inject(RESUME_PDF_CDN_SCRIPT_LOADER);
+      const loadRuntime = inject(loadBrowserPdfRuntime);
       const view = isPlatformBrowser(platformId)
         ? (document.defaultView as PdfMakeWindow | null)
         : null;
@@ -23,7 +25,7 @@ export const RESUME_PDF_RUNTIME_LOADER = new InjectionToken<ResumePdfRuntimeLoad
         if (!view) {
           return Promise.reject(new Error('The pdfmake browser runtime is unavailable.'));
         }
-        return inject(loadBrowserPdfRuntime)(view, scriptLoader);
+        return loadRuntime(view, scriptLoader);
       };
     },
   },

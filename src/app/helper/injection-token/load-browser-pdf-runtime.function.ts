@@ -9,6 +9,7 @@ import { PDFMAKE_FONT_ASSET } from './pdfmake-font-asset.variable.ts';
 import { clearRequiredRobotoFonts } from './clear-required-roboto-fonts.function.ts';
 import { hasRequiredRobotoFonts } from './has-required-roboto-fonts.function.ts';
 import { clearPdfMake } from './clear-pdf-make.function.ts';
+import type { PdfMakeWindow } from '../type/pdf-make-window.type.ts';
 
 export const loadBrowserPdfRuntime = new InjectionToken<
   (view: PdfMakeWindow, scriptLoader: ResumePdfCdnScriptLoader) => Promise<ResumePdfRuntime>
