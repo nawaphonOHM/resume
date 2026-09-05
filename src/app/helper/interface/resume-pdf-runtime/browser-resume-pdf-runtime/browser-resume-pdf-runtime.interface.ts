@@ -1,6 +1,6 @@
 import type { ResumePdfRuntime } from '../resume-pdf-runtime.interface.ts';
 
-interface BrowserResumePdfRuntime extends ResumePdfRuntime {
+export interface BrowserResumePdfRuntime extends ResumePdfRuntime {
   readonly virtualfs?: {
     readonly storage?: Readonly<Record<string, unknown>>;
   };
