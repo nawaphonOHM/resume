@@ -1,0 +1,1 @@
+type ResumePdfColumnWidth = number | '*' | 'auto';
