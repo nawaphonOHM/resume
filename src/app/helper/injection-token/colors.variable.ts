@@ -1,6 +1,7 @@
 import { InjectionToken } from '@angular/core';
+import type { COLOR_TYPE } from '../type/colors.type.ts';
 
-export const COLORS = new InjectionToken<Object>('COLORS', {
+export const COLORS = new InjectionToken<COLOR_TYPE>('COLORS', {
   providedIn: 'root',
   factory: () => ({
     navy: '#102a43',
