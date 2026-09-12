@@ -21,3 +21,25 @@
 
   --mat-progress-spinner-active-indicator-color: #7cb8ff;
 }
+
+.route-loading-leave {
+  pointer-events: none;
+  animation: route-loading-fade-out 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes route-loading-fade-out {
+  0% {
+    opacity: 1;
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-loading-leave {
+    animation: none;
+  }
+}

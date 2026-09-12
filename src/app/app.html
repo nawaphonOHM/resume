@@ -1,5 +1,11 @@
 @if (isRouteLoading()) {
-  <div class="route-loading-container" role="status" aria-live="polite" aria-label="Loading résumé">
+  <div
+    class="route-loading-container"
+    animate.leave="route-loading-leave"
+    role="status"
+    aria-live="polite"
+    aria-label="Loading résumé"
+  >
     <mat-progress-spinner mode="indeterminate" diameter="56" strokeWidth="4" />
   </div>
 }

@@ -57,11 +57,13 @@ describe('App', () => {
   });
 
   describe('loading overlay & accessibility', () => {
-    it('initializes in loading state and renders the progress spinner container', async () => {
+    it('initializes in loading state and renders the progress spinner container with proper accessibility attributes', async () => {
       expect(component.isRouteLoading()).toBe(true);
       await fixture.whenStable();
 
-      const container = fixture.nativeElement.querySelector('.route-loading-container');
+      const container = fixture.nativeElement.querySelector(
+        '.route-loading-container',
+      ) as HTMLElement | null;
       expect(container).not.toBeNull();
       expect(container?.getAttribute('role')).toBe('status');
       expect(container?.getAttribute('aria-live')).toBe('polite');
