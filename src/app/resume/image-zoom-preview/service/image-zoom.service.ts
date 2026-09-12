@@ -15,44 +15,8 @@ import type { ImageZoomActivation } from '../../../helper/type/image-zoom-activa
 import type { ImageZoomRequest } from '../../../helper/interface/image-zoom-request/image-zoom-request.interface.ts';
 import { VIEWPORT_MARGIN } from '../../../helper/injection-token/viewpoint-margin.variable.ts';
 import { IMAGE_MAX_VIEWPORT_RATIO } from '../../../helper/injection-token/image-max-viewpoint-radio.variable.ts';
-
-/** Preferred visual separation between an origin and its connected preview. */
-const ORIGIN_GAP = 12;
-
-/** Panel padding (0.75rem * 2) + border (1px * 2), matching `image-zoom-preview-preview.scss`. */
-const PANEL_CHROME_PX = 26;
-
-/** Connected placement fallbacks tried in right, left, below, then above order. */
-const IMAGE_ZOOM_POSITIONS: readonly ConnectedPosition[] = [
-  {
-    originX: 'end',
-    originY: 'center',
-    overlayX: 'start',
-    overlayY: 'center',
-    offsetX: ORIGIN_GAP,
-  },
-  {
-    originX: 'start',
-    originY: 'center',
-    overlayX: 'end',
-    overlayY: 'center',
-    offsetX: -ORIGIN_GAP,
-  },
-  {
-    originX: 'center',
-    originY: 'bottom',
-    overlayX: 'center',
-    overlayY: 'top',
-    offsetY: ORIGIN_GAP,
-  },
-  {
-    originX: 'center',
-    originY: 'top',
-    overlayX: 'center',
-    overlayY: 'bottom',
-    offsetY: -ORIGIN_GAP,
-  },
-];
+import { IMAGE_ZOOM_POSITIONS } from '../../../helper/injection-token/image-zoom-positions.variable.ts';
+import { PANEL_CHROME_PX } from '../../../helper/injection-token/panel-chrome-px.variable.ts';
 
 /**
  * Owns the application's single connected logo-preview overlay.
@@ -71,6 +35,8 @@ export class ImageZoomService {
   private readonly destroyRef = inject(DestroyRef);
   private readonly viewportMargin = inject(VIEWPORT_MARGIN);
   private readonly imageMaxViewportRatio = inject(IMAGE_MAX_VIEWPORT_RATIO);
+  private readonly imageZoomPositions = inject(IMAGE_ZOOM_POSITIONS);
+  private readonly panelChromePx = inject(PANEL_CHROME_PX);
   private overlayRef: OverlayRef | null = null;
   private currentRequest: ImageZoomRequest | null = null;
   private dismissalSubscriptions: Subscription | null = null;
@@ -103,7 +69,7 @@ export class ImageZoomService {
     const positionStrategy = this.overlay
       .position()
       .flexibleConnectedTo(request.origin)
-      .withPositions([...IMAGE_ZOOM_POSITIONS])
+      .withPositions([...this.imageZoomPositions])
       .withViewportMargin(this.viewportMargin)
       .withFlexibleDimensions(false)
       .withPush(true);
@@ -250,11 +216,11 @@ export class ImageZoomService {
     const maxHeight = Math.max(viewport.height - this.viewportMargin * 2, 0);
     const imageMaxWidth = Math.min(
       viewport.width * this.imageMaxViewportRatio,
-      Math.max(maxWidth - PANEL_CHROME_PX, 0),
+      Math.max(maxWidth - this.panelChromePx, 0),
     );
     const imageMaxHeight = Math.min(
       viewport.height * this.imageMaxViewportRatio,
-      Math.max(maxHeight - PANEL_CHROME_PX, 0),
+      Math.max(maxHeight - this.panelChromePx, 0),
     );
     const pane = overlayRef.overlayElement;
 
