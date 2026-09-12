@@ -9,28 +9,10 @@ import { DestroyRef, Injector, inject, Service } from '@angular/core';
 import { Subscription } from 'rxjs';
 
 import { ImageZoomPreview } from '../image-zoom-preview.ts';
-import type { BrandLogo } from '../../../helper/interface/brand-logo/brand-logo.interface.ts';
 import type { ImageZoomPreviewData } from '../../../helper/interface/image-zoom-preview-data/image-zoom-preview-data.interface.ts';
 import { IMAGE_ZOOM_PREVIEW_DATA } from '../../../helper/injection-token/image-zoom-preview-data.variable.ts';
 import type { ImageZoomActivation } from '../../../helper/type/image-zoom-activation.type.ts';
-
-/** Complete request for opening a logo preview beside its rendered image. */
-export interface ImageZoomRequest {
-  /** Rendered image that owns and anchors the overlay. */
-  readonly origin: HTMLImageElement;
-
-  /** Intrinsic asset and surface metadata rendered by the preview. */
-  readonly logo: BrandLogo;
-
-  /** Descriptive alternative text copied to the enlarged image. */
-  readonly label: string;
-
-  /** Exact preview surface override; omission retains the logo tone's standard card color. */
-  readonly background?: string;
-
-  /** Interaction mode used for ownership checks and pane pointer behavior. */
-  readonly activation: ImageZoomActivation;
-}
+import type { ImageZoomRequest } from '../../../helper/interface/image-zoom-request/image-zoom-request.interface.ts';
 
 /** Minimum space retained between the overlay pane and each viewport edge. */
 const VIEWPORT_MARGIN = 16;
