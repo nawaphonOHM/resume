@@ -33,8 +33,88 @@
 
     <link rel="preconnect" href="https://resume-images.ohm-mho.space" />
     <link rel="icon" type="image/svg+xml" href="https://resume-images.ohm-mho.space/favicon.svg" />
+
+    <style>
+      body {
+        margin: 0;
+        background-color: #07111f;
+      }
+
+      .pre-bootstrap-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #07111f;
+        color: #7cb8ff;
+      }
+
+      .pre-bootstrap-spinner {
+        width: 56px;
+        height: 56px;
+        animation: pre-bootstrap-rotate 2s linear infinite;
+        transform-origin: center center;
+      }
+
+      .pre-bootstrap-spinner circle {
+        stroke: currentColor;
+        stroke-linecap: round;
+        animation: pre-bootstrap-dash 1.5s ease-in-out infinite;
+      }
+
+      @keyframes pre-bootstrap-rotate {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes pre-bootstrap-dash {
+        0% {
+          stroke-dasharray: 1px, 200px;
+          stroke-dashoffset: 0;
+        }
+        50% {
+          stroke-dasharray: 100px, 200px;
+          stroke-dashoffset: -15px;
+        }
+        100% {
+          stroke-dasharray: 100px, 200px;
+          stroke-dashoffset: -125px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .pre-bootstrap-spinner {
+          animation: none;
+        }
+
+        .pre-bootstrap-spinner circle {
+          animation: none;
+          stroke-dasharray: 110px, 200px;
+        }
+      }
+    </style>
   </head>
   <body>
-    <app-root></app-root>
+    <app-root>
+      <div
+        class="pre-bootstrap-loader"
+        role="status"
+        aria-live="polite"
+        aria-label="Loading résumé"
+      >
+        <svg
+          class="pre-bootstrap-spinner"
+          viewBox="0 0 56 56"
+          width="56"
+          height="56"
+          aria-hidden="true"
+        >
+          <circle cx="28" cy="28" r="26" fill="none" stroke-width="4" />
+        </svg>
+      </div>
+    </app-root>
   </body>
 </html>

@@ -1,10 +1,23 @@
 ////
-/// Establishes the root application host as a full-height block.
+/// Establishes the root application host and full-viewport route loading presentation.
 ///
-/// The résumé page remains responsible for its own theme background and document layout.
+/// The dark loader guarantees immediate visual feedback during lazy route chunk resolution.
 ////
 
 :host {
   display: block;
   min-height: 100vh;
+}
+
+.route-loading-container {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #07111f;
+  color: #7cb8ff;
+
+  --mat-progress-spinner-active-indicator-color: #7cb8ff;
 }

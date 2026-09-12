@@ -1,1 +1,6 @@
+@if (isRouteLoading()) {
+  <div class="route-loading-container" role="status" aria-live="polite" aria-label="Loading résumé">
+    <mat-progress-spinner mode="indeterminate" diameter="56" strokeWidth="4" />
+  </div>
+}
 <router-outlet />
