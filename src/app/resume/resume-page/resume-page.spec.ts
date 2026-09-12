@@ -7,6 +7,7 @@ import { APP_BOOTSTRAP_LISTENER, ApplicationRef, ErrorHandler } from '@angular/c
 import type { ComponentFixture } from '@angular/core/testing';
 import { DeferBlockBehavior, DeferBlockState, TestBed } from '@angular/core/testing';
 import { MatMenuTrigger } from '@angular/material/menu';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { By } from '@angular/platform-browser';
 import {
   provideRouter,
@@ -273,6 +274,19 @@ describe('ResumePage', () => {
     ]);
     expect(anchors.every((anchor) => anchor.getAttribute('tabindex') === '-1')).toBe(true);
     expect(anchors.every((anchor) => anchor.hasAttribute('aria-labelledby'))).toBe(true);
+    expect(anchors.every((anchor) => anchor.querySelector('mat-progress-spinner') !== null)).toBe(
+      true,
+    );
+    const spinners = fixture.debugElement.queryAll(By.directive(MatProgressSpinner));
+    expect(spinners).toHaveLength(5);
+    for (const spinnerDebug of spinners) {
+      const spinner = spinnerDebug.componentInstance as MatProgressSpinner;
+      expect(spinner.mode).toBe('indeterminate');
+      expect(spinner.diameter).toBe(20);
+      expect(spinner.strokeWidth).toBe(3);
+      expect(spinnerDebug.nativeElement.getAttribute('aria-hidden')).toBe('true');
+      expect(spinnerDebug.nativeElement.classList.contains('resume-defer-spinner')).toBe(true);
+    }
     expect(groupedPlaceholder?.querySelectorAll(':scope > section')).toHaveLength(3);
     expect(element.querySelectorAll('[data-resume-defer-settled]')).toHaveLength(0);
   });
@@ -306,6 +320,7 @@ describe('ResumePage', () => {
     ]);
     expect(element.querySelectorAll('[data-resume-defer-placeholder]')).toHaveLength(0);
     expect(element.querySelectorAll('[data-resume-section]')).toHaveLength(5);
+    expect(fixture.debugElement.queryAll(By.directive(MatProgressSpinner))).toHaveLength(0);
 
     fixture.detectChanges();
     expect(Array.from(element.querySelectorAll('[data-resume-defer-settled]'))).toEqual(
@@ -356,6 +371,7 @@ describe('ResumePage', () => {
     expect(element.querySelector('app-experience-timeline')).toBeNull();
     expect(element.querySelector('app-education-section')).toBeNull();
     expect(element.querySelector('app-profile-sidebar')).toBeNull();
+    expect(fixture.debugElement.queryAll(By.directive(MatProgressSpinner))).toHaveLength(0);
   });
 
   it('renders every résumé section and keeps public links safe', async () => {

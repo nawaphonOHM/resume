@@ -10,6 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { merge } from 'rxjs';
 
@@ -51,6 +52,7 @@ const DEFER_BOUNDARY_IDS = Object.values(RESUME_DEFER_BOUNDARIES);
     EducationSection,
     ExperienceTimeline,
     HeroSection,
+    MatProgressSpinner,
     ProfileSidebar,
     ResumeNavigation,
     RouterLink,

@@ -113,15 +113,10 @@ main > div {
   text-transform: uppercase;
 }
 
-.resume-defer-indicator {
-  width: 1.25rem;
-  height: 1.25rem;
+.resume-defer-spinner {
   flex: 0 0 auto;
   margin-top: 0.2rem;
-  border: 0.2rem solid var(--resume-border);
-  border-top-color: var(--resume-accent);
-  border-radius: 50%;
-  animation: resume-defer-spin 800ms linear infinite;
+  --mat-progress-spinner-active-indicator-color: var(--resume-accent);
 }
 
 .resume-defer-error .resume-defer-message {
@@ -131,12 +126,6 @@ main > div {
 
 .resume-defer-error .resume-defer-kicker {
   color: color-mix(in srgb, #b42318 75%, var(--resume-text));
-}
-
-@keyframes resume-defer-spin {
-  to {
-    transform: rotate(1turn);
-  }
 }
 
 footer {
@@ -153,10 +142,6 @@ footer p {
 @media (prefers-reduced-motion: reduce) {
   .skip-link {
     transition: none;
-  }
-
-  .resume-defer-indicator {
-    animation: none;
   }
 }
 
@@ -228,8 +213,9 @@ footer p {
     font-size: 8pt;
   }
 
-  .resume-defer-indicator {
-    display: none;
+  .resume-defer-spinner,
+  mat-progress-spinner {
+    display: none !important;
   }
 
   footer {
