@@ -8,10 +8,8 @@ import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
 import { ImageZoomDirective } from './image-zoom.directive.ts';
-import {
-  ImageZoomService,
-  type ImageZoomRequest,
-} from '../../resume/image-zoom-preview/service/image-zoom.service.ts';
+import { ImageZoomService } from '../../resume/image-zoom-preview/service/image-zoom.service.ts';
+import type { ImageZoomRequest } from '../../helper/interface/image-zoom-request/image-zoom-request.interface.ts';
 import type { BrandLogo } from '../../helper/interface/brand-logo/brand-logo.interface.ts';
 
 /** Intrinsic logo fixture shared by host input and expected service requests. */

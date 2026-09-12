@@ -4,11 +4,9 @@
  */
 import { TestBed } from '@angular/core/testing';
 
-import {
-  IMAGE_ZOOM_PREVIEW_DATA,
-  ImageZoomPreview,
-  type ImageZoomPreviewData,
-} from './image-zoom-preview';
+import { ImageZoomPreview } from './image-zoom-preview.ts';
+import { IMAGE_ZOOM_PREVIEW_DATA } from '../../helper/injection-token/image-zoom-preview-data.variable.ts';
+import type { ImageZoomPreviewData } from '../../helper/interface/image-zoom-preview-data/image-zoom-preview-data.interface.ts';
 import type { BrandLogo } from '../../helper/interface/brand-logo/brand-logo.interface.ts';
 
 describe('ImageZoomPreview', () => {

@@ -10,11 +10,9 @@ import {
   signal,
 } from '@angular/core';
 
-import {
-  ImageZoomService,
-  type ImageZoomActivation,
-  type ImageZoomRequest,
-} from '../../resume/image-zoom-preview/service/image-zoom.service.ts';
+import { ImageZoomService } from '../../resume/image-zoom-preview/service/image-zoom.service.ts';
+import type { ImageZoomActivation } from '../../helper/type/image-zoom-activation.type.ts';
+import type { ImageZoomRequest } from '../../helper/interface/image-zoom-request/image-zoom-request.interface.ts';
 import type { BrandLogo } from '../../helper/interface/brand-logo/brand-logo.interface.ts';
 
 /** Pixel dimensions used to compare an image's intrinsic and rendered content boxes. */
