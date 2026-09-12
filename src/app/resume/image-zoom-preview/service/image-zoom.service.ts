@@ -12,9 +12,7 @@ import { ImageZoomPreview } from '../image-zoom-preview.ts';
 import type { BrandLogo } from '../../../helper/interface/brand-logo/brand-logo.interface.ts';
 import type { ImageZoomPreviewData } from '../../../helper/interface/image-zoom-preview-data/image-zoom-preview-data.interface.ts';
 import { IMAGE_ZOOM_PREVIEW_DATA } from '../../../helper/injection-token/image-zoom-preview-data.variable.ts';
-
-/** Interaction mode that owns an open preview and controls its pointer behavior. */
-export type ImageZoomActivation = 'hover' | 'touch';
+import type { ImageZoomActivation } from '../../../helper/type/image-zoom-activation.type.ts';
 
 /** Complete request for opening a logo preview beside its rendered image. */
 export interface ImageZoomRequest {
