@@ -14,9 +14,7 @@ import { IMAGE_ZOOM_PREVIEW_DATA } from '../../../helper/injection-token/image-z
 import type { ImageZoomActivation } from '../../../helper/type/image-zoom-activation.type.ts';
 import type { ImageZoomRequest } from '../../../helper/interface/image-zoom-request/image-zoom-request.interface.ts';
 import { VIEWPORT_MARGIN } from '../../../helper/injection-token/viewpoint-margin.variable.ts';
-
-/** Maximum share of either viewport dimension occupied by the preview image itself. */
-const IMAGE_MAX_VIEWPORT_RATIO = 0.2;
+import { IMAGE_MAX_VIEWPORT_RATIO } from '../../../helper/injection-token/image-max-viewpoint-radio.variable.ts';
 
 /** Preferred visual separation between an origin and its connected preview. */
 const ORIGIN_GAP = 12;
@@ -72,6 +70,7 @@ export class ImageZoomService {
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
   private readonly viewportMargin = inject(VIEWPORT_MARGIN);
+  private readonly imageMaxViewportRatio = inject(IMAGE_MAX_VIEWPORT_RATIO);
   private overlayRef: OverlayRef | null = null;
   private currentRequest: ImageZoomRequest | null = null;
   private dismissalSubscriptions: Subscription | null = null;
@@ -250,11 +249,11 @@ export class ImageZoomService {
     const maxWidth = Math.max(viewport.width - this.viewportMargin * 2, 0);
     const maxHeight = Math.max(viewport.height - this.viewportMargin * 2, 0);
     const imageMaxWidth = Math.min(
-      viewport.width * IMAGE_MAX_VIEWPORT_RATIO,
+      viewport.width * this.imageMaxViewportRatio,
       Math.max(maxWidth - PANEL_CHROME_PX, 0),
     );
     const imageMaxHeight = Math.min(
-      viewport.height * IMAGE_MAX_VIEWPORT_RATIO,
+      viewport.height * this.imageMaxViewportRatio,
       Math.max(maxHeight - PANEL_CHROME_PX, 0),
     );
     const pane = overlayRef.overlayElement;
