@@ -13,9 +13,7 @@ import type { ImageZoomPreviewData } from '../../../helper/interface/image-zoom-
 import { IMAGE_ZOOM_PREVIEW_DATA } from '../../../helper/injection-token/image-zoom-preview-data.variable.ts';
 import type { ImageZoomActivation } from '../../../helper/type/image-zoom-activation.type.ts';
 import type { ImageZoomRequest } from '../../../helper/interface/image-zoom-request/image-zoom-request.interface.ts';
-
-/** Minimum space retained between the overlay pane and each viewport edge. */
-const VIEWPORT_MARGIN = 16;
+import { VIEWPORT_MARGIN } from '../../../helper/injection-token/viewpoint-margin.variable.ts';
 
 /** Maximum share of either viewport dimension occupied by the preview image itself. */
 const IMAGE_MAX_VIEWPORT_RATIO = 0.2;
@@ -73,6 +71,7 @@ export class ImageZoomService {
   private readonly viewportRuler = inject(ViewportRuler);
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly viewportMargin = inject(VIEWPORT_MARGIN);
   private overlayRef: OverlayRef | null = null;
   private currentRequest: ImageZoomRequest | null = null;
   private dismissalSubscriptions: Subscription | null = null;
@@ -106,7 +105,7 @@ export class ImageZoomService {
       .position()
       .flexibleConnectedTo(request.origin)
       .withPositions([...IMAGE_ZOOM_POSITIONS])
-      .withViewportMargin(VIEWPORT_MARGIN)
+      .withViewportMargin(this.viewportMargin)
       .withFlexibleDimensions(false)
       .withPush(true);
     const overlayRef = this.overlay.create({
@@ -119,8 +118,8 @@ export class ImageZoomService {
               'image-zoom-preview-overlay-pane--pointer-transparent',
             ]
           : ['image-zoom-preview-overlay-pane'],
-      maxWidth: `calc(100vw - ${VIEWPORT_MARGIN * 2}px)`,
-      maxHeight: `calc(100vh - ${VIEWPORT_MARGIN * 2}px)`,
+      maxWidth: `calc(100vw - ${this.viewportMargin * 2}px)`,
+      maxHeight: `calc(100vh - ${this.viewportMargin * 2}px)`,
       disposeOnNavigation: true,
     });
     const subscriptions = new Subscription();
@@ -248,8 +247,8 @@ export class ImageZoomService {
   /** Publishes pane and image limits derived from the current viewport and panel chrome. */
   private applyViewportSizeLimits(overlayRef: OverlayRef): void {
     const viewport = this.viewportRuler.getViewportSize();
-    const maxWidth = Math.max(viewport.width - VIEWPORT_MARGIN * 2, 0);
-    const maxHeight = Math.max(viewport.height - VIEWPORT_MARGIN * 2, 0);
+    const maxWidth = Math.max(viewport.width - this.viewportMargin * 2, 0);
+    const maxHeight = Math.max(viewport.height - this.viewportMargin * 2, 0);
     const imageMaxWidth = Math.min(
       viewport.width * IMAGE_MAX_VIEWPORT_RATIO,
       Math.max(maxWidth - PANEL_CHROME_PX, 0),
@@ -276,10 +275,10 @@ export class ImageZoomService {
     const pane = overlayRef.overlayElement;
     const rect = pane.getBoundingClientRect();
     const viewport = this.viewportRuler.getViewportSize();
-    const minLeft = VIEWPORT_MARGIN;
-    const minTop = VIEWPORT_MARGIN;
-    const maxRight = viewport.width - VIEWPORT_MARGIN;
-    const maxBottom = viewport.height - VIEWPORT_MARGIN;
+    const minLeft = this.viewportMargin;
+    const minTop = this.viewportMargin;
+    const maxRight = viewport.width - this.viewportMargin;
+    const maxBottom = viewport.height - this.viewportMargin;
 
     let nextLeft = rect.left;
     let nextTop = rect.top;
