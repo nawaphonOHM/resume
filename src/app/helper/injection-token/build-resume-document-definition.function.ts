@@ -81,7 +81,7 @@ export const buildResumeDocumentDefinition = new InjectionToken<
               color: color.accent,
             },
             employmentType: {
-              font: BROWSER_FONT,
+              font: browserFont,
               fontSize: 8.5,
               bold: true,
               color: color.accent,
@@ -208,7 +208,7 @@ export const buildResumeDocumentDefinition = new InjectionToken<
               layout: {
                 hLineColor: () => color.border,
                 vLineWidth: () => 0,
-                hLineWidth: (index) => (index === 0 ? 0 : 0.5),
+                hLineWidth: (index: number) => (index === 0 ? 0 : 0.5),
                 paddingLeft: () => 0,
                 paddingRight: () => 8,
                 paddingTop: () => 5,

@@ -25,7 +25,7 @@ import type { ResumePdfRuntime } from '../../../../helper/interface/resume-pdf-r
 import type { ResumeProfile } from '../../../../helper/interface/resume-profile/resume-profile.interface.ts';
 import type { PdfMakeWindow } from '../../../../helper/type/pdf-make-window.type.ts';
 import type { ResumePdfRuntimeLoader } from '../../../../helper/type/resume-pdf-runtime-loader.type.ts';
-import type { ResumePdfDocumentDefinition } from '../../../resume-pdf/resume-pdf-document.ts';
+import type { ResumePdfDocumentDefinition } from '../../../../helper/interface/resume-pdf-document-definition/resume-pdf-document-definition.interface.ts';
 import { ResumePdfService } from './resume-pdf.service';
 
 interface TestBrowserPdfRuntime extends ResumePdfRuntime {

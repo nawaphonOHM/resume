@@ -1,14 +1,13 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, inject, Service } from '@angular/core';
 
-import {
-  buildResumeDocumentDefinition,
-  validateResumePdfBytes,
-} from '../../../resume-pdf/resume-pdf-document.ts';
+import { buildResumeDocumentDefinition } from '../../../../helper/injection-token/build-resume-document-definition.function.ts';
+import { validateResumePdfBytes } from '../../../../helper/injection-token/validate-resume-pdf-bytes.function.ts';
 import { resumeData } from '../../../../helper/injection-token/resume.data.ts';
 import { RESUME_PDF_FILENAME } from '../../../../helper/injection-token/resume-pdf-filename.variable.ts';
 import type { ResumePdfRuntime } from '../../../../helper/interface/resume-pdf-runtime/resume-pdf-runtime.interface.ts';
 import { RESUME_PDF_RUNTIME_LOADER } from '../../../../helper/injection-token/resume-pdf-runtime-loader.function.ts';
+import type { ResumeProfile } from '../../../../helper/interface/resume-profile/resume-profile.interface.ts';
 
 /** Lazily generates, validates, and downloads the canonical résumé PDF. */
 @Service()
@@ -16,6 +15,11 @@ export class ResumePdfService {
   private readonly document = inject(DOCUMENT);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly runtimeLoader = inject(RESUME_PDF_RUNTIME_LOADER);
+  private readonly buildResumeDocumentDefinitionFn = inject(buildResumeDocumentDefinition);
+  private readonly validateResumePdfBytesFn: (
+    pdf: unknown,
+    profile: ResumeProfile,
+  ) => asserts pdf is Uint8Array = inject(validateResumePdfBytes);
   private readonly view = isPlatformBrowser(this.platformId) ? this.document.defaultView : null;
   private runtime: Promise<ResumePdfRuntime> | undefined;
 
@@ -30,10 +34,10 @@ export class ResumePdfService {
       return;
     }
 
-    const definition = buildResumeDocumentDefinition(this.resumeDataToken);
+    const definition = this.buildResumeDocumentDefinitionFn(this.resumeDataToken);
     const runtime = await this.loadRuntime();
     const pdf = await runtime.createPdf(definition).getBuffer();
-    validateResumePdfBytes(pdf, this.resumeDataToken);
+    this.validateResumePdfBytesFn(pdf, this.resumeDataToken);
 
     const blob = new view.Blob([pdf as BlobPart], { type: 'application/pdf' });
     this.downloadBlob(view, blob);

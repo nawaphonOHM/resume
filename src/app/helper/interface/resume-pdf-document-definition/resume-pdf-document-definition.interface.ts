@@ -1,6 +1,7 @@
 import type { ResumePdfInfo } from '../resume-pdf-info/resume-pdf-info.interface.ts';
-import type { ResumePdfStyle } from '../../../resume/resume-pdf/resume-pdf-document.ts';
+import type { ResumePdfStyle } from '../resume-pdf-style/resume-pdf-style.interface.ts';
 import type { ResumePdfNode } from '../resume-pdf-node/resume-pdf-node.interface.ts';
+import type { ResumePdfMargin } from '../../type/resume-pdf-margin.type.ts';
 
 /** Typed document definition consumed by the lazily loaded browser pdfmake runtime. */
 export interface ResumePdfDocumentDefinition {

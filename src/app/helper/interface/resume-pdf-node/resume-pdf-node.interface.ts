@@ -1,8 +1,9 @@
-import type {
-  ResumePdfCanvas,
-  ResumePdfTable,
-  ResumePdfTableLayout,
-} from '../../../resume/resume-pdf/resume-pdf-document.ts';
+import type { ResumePdfCanvas } from '../resume-pdf-canvas/resume-pdf-canvas.interface.ts';
+import type { ResumePdfTable } from '../resume-pdf-table/resume-pdf-table.interface.ts';
+import type { ResumePdfTableLayout } from '../resume-pdf-table-layout/resume-pdf-table-layout.interface.ts';
+import type { ResumePdfMargin } from '../../type/resume-pdf-margin.type.ts';
+import type { ResumePdfColumnWidth } from '../../type/resume-pdf-column-width.type.ts';
+import type { ResumePdfAlignment } from '../../type/resume-pdf-alignment.type.ts';
 
 /** A pdfmake content node used by the browser-neutral résumé definition. */
 export interface ResumePdfNode {

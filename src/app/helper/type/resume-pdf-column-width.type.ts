@@ -1,1 +1,1 @@
-type ResumePdfColumnWidth = number | '*' | 'auto';
+export type ResumePdfColumnWidth = number | '*' | 'auto';

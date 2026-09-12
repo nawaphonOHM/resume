@@ -1,14 +1,21 @@
 import { TestBed } from '@angular/core/testing';
 import { resumeData } from '../../helper/injection-token/resume.data.ts';
 import type { ResumeProfile } from '../../helper/interface/resume-profile/resume-profile.interface.ts';
-import {
-  buildResumeDocumentDefinition,
-  validateResumePdfBytes,
-  validateResumeProfile,
-} from './resume-pdf-document';
+import { buildResumeDocumentDefinition } from '../../helper/injection-token/build-resume-document-definition.function.ts';
+import { validateResumePdfBytes } from '../../helper/injection-token/validate-resume-pdf-bytes.function.ts';
+import { validateResumeProfile } from '../../helper/injection-token/validate-resume-profile.function.ts';
 
 const METADATA_DATE = '2026-01-01T00:00:00.000Z';
 const RESUME: ResumeProfile = TestBed.runInInjectionContext(() => TestBed.inject(resumeData));
+const buildResumeDocumentDefinitionFn = TestBed.runInInjectionContext(() =>
+  TestBed.inject(buildResumeDocumentDefinition),
+);
+const validateResumePdfBytesFn = TestBed.runInInjectionContext(() =>
+  TestBed.inject(validateResumePdfBytes),
+);
+const validateResumeProfileFn = TestBed.runInInjectionContext(() =>
+  TestBed.inject(validateResumeProfile),
+);
 
 function collectProperty(value: unknown, propertyName: string): string[] {
   if (Array.isArray(value)) {
@@ -67,7 +74,7 @@ function validPdfBytes(profile: ResumeProfile, additionalText = ''): Uint8Array 
 
 describe('resume-profile PDF document definition', () => {
   it('contains every résumé fact and only safe links', () => {
-    const definition = buildResumeDocumentDefinition(RESUME);
+    const definition = buildResumeDocumentDefinitionFn(RESUME);
     const documentText = collectProperty(definition, 'text').join('\n');
     const documentLinks = collectProperty(definition, 'link');
     const expectedEmploymentLabels = RESUME.experience.map(({ employmentTypes }) =>
@@ -77,8 +84,8 @@ describe('resume-profile PDF document definition', () => {
       expectedEmploymentLabels.includes(text),
     );
     const sectionHeadings = definition.content
-      .filter(({ headlineLevel }) => headlineLevel === 1)
-      .map(({ text }) => text);
+      .filter(({ headlineLevel }: { headlineLevel?: number }) => headlineLevel === 1)
+      .map(({ text }: { text?: unknown }) => text);
 
     for (const expectedText of expectedResumeText(RESUME)) {
       expect(documentText, `Missing PDF text: ${expectedText}`).toContain(expectedText);
@@ -108,8 +115,8 @@ describe('resume-profile PDF document definition', () => {
   });
 
   it('uses deterministic metadata and browser VFS font names', () => {
-    const firstDefinition = buildResumeDocumentDefinition(RESUME);
-    const secondDefinition = buildResumeDocumentDefinition(RESUME);
+    const firstDefinition = buildResumeDocumentDefinitionFn(RESUME);
+    const secondDefinition = buildResumeDocumentDefinitionFn(RESUME);
 
     expect(firstDefinition.info).toEqual({
       title: `${RESUME.name} — ${RESUME.title}`,
@@ -130,18 +137,24 @@ describe('resume-profile PDF document definition', () => {
       ...RESUME,
       skills: [...RESUME.skills, 'TypeScript'],
     };
-    const definition = buildResumeDocumentDefinition(expandedProfile);
-    const skillsHeadingIndex = definition.content.findIndex(({ text }) => text === 'Core skills');
+    const definition = buildResumeDocumentDefinitionFn(expandedProfile);
+    const skillsHeadingIndex = definition.content.findIndex(
+      ({ text }: { text?: unknown }) => text === 'Core skills',
+    );
     const skillsTable = definition.content[skillsHeadingIndex + 1]?.table;
 
     expect(skillsTable).toBeDefined();
-    expect(skillsTable?.body.at(-1)?.map(({ text }) => text)).toEqual(['TypeScript', '', '']);
+    expect(skillsTable?.body.at(-1)?.map(({ text }: { text?: unknown }) => text)).toEqual([
+      'TypeScript',
+      '',
+      '',
+    ]);
   });
 });
 
 describe('résumé profile validation', () => {
   it('accepts the canonical profile', () => {
-    expect(() => validateResumeProfile(RESUME)).not.toThrow();
+    expect(() => validateResumeProfileFn(RESUME)).not.toThrow();
   });
 
   it('rejects phone data, telephone links, and insecure external links', () => {
@@ -149,35 +162,35 @@ describe('résumé profile validation', () => {
       ...RESUME,
       details: { ...RESUME.details, phoneLabel: ['08', '1 234 5678'].join('') },
     };
-    expect(() => validateResumeProfile(phoneProfile)).toThrow(/phone/i);
+    expect(() => validateResumeProfileFn(phoneProfile)).toThrow(/phone/i);
 
     const embeddedPhoneProfile = {
       ...RESUME,
       summary: [...RESUME.summary, `Call ${['08', '1 234 5678'].join('')}`],
     };
-    expect(() => validateResumeProfile(embeddedPhoneProfile)).toThrow(/phone data/i);
+    expect(() => validateResumeProfileFn(embeddedPhoneProfile)).toThrow(/phone data/i);
 
     const telephoneLinkProfile = {
       ...RESUME,
       links: [...RESUME.links, { label: 'Phone', url: ['te', 'l:private'].join('') }],
     };
-    expect(() => validateResumeProfile(telephoneLinkProfile)).toThrow(/telephone link/i);
+    expect(() => validateResumeProfileFn(telephoneLinkProfile)).toThrow(/telephone link/i);
 
     const insecureLinkProfile = {
       ...RESUME,
       links: [{ ...RESUME.links[0], url: 'http://example.com' }, ...RESUME.links.slice(1)],
     };
-    expect(() => validateResumeProfile(insecureLinkProfile)).toThrow(/HTTPS/i);
+    expect(() => validateResumeProfileFn(insecureLinkProfile)).toThrow(/HTTPS/i);
 
     const invalidLinkProfile = {
       ...RESUME,
       links: [{ ...RESUME.links[0], url: 'not a URL' }, ...RESUME.links.slice(1)],
     };
-    expect(() => validateResumeProfile(invalidLinkProfile)).toThrow(/link is invalid/i);
+    expect(() => validateResumeProfileFn(invalidLinkProfile)).toThrow(/link is invalid/i);
   });
 
   it('rejects incomplete résumé content', () => {
-    expect(() => validateResumeProfile({ ...RESUME, summary: [] })).toThrow(/summary/i);
+    expect(() => validateResumeProfileFn({ ...RESUME, summary: [] })).toThrow(/summary/i);
   });
 
   it('requires supported employment types for every experience', () => {
@@ -188,7 +201,7 @@ describe('résumé profile validation', () => {
         ...RESUME.experience.slice(1),
       ],
     };
-    expect(() => validateResumeProfile(missingEmploymentTypesProfile)).toThrow(
+    expect(() => validateResumeProfileFn(missingEmploymentTypesProfile)).toThrow(
       /experience\[0\]\.employmentTypes.*at least one item/i,
     );
 
@@ -200,7 +213,7 @@ describe('résumé profile validation', () => {
         ...RESUME.experience.slice(2),
       ],
     };
-    expect(() => validateResumeProfile(emptyEmploymentTypesProfile)).toThrow(
+    expect(() => validateResumeProfileFn(emptyEmploymentTypesProfile)).toThrow(
       /experience\[1\]\.employmentTypes.*at least one item/i,
     );
 
@@ -213,13 +226,13 @@ describe('résumé profile validation', () => {
         ...RESUME.experience.slice(3),
       ],
     };
-    expect(() => validateResumeProfile(unsupportedEmploymentTypeProfile)).toThrow(
+    expect(() => validateResumeProfileFn(unsupportedEmploymentTypeProfile)).toThrow(
       /experience\[2\]\.employmentTypes\[1\].*supported/i,
     );
   });
 
   it('requires every education and senior-project field', () => {
-    expect(() => validateResumeProfile({ ...RESUME, education: undefined })).toThrow(
+    expect(() => validateResumeProfileFn({ ...RESUME, education: undefined })).toThrow(
       /education.*required/i,
     );
 
@@ -228,7 +241,7 @@ describe('résumé profile validation', () => {
         ...RESUME,
         education: { ...RESUME.education, [fieldName]: ' ' },
       };
-      expect(() => validateResumeProfile(incompleteEducationProfile)).toThrow(
+      expect(() => validateResumeProfileFn(incompleteEducationProfile)).toThrow(
         new RegExp(`education\\.${fieldName}`, 'i'),
       );
     }
@@ -237,7 +250,7 @@ describe('résumé profile validation', () => {
       ...RESUME,
       education: { ...RESUME.education, seniorProject: undefined },
     };
-    expect(() => validateResumeProfile(missingProjectProfile)).toThrow(
+    expect(() => validateResumeProfileFn(missingProjectProfile)).toThrow(
       /education.*seniorProject.*required/i,
     );
 
@@ -249,7 +262,7 @@ describe('résumé profile validation', () => {
           seniorProject: { ...RESUME.education.seniorProject, [fieldName]: '' },
         },
       };
-      expect(() => validateResumeProfile(incompleteProjectProfile)).toThrow(
+      expect(() => validateResumeProfileFn(incompleteProjectProfile)).toThrow(
         new RegExp(`education\\.seniorProject\\.${fieldName}`, 'i'),
       );
     }
@@ -263,7 +276,7 @@ describe('résumé profile validation', () => {
         seniorProject: { ...RESUME.education.seniorProject, url: 'not a URL' },
       },
     };
-    expect(() => validateResumeProfile(invalidProjectLinkProfile)).toThrow(
+    expect(() => validateResumeProfileFn(invalidProjectLinkProfile)).toThrow(
       /project link is invalid/i,
     );
 
@@ -277,7 +290,7 @@ describe('résumé profile validation', () => {
         },
       },
     };
-    expect(() => validateResumeProfile(insecureProjectLinkProfile)).toThrow(
+    expect(() => validateResumeProfileFn(insecureProjectLinkProfile)).toThrow(
       /project link must use HTTPS/i,
     );
   });
@@ -285,17 +298,17 @@ describe('résumé profile validation', () => {
 
 describe('generated résumé PDF byte validation', () => {
   it('accepts a sufficiently large PDF with all required annotations', () => {
-    expect(() => validateResumePdfBytes(validPdfBytes(RESUME), RESUME)).not.toThrow();
+    expect(() => validateResumePdfBytesFn(validPdfBytes(RESUME), RESUME)).not.toThrow();
   });
 
   it('rejects non-PDF and unexpectedly small output', () => {
-    expect(() => validateResumePdfBytes(new ArrayBuffer(10_001), RESUME)).toThrow(
+    expect(() => validateResumePdfBytesFn(new ArrayBuffer(10_001), RESUME)).toThrow(
       /not a PDF document/i,
     );
-    expect(() => validateResumePdfBytes(pdfBytes('', 'not-pdf'), RESUME)).toThrow(
+    expect(() => validateResumePdfBytesFn(pdfBytes('', 'not-pdf'), RESUME)).toThrow(
       /not a PDF document/i,
     );
-    expect(() => validateResumePdfBytes(new TextEncoder().encode('%PDF-1.7'), RESUME)).toThrow(
+    expect(() => validateResumePdfBytesFn(new TextEncoder().encode('%PDF-1.7'), RESUME)).toThrow(
       /unexpectedly small/i,
     );
   });
@@ -304,10 +317,10 @@ describe('generated résumé PDF byte validation', () => {
     const missingProjectLink = pdfBytes(
       [`mailto:${RESUME.details.email}`, ...RESUME.links.map(({ url }) => url)].join('\n'),
     );
-    expect(() => validateResumePdfBytes(missingProjectLink, RESUME)).toThrow(
+    expect(() => validateResumePdfBytesFn(missingProjectLink, RESUME)).toThrow(
       /missing a link annotation/i,
     );
-    expect(() => validateResumePdfBytes(validPdfBytes(RESUME, 'tel:private'), RESUME)).toThrow(
+    expect(() => validateResumePdfBytesFn(validPdfBytes(RESUME, 'tel:private'), RESUME)).toThrow(
       /telephone link/i,
     );
   });

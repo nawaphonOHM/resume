@@ -1,1 +1,1 @@
-type ResumePdfAlignment = 'left' | 'center' | 'right';
+export type ResumePdfAlignment = 'left' | 'center' | 'right';
