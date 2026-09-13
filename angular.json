@@ -40,7 +40,12 @@
                   "maximumError": "8kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "outputPath": {
+                "base": "dist",
+                "browser": ""
+              },
+              "extractLicenses": false
             },
             "development": {
               "optimization": false,
