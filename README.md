@@ -21,6 +21,67 @@ npm start
 
 Open `http://localhost:4200/`. The development server reloads when source files change.
 
+## Architecture & Component Graph
+
+The project follows a modular, standalone Angular architecture with a lazy routed page, typed canonical data, focused UI sections, and browser-only runtime integrations.
+
+```mermaid
+graph TD
+    subgraph Entry["Application Shell"]
+        MAIN["main.ts"] --> APP["App (app.ts)"]
+        MAIN --> APP_CONFIG["appConfig (app.config.ts)"]
+        APP_CONFIG --> ROUTES["routes (app.routes.ts)"]
+    end
+
+    subgraph PageLayer["Routed Page & Presentational Sections"]
+        ROUTES -->|loadComponent| RESUME_PAGE["ResumePage<br/>resume-page.ts"]
+        RESUME_PAGE --> NAV["ResumeNavigation"]
+        NAV -.->|themeToggled| RESUME_PAGE
+        RESUME_PAGE --> HERO["HeroSection"]
+        RESUME_PAGE --> SUMMARY["SummarySection"]
+        RESUME_PAGE --> EXPERIENCE["ExperienceTimeline"]
+        RESUME_PAGE --> EDUCATION["EducationSection"]
+        RESUME_PAGE --> PROFILE["ProfileSidebar"]
+        EXPERIENCE --> TECHNOLOGY_ICON["TechnologyIconComponent"]
+    end
+
+    subgraph Interactive["Directives, Services & Overlays"]
+        EXPERIENCE -.->|appImageZoom| ZOOM_DIRECTIVE["ImageZoomDirective"]
+        EDUCATION -.->|appImageZoom| ZOOM_DIRECTIVE
+        PROFILE -.->|appImageZoom| ZOOM_DIRECTIVE
+        TECHNOLOGY_ICON -.->|appImageZoom| ZOOM_DIRECTIVE
+        ZOOM_DIRECTIVE --> ZOOM_SERVICE["ImageZoomService"]
+        ZOOM_SERVICE -->|CDK Overlay| ZOOM_PREVIEW["ImageZoomPreview"]
+        RESUME_PAGE --> THEME_SERVICE["ThemeService"]
+        RESUME_PAGE --> PDF_SERVICE["ResumePdfService"]
+        TECHNOLOGY_ICON --> CONTRAST_SERVICE["TechnologyIconContrastService"]
+    end
+
+    subgraph DataTokens["Canonical Data & Injection Tokens"]
+        RESUME_DATA["resumeData<br/>resume.data.ts"] --> RESUME_PAGE
+        RESUME_DATA --> PDF_SERVICE
+        SECTIONS_TOKEN["RESUME_SECTIONS"] --> RESUME_PAGE
+        SECTIONS_TOKEN --> NAV
+        PDF_HELPERS["PDF generators & validators"] --> PDF_SERVICE
+        CONTRAST_HELPERS["CLAHE contrast helpers"] --> CONTRAST_SERVICE
+    end
+
+    subgraph External["External CDN Runtimes & Assets"]
+        PDF_SERVICE -.->|lazy SRI scripts| PDFMAKE_CDN["cdnjs<br/>pdfmake + Roboto fonts"]
+        CONTRAST_SERVICE -.->|lazy ESM import| OPENCV_CDN["jsdelivr<br/>@techstark/opencv-js"]
+        EXPERIENCE -.->|remote images| DO_SPACES["DigitalOcean Spaces<br/>image assets"]
+        EDUCATION -.->|remote images| DO_SPACES
+        PROFILE -.->|remote images| DO_SPACES
+        TECHNOLOGY_ICON -.->|remote icons| DO_SPACES
+    end
+```
+
+- **Application Shell:** `main.ts` bootstraps the standalone `App` with `appConfig`; the route configuration lazy-loads the résumé page.
+- **Routed Components:** `ResumePage` coordinates the résumé sections, navigation, responsive behavior, and presentation of the canonical profile content.
+- **Services & Overlays:** Theme and PDF services handle browser capabilities, while the image-zoom directive delegates overlay rendering to `ImageZoomService` and `ImageZoomPreview`; the technology icon component uses the contrast service.
+- **Data & Helper Tokens:** `resumeData` is the canonical résumé source, `RESUME_SECTIONS` supplies shared section metadata, and dedicated PDF and CLAHE helpers keep specialized processing separate from components.
+- **External Runtime CDNs:** `cdnjs` supplies the on-demand PDF runtime and Roboto fonts, `jsdelivr` supplies OpenCV, and DigitalOcean Spaces hosts the remote image assets.
+
 ## Edit résumé content
 
 All publishable résumé facts live in `src/app/data/resume/resume.data.ts` and conform to the contracts in `src/app/helper/interface/resume-profile/resume-profile.interface.ts`. Update that data source rather than duplicating content in component templates.
