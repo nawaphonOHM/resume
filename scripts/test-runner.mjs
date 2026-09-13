@@ -51,29 +51,62 @@ child.stderr?.on('data', (data) => {
 
 child.on('close', (code) => {
   clearTimeout(timer);
-  const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-  console.log(`\n----------------------------------------`);
-  console.log(`[test-runner] Finished in ${duration}s with exit code ${timedOut ? 124 : code}`);
+  const totalDuration = ((Date.now() - startTime) / 1000).toFixed(2);
+  const combined = stdout + '\n' + stderr;
+
+  console.log(`\n========================================`);
+  console.log(`[test-runner] Execution Summary`);
+  console.log(`========================================`);
+  console.log(`Total duration: ${totalDuration}s`);
+  console.log(`Exit code: ${timedOut ? 124 : (code ?? 1)}`);
+
+  // Extract Vitest summary lines
+  const testFilesMatch = combined.match(/Test Files\s+([^\n]+)/);
+  const testsMatch = combined.match(/Tests\s+([^\n]+)/);
+  const vitestDurationMatch = combined.match(/Duration\s+([^\n]+)/);
+
+  if (testFilesMatch) {
+    console.log(`Test Files: ${testFilesMatch[1].trim()}`);
+  }
+  if (testsMatch) {
+    console.log(`Tests:      ${testsMatch[1].trim()}`);
+  }
+  if (vitestDurationMatch) {
+    console.log(`Vitest run: ${vitestDurationMatch[1].trim()}`);
+  }
 
   if (code !== 0 || timedOut) {
-    console.error(`\n[test-runner] TEST FAILURES / ERRORS DETECTED:`);
-    const combined = stdout + '\n' + stderr;
-    const failureLines = combined
-      .split('\n')
-      .filter(
-        (line) =>
-          line.includes('FAIL') ||
-          line.includes('AssertionError') ||
-          line.includes('Error:') ||
-          line.includes('✕') ||
-          line.includes('failed'),
-      );
-    if (failureLines.length > 0) {
-      console.error(failureLines.join('\n'));
+    console.error(`\n----------------------------------------`);
+    console.error(`[test-runner] FAILED TESTS & ERROR DETAILS:`);
+    console.error(`----------------------------------------`);
+
+    if (timedOut) {
+      console.error(`Execution timed out after ${timeoutMs / 1000}s`);
+    }
+
+    // Extract individual test failure blocks (between Failed Tests separator lines)
+    const failedBlockMatch = combined.match(/⎯+ Failed Tests \d+ ⎯+([\s\S]*?)⎯+\[\d+\/\d+\]⎯+/);
+    if (failedBlockMatch) {
+      console.error(failedBlockMatch[1].trim());
+    } else {
+      const failureLines = combined
+        .split('\n')
+        .filter(
+          (line) =>
+            line.includes('FAIL') ||
+            line.includes('AssertionError') ||
+            line.includes('Error:') ||
+            line.includes('✕') ||
+            line.includes('failed'),
+        );
+      if (failureLines.length > 0) {
+        console.error(failureLines.join('\n'));
+      }
     }
   } else {
-    console.log(`[test-runner] All tests executed successfully.`);
+    console.log(`\n[test-runner] Result: ALL TESTS PASSED SUCCESSFULLY.`);
   }
+  console.log(`========================================\n`);
 
   process.exit(timedOut ? 124 : (code ?? 1));
 });

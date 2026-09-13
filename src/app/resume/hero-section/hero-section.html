@@ -8,7 +8,16 @@
     </p>
     <p class="hero-kicker">
       <span class="hero-kicker-copy"
-        >UTC+7 · <time class="hero-clock">{{ formattedTime() }}</time></span
+        >UTC+7 ·
+        <time
+          class="hero-clock"
+          [class.hero-clock--slide-fade]="clockTransition === 'slide-fade'"
+          [class.hero-clock--opacity-pulse]="clockTransition === 'opacity-pulse'"
+          [class.hero-clock--soft-glow]="clockTransition === 'soft-glow'"
+          [class.hero-clock-tick-a]="isTickAlternate()"
+          [class.hero-clock-tick-b]="!isTickAlternate()"
+          >{{ formattedTime() }}</time
+        ></span
       >
     </p>
 

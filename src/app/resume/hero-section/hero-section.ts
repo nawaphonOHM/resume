@@ -15,6 +15,7 @@ import type { ResumeProfile } from '../../helper/interface/resume-profile/resume
 import { formatUtcPlusSevenDateTime } from '../../helper/injection-token/format-utc-plus-seven-date-time.function.ts';
 import { CLOCK_UPDATE_INTERVAL_MS } from '../../helper/injection-token/clock-update_interval-ms.variable.ts';
 import { statusColorForUtcPlusSeven } from '../../helper/injection-token/status-color-for-utc-plus-seven.function.ts';
+import { heroClockTransitionPicker } from '../../helper/injection-token/hero-clock-transition-picker.variable.ts';
 
 /** Introduces the candidate and exposes the primary email contact action. */
 @Component({
@@ -30,6 +31,9 @@ export class HeroSection {
   private readonly clockUpdateIntervalMs = inject(CLOCK_UPDATE_INTERVAL_MS);
   private readonly statusColorForUtcPlusSeven = inject(statusColorForUtcPlusSeven);
 
+  /** Selected transition effect applied on each clock tick. */
+  protected readonly clockTransition = inject(heroClockTransitionPicker)();
+
   /** Complete profile supplying the candidate identity and public contact details. */
   readonly profile = input.required<ResumeProfile>();
 
@@ -37,6 +41,9 @@ export class HeroSection {
   protected readonly formattedTime = computed(() =>
     this.formatUtcPlusSevenDateTimeFn(this.currentInstant()),
   );
+
+  /** Alternates on each clock tick to re-trigger slide-and-fade CSS animations. */
+  protected readonly isTickAlternate = signal(false);
 
   /** Availability color for the same current instant as the visible UTC+7 clock. */
   protected readonly statusColor = computed(() =>
@@ -46,10 +53,10 @@ export class HeroSection {
   /** Starts browser clock synchronization after rendering and releases it on destruction. */
   constructor() {
     afterNextRender(() => {
-      const intervalId = window.setInterval(
-        () => this.currentInstant.set(new Date()),
-        this.clockUpdateIntervalMs,
-      );
+      const intervalId = window.setInterval(() => {
+        this.currentInstant.set(new Date());
+        this.isTickAlternate.update((v) => !v);
+      }, this.clockUpdateIntervalMs);
 
       this.destroyRef.onDestroy(() => window.clearInterval(intervalId));
     });

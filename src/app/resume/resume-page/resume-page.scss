@@ -24,10 +24,10 @@
   text-decoration: none;
   transform: translateY(calc(-100% - 1rem));
   transition: transform 160ms ease;
-}
 
-.skip-link:focus-visible {
-  transform: translateY(0);
+  &:focus-visible {
+    transform: translateY(0);
+  }
 }
 
 main {
@@ -35,8 +35,8 @@ main {
   overflow: hidden;
   padding-top: clamp(1rem, 3vw, 2rem);
   background:
-    radial-gradient(circle at 3% 12%, rgb(45 128 237 / 0.08), transparent 22rem),
-    radial-gradient(circle at 98% 55%, rgb(45 128 237 / 0.07), transparent 26rem),
+    radial-gradient(circle at 3% 12%, rgba(45, 128, 237, 0.08), transparent 22rem),
+    radial-gradient(circle at 98% 55%, rgba(45, 128, 237, 0.07), transparent 26rem),
     var(--resume-page);
 
   > div {
@@ -51,26 +51,17 @@ $resume-defer-enter-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 $resume-defer-enter-distance: 0.5rem;
 
 @keyframes resume-defer-enter {
-  0% {
+  from {
     opacity: 0;
     transform: translateY($resume-defer-enter-distance);
   }
-
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@mixin resume-defer-enter-transition {
-  animation: resume-defer-enter $resume-defer-enter-duration $resume-defer-enter-timing-function
-    both;
 }
 
 $resume-defer-targets: 'app-summary-section, app-experience-timeline, app-education-section, app-profile-sidebar, .resume-defer-error';
 
 #{$resume-defer-targets} {
-  @include resume-defer-enter-transition;
+  animation: resume-defer-enter $resume-defer-enter-duration $resume-defer-enter-timing-function
+    both;
 }
 
 // Keep fragment targets present and reserve realistic space while deferred sections load.
@@ -86,21 +77,23 @@ $resume-defer-targets: 'app-summary-section, app-experience-timeline, app-educat
   }
 }
 
-.resume-defer-reserve--summary,
-.resume-defer-reserve--education {
-  min-height: 38rem;
-}
+.resume-defer-reserve {
+  &--summary,
+  &--education {
+    min-height: 38rem;
+  }
 
-.resume-defer-reserve--experience {
-  min-height: 130rem;
-}
+  &--experience {
+    min-height: 130rem;
+  }
 
-.resume-defer-reserve--skills {
-  min-height: 30rem;
-}
+  &--skills {
+    min-height: 30rem;
+  }
 
-.resume-defer-reserve--profile {
-  min-height: 42rem;
+  &--profile {
+    min-height: 42rem;
+  }
 }
 
 .resume-defer-message {
@@ -113,7 +106,7 @@ $resume-defer-targets: 'app-summary-section, app-experience-timeline, app-educat
   border-radius: 1.4rem;
   background: color-mix(in srgb, var(--resume-surface) 92%, var(--resume-brand-soft));
   color: var(--resume-muted);
-  box-shadow: 0 0.75rem 2rem rgb(8 35 62 / 0.05);
+  box-shadow: 0 0.75rem 2rem rgba(8, 35, 62, 0.05);
 
   h2 {
     margin: 0;
@@ -176,24 +169,26 @@ footer {
 }
 
 @media (max-width: 48rem) {
-  .resume-defer-reserve--summary {
-    min-height: 44rem;
-  }
+  .resume-defer-reserve {
+    &--summary {
+      min-height: 44rem;
+    }
 
-  .resume-defer-reserve--experience {
-    min-height: 180rem;
-  }
+    &--experience {
+      min-height: 180rem;
+    }
 
-  .resume-defer-reserve--education {
-    min-height: 52rem;
-  }
+    &--education {
+      min-height: 52rem;
+    }
 
-  .resume-defer-reserve--skills {
-    min-height: 36rem;
-  }
+    &--skills {
+      min-height: 36rem;
+    }
 
-  .resume-defer-reserve--profile {
-    min-height: 54rem;
+    &--profile {
+      min-height: 54rem;
+    }
   }
 }
 
@@ -201,14 +196,11 @@ footer {
 @media print {
   :host {
     min-height: 0;
-    background: #fff !important;
-    color: #172033 !important;
   }
 
   .skip-link,
   app-resume-navigation,
-  .resume-defer-spinner,
-  mat-progress-spinner {
+  .resume-defer-spinner {
     display: none !important;
   }
 
@@ -221,7 +213,7 @@ footer {
   main {
     overflow: visible;
     padding: 0;
-    background: #fff !important;
+    background: none;
 
     > div {
       max-width: none !important;
@@ -238,24 +230,18 @@ footer {
     padding: 3mm;
     border-radius: 2.5mm;
     background: #fff !important;
-    box-shadow: none;
 
     h2 {
-      color: #172033 !important;
       font-size: 13pt;
     }
 
     p {
-      color: #44516a !important;
       font-size: 8pt;
     }
   }
 
   footer {
     margin-top: 4mm;
-    border-color: #b9c7d7;
-    background: #fff !important;
-    color: #44516a !important;
     font-size: 7.5pt;
     break-inside: avoid;
 

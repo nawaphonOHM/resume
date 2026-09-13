@@ -12,28 +12,32 @@
 .hero-section {
   position: relative;
   display: grid;
-  min-height: min(40rem, calc(100vh - 7rem));
   align-items: center;
   gap: clamp(2rem, 6vw, 5rem);
   overflow: hidden;
   padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5.5rem);
-  border: 1px solid rgb(255 255 255 / 12%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: clamp(1.5rem, 4vw, 2.5rem);
   background:
-    radial-gradient(circle at 90% 10%, rgb(91 170 255 / 24%), transparent 34%),
-    linear-gradient(135deg, var(--resume-sidebar) 0%, #123f6b 58%, #0c3155 100%);
+    radial-gradient(circle at 90% 10%, rgba(91, 170, 255, 0.24), transparent 34%),
+    linear-gradient(135deg, var(--resume-sidebar), #123f6b 58%, #0c3155);
   color: #f6f9ff;
   box-shadow: var(--resume-shadow);
-}
+  overflow-wrap: anywhere;
+  --mat-button-filled-container-color: #fff;
+  --mat-button-filled-label-text-color: #0b3158;
+  --mat-button-outlined-label-text-color: #fff;
+  --mat-button-outlined-outline-color: rgba(255, 255, 255, 0.48);
 
-.hero-section::after {
-  position: absolute;
-  inset: auto -10% -42% 35%;
-  height: 70%;
-  border-radius: 50%;
-  background: rgb(92 174 255 / 10%);
-  content: '';
-  filter: blur(0.125rem);
+  &::after {
+    position: absolute;
+    inset: auto -10% -42% 35%;
+    height: 70%;
+    border-radius: 50%;
+    background: rgba(92, 174, 255, 0.1);
+    content: '';
+    filter: blur(0.125rem);
+  }
 }
 
 .hero-copy {
@@ -52,35 +56,104 @@
   font-size: clamp(0.78rem, 1.6vw, 0.92rem);
   font-weight: 700;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.hero-kicker-copy {
-  min-width: 0;
   line-height: 1.55;
-  overflow-wrap: anywhere;
+  text-transform: uppercase;
   text-wrap: pretty;
 }
 
+.hero-clock {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  animation: 250ms ease-out;
+
+  &--slide-fade {
+    &.hero-clock-tick-a {
+      animation-name: a;
+    }
+
+    &.hero-clock-tick-b {
+      animation-name: b;
+    }
+  }
+
+  &--opacity-pulse {
+    &.hero-clock-tick-a {
+      animation-name: c;
+    }
+
+    &.hero-clock-tick-b {
+      animation-name: d;
+    }
+  }
+
+  &--soft-glow {
+    &.hero-clock-tick-a {
+      animation-name: e;
+    }
+
+    &.hero-clock-tick-b {
+      animation-name: f;
+    }
+  }
+}
+
+@keyframes a {
+  from {
+    opacity: 0.4;
+    transform: translateY(0.18rem);
+  }
+}
+
+@keyframes b {
+  from {
+    opacity: 0.4;
+    transform: translateY(0.18rem);
+  }
+}
+
+@keyframes c {
+  from {
+    opacity: 0.35;
+  }
+}
+
+@keyframes d {
+  from {
+    opacity: 0.35;
+  }
+}
+
+@keyframes e {
+  from {
+    opacity: 0.7;
+    text-shadow: 0 0 0.55rem rgba(169, 208, 255, 0.85);
+  }
+}
+
+@keyframes f {
+  from {
+    opacity: 0.7;
+    text-shadow: 0 0 0.55rem rgba(169, 208, 255, 0.85);
+  }
+}
+
 .status-dot {
-  flex: 0 0 auto;
+  flex: none;
   width: 0.65rem;
   height: 0.65rem;
   margin-top: 0.25em;
-  border: 0.125rem solid rgb(255 255 255 / 45%);
+  border: 0.125rem solid rgba(255, 255, 255, 0.45);
   border-radius: 50%;
   background: var(--status-dot-color);
   box-shadow: 0 0 0 0.35rem color-mix(in srgb, var(--status-dot-color) 14%, transparent);
 }
 
 h1 {
-  max-width: 100%;
   margin: 0;
   font-size: clamp(1.9rem, 9.5vw, 4.75rem);
   font-weight: 800;
   letter-spacing: -0.055em;
   line-height: 0.94;
-  overflow-wrap: anywhere;
   text-wrap: balance;
 }
 
@@ -100,21 +173,11 @@ h1 {
   line-height: 1.75;
 }
 
-.hero-primary-action {
-  --mat-button-filled-container-color: #ffffff;
-  --mat-button-filled-label-text-color: #0b3158;
-}
-
-.hero-secondary-action {
-  --mat-button-outlined-label-text-color: #ffffff;
-  --mat-button-outlined-outline-color: rgb(255 255 255 / 48%);
-}
-
 // The orbital monogram is decorative and yields entirely when space cannot support two columns.
 .hero-visual {
   position: relative;
   z-index: 1;
-  display: grid;
+  display: none;
   width: min(22vw, 15rem);
   min-width: 11rem;
   aspect-ratio: 1;
@@ -122,70 +185,62 @@ h1 {
   justify-self: center;
 }
 
-.hero-orbit,
+.hero-orbit {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(180, 218, 255, 0.28);
+  border-radius: 50%;
+
+  &-inner {
+    inset: 13%;
+    border-style: dashed;
+  }
+}
+
 .hero-monogram {
   position: absolute;
-  border-radius: 50%;
-}
-
-.hero-orbit {
-  border: 1px solid rgb(180 218 255 / 28%);
-}
-
-.hero-orbit-outer {
-  inset: 0;
-}
-
-.hero-orbit-inner {
-  inset: 13%;
-  border-style: dashed;
-}
-
-.hero-monogram {
   display: grid;
   width: 52%;
   aspect-ratio: 1;
   place-items: center;
-  border: 1px solid rgb(255 255 255 / 30%);
-  background: rgb(255 255 255 / 11%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.11);
   font-size: clamp(2rem, 5vw, 4.2rem);
   font-weight: 800;
   letter-spacing: -0.06em;
-  box-shadow: inset 0 0 2rem rgb(255 255 255 / 8%);
+  box-shadow: inset 0 0 2rem rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(0.5rem);
 }
 
 .hero-code {
   position: absolute;
   color: #a9d0ff;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.9rem;
-  font-weight: 700;
-}
+  font:
+    700 0.9rem ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
 
-.hero-code-left {
-  top: 18%;
-  left: -3%;
-}
+  &-left {
+    top: 18%;
+    left: -3%;
+  }
 
-.hero-code-right {
-  right: -2%;
-  bottom: 20%;
+  &-right {
+    right: -2%;
+    bottom: 20%;
+  }
 }
 
 @media (min-width: 62rem) {
   .hero-section {
     grid-template-columns: minmax(0, 1fr) minmax(11rem, 15rem);
-  }
-}
-
-@media (max-width: 61.99rem) {
-  .hero-section {
-    min-height: auto;
+    min-height: min(40rem, 100vh - 7rem);
   }
 
   .hero-visual {
-    display: none;
+    display: grid;
   }
 }
 
@@ -199,11 +254,10 @@ h1 {
 @media print {
   .hero-section {
     display: block;
-    min-height: 0;
     padding: 8mm 9mm;
     border-radius: 3mm;
     background: #0b2847 !important;
-    color: #ffffff !important;
+    color: #fff !important;
     break-inside: avoid;
   }
 
@@ -213,13 +267,8 @@ h1 {
     display: none !important;
   }
 
-  .hero-copy {
-    max-width: none;
-  }
-
   .hero-kicker {
     margin-bottom: 3mm;
-    color: #c9e2ff !important;
     font-size: 7.5pt;
   }
 
@@ -233,19 +282,16 @@ h1 {
     font-size: 26pt;
     letter-spacing: -0.04em;
     line-height: 1;
-    overflow-wrap: normal;
   }
 
   .hero-role {
     margin-top: 3mm;
-    color: #a9d0ff !important;
     font-size: 12pt;
   }
 
   .hero-introduction {
     max-width: none;
     margin: 3mm 0 0;
-    color: #dbe9f8 !important;
     font-size: 8.5pt;
     line-height: 1.45;
   }
