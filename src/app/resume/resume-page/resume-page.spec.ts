@@ -321,7 +321,7 @@ describe('ResumePage', () => {
     ]);
     expect(element.querySelectorAll('[data-resume-defer-placeholder]')).toHaveLength(0);
     expect(element.querySelectorAll('[data-resume-section]')).toHaveLength(5);
-    expect(fixture.debugElement.queryAll(By.directive(MatProgressSpinner))).toHaveLength(0);
+    expect(element.querySelectorAll('.resume-defer-spinner')).toHaveLength(0);
 
     fixture.detectChanges();
     expect(Array.from(element.querySelectorAll('[data-resume-defer-settled]'))).toEqual(

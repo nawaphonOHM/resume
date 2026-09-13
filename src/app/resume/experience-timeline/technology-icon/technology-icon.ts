@@ -1,4 +1,5 @@
-import { Component, computed, inject, input, resource } from '@angular/core';
+import { Component, computed, inject, input, linkedSignal, resource } from '@angular/core';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 import { ImageZoomDirective } from '../../../directive/image-zome/image-zoom.directive.ts';
 import { TechnologyIconContrastService } from './service/technology-icon-contrast/technology-icon-contrast.service.ts';
@@ -9,7 +10,7 @@ import type { TechnologyIconMetadata } from '../../../helper/interface/brand-log
 /** Presents one decorative technology mark and upgrades it after deferred contrast processing. */
 @Component({
   selector: 'app-technology-icon',
-  imports: [ImageZoomDirective, NgOptimizedImage],
+  imports: [ImageZoomDirective, NgOptimizedImage, MatProgressSpinner],
   templateUrl: './technology-icon.html',
   host: {
     class:
@@ -43,4 +44,17 @@ export class TechnologyIconComponent {
       ? this.optimizedPresentation.value()
       : this.fallbackPresentation(),
   );
+
+  protected readonly isLoading = linkedSignal<string, boolean>({
+    source: () => this.presentation().logo.src,
+    computation: () => true,
+  });
+
+  protected onImageLoad(): void {
+    this.isLoading.set(false);
+  }
+
+  protected onImageError(): void {
+    this.isLoading.set(false);
+  }
 }

@@ -1,9 +1,10 @@
 /**
- * Verifies immediate technology artwork, asynchronous enhancement, exact frame surfaces, and
- * propagation of resolved presentation metadata to image zoom.
+ * Verifies immediate technology artwork, loading progress spinner lifecycle, asynchronous
+ * enhancement, exact frame surfaces, and propagation of resolved presentation metadata to image zoom.
  */
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { By } from '@angular/platform-browser';
 import { vi } from 'vitest';
 
@@ -120,6 +121,69 @@ describe('TechnologyIconComponent', () => {
     expect(zoom.appImageZoom()).toBe(OPTIMIZED_PRESENTATION.logo);
     expect(zoom.imageZoomLabel()).toBe('Oracle');
     expect(zoom.imageZoomBackground()).toBe('#0d1b2d');
+  });
+
+  it('displays an indeterminate progress spinner while loading and hides it once the image loads', () => {
+    fixture = createComponent();
+    const host = fixture.nativeElement as HTMLElement;
+    const image = host.querySelector<HTMLImageElement>('img')!;
+
+    const spinnerDebug = fixture.debugElement.query(By.directive(MatProgressSpinner));
+    expect(spinnerDebug).not.toBeNull();
+    const spinner = spinnerDebug.componentInstance as MatProgressSpinner;
+    expect(spinner.mode).toBe('indeterminate');
+    expect(spinner.diameter).toBe(14);
+    expect(spinner.strokeWidth).toBe(2);
+    expect(spinnerDebug.nativeElement.getAttribute('aria-hidden')).toBe('true');
+    expect(image.classList.contains('invisible')).toBe(true);
+
+    image.dispatchEvent(new Event('load'));
+    TestBed.tick();
+
+    expect(fixture.debugElement.query(By.directive(MatProgressSpinner))).toBeNull();
+    expect(image.classList.contains('invisible')).toBe(false);
+  });
+
+  it('dismisses the progress spinner and reveals the image if image loading fails', () => {
+    fixture = createComponent();
+    const host = fixture.nativeElement as HTMLElement;
+    const image = host.querySelector<HTMLImageElement>('img')!;
+
+    expect(fixture.debugElement.query(By.directive(MatProgressSpinner))).not.toBeNull();
+    expect(image.classList.contains('invisible')).toBe(true);
+
+    image.dispatchEvent(new Event('error'));
+    TestBed.tick();
+
+    expect(fixture.debugElement.query(By.directive(MatProgressSpinner))).toBeNull();
+    expect(image.classList.contains('invisible')).toBe(false);
+  });
+
+  it('reactivates the progress spinner when the icon input changes until the replacement image loads', () => {
+    fixture = createComponent();
+    const host = fixture.nativeElement as HTMLElement;
+    const image = host.querySelector<HTMLImageElement>('img')!;
+
+    // Resolve initial image load
+    image.dispatchEvent(new Event('load'));
+    TestBed.tick();
+    expect(fixture.debugElement.query(By.directive(MatProgressSpinner))).toBeNull();
+    expect(image.classList.contains('invisible')).toBe(false);
+
+    // Change icon input
+    fixture.componentRef.setInput('icon', REPLACEMENT_ICON);
+    TestBed.tick();
+
+    // Spinner should reactivate and image should be hidden while loading
+    expect(fixture.debugElement.query(By.directive(MatProgressSpinner))).not.toBeNull();
+    expect(image.classList.contains('invisible')).toBe(true);
+
+    // Resolve replacement image load
+    image.dispatchEvent(new Event('load'));
+    TestBed.tick();
+
+    expect(fixture.debugElement.query(By.directive(MatProgressSpinner))).toBeNull();
+    expect(image.classList.contains('invisible')).toBe(false);
   });
 
   it('retains the usable original presentation when optimization unexpectedly rejects', async () => {

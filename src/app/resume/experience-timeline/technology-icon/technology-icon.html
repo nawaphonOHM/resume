@@ -1,12 +1,24 @@
 @if (presentation(); as resolved) {
+  @if (isLoading()) {
+    <mat-progress-spinner
+      class="col-start-1 row-start-1"
+      mode="indeterminate"
+      diameter="14"
+      strokeWidth="2"
+      aria-hidden="true"
+    />
+  }
   <img
-    class="technology-brand-icon block h-full w-full object-contain"
+    class="technology-brand-icon col-start-1 row-start-1 block h-full w-full object-contain"
+    [class.invisible]="isLoading()"
     [ngSrc]="resolved.logo.src"
     [width]="resolved.logo.width"
     [height]="resolved.logo.height"
     [appImageZoom]="resolved.logo"
     [imageZoomBackground]="resolved.backgroundColor"
     [imageZoomLabel]="label()"
+    (load)="onImageLoad()"
+    (error)="onImageError()"
     loading="lazy"
     alt=""
     aria-hidden="true"
