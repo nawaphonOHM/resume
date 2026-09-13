@@ -82,6 +82,41 @@ graph TD
 - **Data & Helper Tokens:** `resumeData` is the canonical résumé source, `RESUME_SECTIONS` supplies shared section metadata, and dedicated PDF and CLAHE helpers keep specialized processing separate from components.
 - **External Runtime CDNs:** `cdnjs` supplies the on-demand PDF runtime and Roboto fonts, `jsdelivr` supplies OpenCV, and DigitalOcean Spaces hosts the remote image assets.
 
+## Computer Science Concepts & Prerequisites
+
+To understand the implementation and maintain the codebase, familiarity with the following Computer Science and web-platform concepts is helpful:
+
+### 1. Computer Vision & Digital Image Processing
+
+- **Contrast Limited Adaptive Histogram Equalization (CLAHE):** The technology-icon pipeline applies CLAHE to local image regions, improving contrast without unbounded amplification of noise. `TechnologyIconContrastService` chooses an adaptive tile grid and evaluates the enhanced result against the original (`src/app/resume/experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts`).
+- **CIE Lab color space:** OpenCV converts pixels from RGBA to RGB and then to CIE $L^*a^*b^*$. CLAHE changes only the lightness channel ($L^*$), while the chromaticity channels ($a^*$ and $b^*$) are retained before conversion back to RGB in the same service.
+
+### 2. Color Science & Photometry
+
+- **sRGB gamma linearization:** `linearize-channel.function.ts` converts gamma-encoded sRGB channels to linear-light values with the standard piecewise transfer function (`src/app/helper/injection-token/linearize-channel.function.ts`).
+- **WCAG 2.1 relative luminance and contrast:** `relative-luminance.function.ts` applies $Y = 0.2126R + 0.7152G + 0.0722B$ to those linear channels. The contrast service then computes $(L_1 + 0.05) / (L_2 + 0.05)$, selecting the higher-scoring light or dark card surface (`src/app/helper/injection-token/relative-luminance.function.ts`, `src/app/resume/experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts`).
+- **Alpha compositing:** Transparent icon pixels are composited over each candidate surface with source-over RGB blending, and their alpha values weight the contrast score. This calculation is implemented in `TechnologyIconContrastService`, rather than in the linearization or luminance injection tokens.
+
+### 3. Asynchronous Concurrency & Cooperative Scheduling
+
+- **Cooperative idle scheduling:** `requestIdleCallback` (with a timeout fallback) defers canvas rasterization and OpenCV initialization until after the initial render, reducing main-thread jank in `TechnologyIconContrastService`.
+- **Exponential backoff with a fixed jitter term:** OpenCV CDN retries use an exponentially increasing delay plus the configured jitter value (`src/app/helper/injection-token/open-cv-retry-delay-multiplier.variable.ts`, `src/app/helper/injection-token/open-cv-retry-jitter-ms.variable.ts`). The current implementation does not generate random jitter.
+- **In-flight Promise deduplication:** `TechnologyIconContrastService` caches optimization promises by icon and intrinsic size, while `ResumePdfService` caches the PDF runtime promise and clears it after failure so a later request can retry (`src/app/resume/experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts`, `src/app/resume/resume-page/service/resume-pdf/resume-pdf.service.ts`).
+
+### 4. Memory Management & WebAssembly Interop
+
+- **Explicit native allocation cleanup:** JavaScript garbage collection does not own C++ objects allocated in the OpenCV WebAssembly heap. The CLAHE pipeline explicitly disposes `Mat`, `MatVector`, `Size`, and `CLAHE` objects in a `finally` block through `.delete()` (`src/app/helper/injection-token/dispose.function.ts` and `src/app/resume/experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts`).
+
+### 5. Computational Geometry & DOM Observers
+
+- **Viewport geometry and collision prevention:** `ImageZoomService` uses overlay rectangles from `getBoundingClientRect()`, viewport margins, and min/max bounds to keep popover previews within the viewport, including after CDK positioning (`src/app/resume/image-zoom-preview/service/image-zoom.service.ts`).
+- **Layout stabilization:** `ResizeObserver` repositions a preview when image decoding or layout changes its size. `ResumePage` uses `MutationObserver` to wait for deferred boundary markers before opening the native print dialog (`src/app/resume/image-zoom-preview/service/image-zoom.service.ts`, `src/app/resume/resume-page/resume-page.ts`).
+
+### 6. Web Security & Cryptography
+
+- **Subresource Integrity (SRI) and CSP alignment:** Pinned pdfmake CDN assets carry SHA-512 integrity digests in `src/app/helper/injection-token/pdfmake-core-asset.variable.ts` and `src/app/helper/injection-token/pdfmake-font-asset.variable.ts`; `src/app/helper/injection-token/create-cdn-script-loader.function.ts` applies them. Deployments must allow the corresponding CDN origins in `script-src`.
+- **Client-side binary validation and privacy checks:** Before download side effects, `src/app/helper/injection-token/validate-resume-pdf-bytes.function.ts` verifies the PDF magic bytes (`%PDF-`), minimum size, required links, and rejects `tel:` content. This is a structural and privacy safeguard, not a replacement for cryptographic signing of generated PDFs.
+
 ## Edit résumé content
 
 All publishable résumé facts live in `src/app/data/resume/resume.data.ts` and conform to the contracts in `src/app/helper/interface/resume-profile/resume-profile.interface.ts`. Update that data source rather than duplicating content in component templates.
