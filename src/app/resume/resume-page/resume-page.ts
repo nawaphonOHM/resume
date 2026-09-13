@@ -19,11 +19,9 @@ import { EducationSection } from '../education-section/education-section';
 import { ExperienceTimeline } from '../experience-timeline/experience-timeline';
 import { HeroSection } from '../hero-section/hero-section';
 import { ProfileSidebar } from '../profile-sidebar/profile-sidebar';
-import {
-  RESUME_SECTIONS,
-  ResumeNavigation,
-  type ResumeSectionId,
-} from '../resume-navigation/resume-navigation';
+import { ResumeNavigation } from '../resume-navigation/resume-navigation';
+import type { ResumeSectionId } from '../../helper/type/resume-section-id.type.ts';
+import { RESUME_SECTIONS } from '../../helper/injection-token/resume-sections.variable.ts';
 import { SummarySection } from '../summary-section/summary-section';
 import { resumeData } from '../../helper/injection-token/resume.data.ts';
 import { ResumePdfService } from './service/resume-pdf/resume-pdf.service.ts';
@@ -70,6 +68,7 @@ export default class ResumePage {
   private readonly scrollDispatcher = inject(ScrollDispatcher);
   private readonly themeService = inject(ThemeService);
   private readonly viewportRuler = inject(ViewportRuler);
+  private readonly sections = inject(RESUME_SECTIONS);
 
   private boundaryReadiness?: Promise<void>;
   private boundaryReadinessObserver?: MutationObserver;
@@ -175,7 +174,7 @@ export default class ResumePage {
       readonly bottom: number;
     }> = [];
 
-    for (const section of RESUME_SECTIONS) {
+    for (const section of this.sections) {
       const element = this.document.getElementById(section.id);
 
       if (!element) {
@@ -266,6 +265,6 @@ export default class ResumePage {
 
   /** @returns Whether a fragment value belongs to the shared section registry. */
   private isSectionId(value: string | null | undefined): value is ResumeSectionId {
-    return RESUME_SECTIONS.some((section) => section.id === value);
+    return this.sections.some((section) => section.id === value);
   }
 }
