@@ -1,9 +1,4 @@
-import {
-  Overlay,
-  ViewportRuler,
-  type ConnectedPosition,
-  type OverlayRef,
-} from '@angular/cdk/overlay';
+import { Overlay, ViewportRuler, type OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { DestroyRef, Injector, inject, Service } from '@angular/core';
 import { Subscription } from 'rxjs';
