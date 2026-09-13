@@ -5,15 +5,14 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "test:ci": "ng test --watch=false",
-    "test:not-ci": "ng test --watch=true --configuration development",
-    "build": "ng build --configuration production",
-    "check-format": "prettier --check .",
-    "formatting": "prettier --write .",
-    "lint": "ng lint",
-    "deploy": "ng build && firebase deploy --only hosting",
-    "preview": "firebase hosting:channel:deploy",
-    "serve:firebase": "firebase emulators:start --only hosting"
+    "build": "npm run angular:check-format && npm run angular:lint && npm run angular:test-via-ci && npm run angular:build-production",
+    "angular:build-production": "ng build --configuration production",
+    "angular:check-format": "prettier --check .",
+    "angular:test-via-ci": "ng test --watch=false",
+    "angular:test-via-not-ci": "ng build --watch --configuration development",
+    "angular:do-format": "prettier --write .",
+    "angular:lint": "ng lint",
+    "postbuild": "rm dist/prerendered-routes.json"
   },
   "private": true,
   "packageManager": "npm@10.9.8",
@@ -46,5 +45,8 @@
     "typescript": "~6.0.2",
     "typescript-eslint": "8.70.0",
     "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=22.22.3"
   }
 }
