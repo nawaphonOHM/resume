@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,28 +8,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 
 import type { ResumeTheme } from '../../core/theme.service';
-
-/** Stable fragment identifiers for sections that participate in résumé navigation. */
-export type ResumeSectionId = 'about' | 'experience' | 'education' | 'skills' | 'profile';
-
-/** Navigation metadata for one observable résumé section. */
-export interface ResumeNavigationSection {
-  /** Fragment identifier shared by its anchor and section element. */
-  readonly id: ResumeSectionId;
-
-  /** Reader-facing anchor label. */
-  readonly label: string;
-}
-
-/** Ordered registry used by both navigation links and page-level section observation. */
-export const RESUME_SECTIONS = [
-  { id: 'about', label: 'About' },
-  { id: 'experience', label: 'Experience' },
-  { id: 'education', label: 'Education' },
-  { id: 'skills', label: 'Skills' },
-  { id: 'profile', label: 'Profile' },
-] as const satisfies readonly ResumeNavigationSection[];
-
+import type { ResumeSectionId } from '../../helper/type/resume-section-id.type.ts';
+import { RESUME_SECTIONS } from '../../helper/injection-token/resume-sections.variable.ts';
 /**
  * Renders responsive section links and résumé-level theme, print, and download controls.
  *
@@ -70,7 +50,7 @@ export class ResumeNavigation {
   readonly downloadRequested = output<void>();
 
   /** Shared section registry exposed to both desktop and mobile templates. */
-  protected readonly sections = RESUME_SECTIONS;
+  protected readonly sections = inject(RESUME_SECTIONS);
 
   /** @returns An accessible action label naming the theme that will be selected. */
   protected themeControlLabel(): string {
