@@ -1,9 +1,7 @@
-////
-/// Defines the themed résumé page shell, accessibility skip link, content canvas, and footer.
-///
-/// The page contains decorative backgrounds on screen, suppresses navigation during print, and
-/// removes constrained containers so child sections can control their own A4 presentation.
-////
+// Defines the themed résumé page shell, accessibility skip link, content canvas, and footer.
+//
+// The page contains decorative backgrounds on screen, suppresses navigation during print, and
+// removes constrained containers so child sections can control their own A4 presentation.
 
 :host {
   display: block;
@@ -21,7 +19,7 @@
   padding: 0.7rem 1rem;
   border-radius: 0.75rem;
   background: var(--resume-sidebar);
-  color: #ffffff;
+  color: #fff;
   font-weight: 750;
   text-decoration: none;
   transform: translateY(calc(-100% - 1rem));
@@ -37,13 +35,42 @@ main {
   overflow: hidden;
   padding-top: clamp(1rem, 3vw, 2rem);
   background:
-    radial-gradient(circle at 3% 12%, rgb(45 128 237 / 8%), transparent 22rem),
-    radial-gradient(circle at 98% 55%, rgb(45 128 237 / 7%), transparent 26rem), var(--resume-page);
+    radial-gradient(circle at 3% 12%, rgb(45 128 237 / 0.08), transparent 22rem),
+    radial-gradient(circle at 98% 55%, rgb(45 128 237 / 0.07), transparent 26rem),
+    var(--resume-page);
+
+  > div {
+    position: relative;
+    z-index: 1;
+  }
 }
 
-main > div {
-  position: relative;
-  z-index: 1;
+// Motion tokens aligning with application loading transitions (src/app/app.scss).
+$resume-defer-enter-duration: 300ms;
+$resume-defer-enter-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+$resume-defer-enter-distance: 0.5rem;
+
+@keyframes resume-defer-enter {
+  0% {
+    opacity: 0;
+    transform: translateY($resume-defer-enter-distance);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@mixin resume-defer-enter-transition {
+  animation: resume-defer-enter $resume-defer-enter-duration $resume-defer-enter-timing-function
+    both;
+}
+
+$resume-defer-targets: 'app-summary-section, app-experience-timeline, app-education-section, app-profile-sidebar, .resume-defer-error';
+
+#{$resume-defer-targets} {
+  @include resume-defer-enter-transition;
 }
 
 // Keep fragment targets present and reserve realistic space while deferred sections load.
@@ -52,23 +79,20 @@ main > div {
   align-items: flex-start;
   padding: clamp(3rem, 7vw, 5rem) 0;
   outline: none;
+
+  &:focus-visible .resume-defer-message {
+    outline: 0.2rem solid color-mix(in srgb, var(--resume-accent) 75%, transparent);
+    outline-offset: 0.3rem;
+  }
 }
 
-.resume-defer-anchor:focus-visible .resume-defer-message {
-  outline: 0.2rem solid color-mix(in srgb, var(--resume-accent) 75%, transparent);
-  outline-offset: 0.3rem;
-}
-
-.resume-defer-reserve--summary {
+.resume-defer-reserve--summary,
+.resume-defer-reserve--education {
   min-height: 38rem;
 }
 
 .resume-defer-reserve--experience {
   min-height: 130rem;
-}
-
-.resume-defer-reserve--education {
-  min-height: 38rem;
 }
 
 .resume-defer-reserve--skills {
@@ -89,19 +113,19 @@ main > div {
   border-radius: 1.4rem;
   background: color-mix(in srgb, var(--resume-surface) 92%, var(--resume-brand-soft));
   color: var(--resume-muted);
-  box-shadow: 0 0.75rem 2rem rgb(8 35 62 / 5%);
-}
+  box-shadow: 0 0.75rem 2rem rgb(8 35 62 / 0.05);
 
-.resume-defer-message h2 {
-  margin: 0;
-  color: var(--resume-text);
-  font-size: clamp(1.45rem, 3vw, 2rem);
-  line-height: 1.15;
-}
+  h2 {
+    margin: 0;
+    color: var(--resume-text);
+    font-size: clamp(1.45rem, 3vw, 2rem);
+    line-height: 1.15;
+  }
 
-.resume-defer-message p:last-child {
-  margin: 0.75rem 0 0;
-  line-height: 1.65;
+  p:last-child {
+    margin: 0.75rem 0 0;
+    line-height: 1.65;
+  }
 }
 
 .resume-defer-kicker {
@@ -119,13 +143,15 @@ main > div {
   --mat-progress-spinner-active-indicator-color: var(--resume-accent);
 }
 
-.resume-defer-error .resume-defer-message {
-  border-color: color-mix(in srgb, #b42318 55%, var(--resume-border));
-  background: color-mix(in srgb, #fff0ee 55%, var(--resume-surface));
-}
+.resume-defer-error {
+  .resume-defer-message {
+    border-color: color-mix(in srgb, #b42318 55%, var(--resume-border));
+    background: color-mix(in srgb, #fff0ee 55%, var(--resume-surface));
+  }
 
-.resume-defer-error .resume-defer-kicker {
-  color: color-mix(in srgb, #b42318 75%, var(--resume-text));
+  .resume-defer-kicker {
+    color: color-mix(in srgb, #b42318 75%, var(--resume-text));
+  }
 }
 
 footer {
@@ -133,15 +159,19 @@ footer {
   background: var(--resume-surface);
   color: var(--resume-muted);
   font-size: 0.88rem;
-}
 
-footer p {
-  margin: 0;
+  p {
+    margin: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .skip-link {
     transition: none;
+  }
+
+  #{$resume-defer-targets} {
+    animation: none !important;
   }
 }
 
@@ -171,24 +201,32 @@ footer p {
 @media print {
   :host {
     min-height: 0;
-    background: #ffffff !important;
+    background: #fff !important;
     color: #172033 !important;
   }
 
   .skip-link,
-  app-resume-navigation {
+  app-resume-navigation,
+  .resume-defer-spinner,
+  mat-progress-spinner {
     display: none !important;
+  }
+
+  #{$resume-defer-targets} {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 
   main {
     overflow: visible;
     padding: 0;
-    background: #ffffff !important;
-  }
+    background: #fff !important;
 
-  main > div {
-    max-width: none !important;
-    padding: 0 !important;
+    > div {
+      max-width: none !important;
+      padding: 0 !important;
+    }
   }
 
   .resume-defer-anchor {
@@ -199,38 +237,33 @@ footer p {
   .resume-defer-message {
     padding: 3mm;
     border-radius: 2.5mm;
-    background: #ffffff !important;
+    background: #fff !important;
     box-shadow: none;
-  }
 
-  .resume-defer-message h2 {
-    color: #172033 !important;
-    font-size: 13pt;
-  }
+    h2 {
+      color: #172033 !important;
+      font-size: 13pt;
+    }
 
-  .resume-defer-message p {
-    color: #44516a !important;
-    font-size: 8pt;
-  }
-
-  .resume-defer-spinner,
-  mat-progress-spinner {
-    display: none !important;
+    p {
+      color: #44516a !important;
+      font-size: 8pt;
+    }
   }
 
   footer {
     margin-top: 4mm;
     border-color: #b9c7d7;
-    background: #ffffff !important;
+    background: #fff !important;
     color: #44516a !important;
     font-size: 7.5pt;
     break-inside: avoid;
-  }
 
-  footer > div {
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    max-width: none !important;
-    padding: 2.5mm 0 0 !important;
+    > div {
+      flex-direction: row !important;
+      justify-content: space-between !important;
+      max-width: none !important;
+      padding: 2.5mm 0 0 !important;
+    }
   }
 }

@@ -375,6 +375,35 @@ describe('ResumePage', () => {
     expect(fixture.debugElement.queryAll(By.directive(MatProgressSpinner))).toHaveLength(0);
   });
 
+  it('applies entrance transitions and enforces reduced-motion and print overrides on deferred elements', async () => {
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+
+    const resumePageStyles = Array.from(document.head.querySelectorAll<HTMLStyleElement>('style'))
+      .map((style) => style.textContent ?? '')
+      .find(
+        (styles) => styles.includes('resume-defer-enter') && styles.includes('resume-defer-error'),
+      );
+
+    expect(resumePageStyles).toBeDefined();
+    expect(resumePageStyles).toMatch(/@keyframes\s+.*resume-defer-enter/);
+    expect(resumePageStyles).toMatch(/app-summary-section/);
+    expect(resumePageStyles).toMatch(/app-experience-timeline/);
+    expect(resumePageStyles).toMatch(/app-education-section/);
+    expect(resumePageStyles).toMatch(/app-profile-sidebar/);
+    expect(resumePageStyles).toMatch(/\.resume-defer-error/);
+
+    // Verify prefers-reduced-motion overrides disable transitions
+    expect(resumePageStyles).toMatch(
+      /@media\s*\(\s*prefers-reduced-motion:\s*reduce\s*\)[^{]*\{[\s\S]*?animation:\s*none\s*!important/,
+    );
+
+    // Verify print overrides disable animations and enforce instant opacity and transform
+    expect(resumePageStyles).toMatch(
+      /@media\s*print[^{]*\{[\s\S]*?animation:\s*none\s*!important[\s\S]*?opacity:\s*1\s*!important[\s\S]*?transform:\s*none\s*!important/,
+    );
+  });
+
   it('renders every résumé section and keeps public links safe', async () => {
     const fixture = TestBed.createComponent(ResumePage);
     await renderDeferredSections(fixture);
