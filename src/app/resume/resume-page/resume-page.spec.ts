@@ -943,6 +943,7 @@ describe('ResumePage', () => {
       fixture.detectChanges();
     }
     await firstPrint;
+    fixture.detectChanges();
 
     const printButton = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
       '[aria-label="Print résumé"]',
@@ -950,6 +951,7 @@ describe('ResumePage', () => {
     expect(printButton).not.toBeNull();
     printButton!.click();
     await Promise.resolve();
+    fixture.detectChanges();
 
     expect(print).toHaveBeenCalledTimes(2);
     expect(observe).toHaveBeenCalledOnce();
@@ -986,6 +988,48 @@ describe('ResumePage', () => {
 
     expect(disconnect).toHaveBeenCalledOnce();
     expect(print).not.toHaveBeenCalled();
+  });
+
+  it('shares print pending state with navigation and disables print button while preparing boundaries', async () => {
+    const print = vi.fn();
+    Object.defineProperty(window, 'print', { configurable: true, value: print });
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const deferBlocks = await fixture.getDeferBlocks();
+    const element = fixture.nativeElement as HTMLElement;
+    const navigation = fixture.debugElement.query(By.directive(ResumeNavigation))
+      .componentInstance as ResumeNavigation;
+    const printButton = element.querySelector<HTMLButtonElement>(
+      'button.desktop-control[aria-label="Print résumé"]',
+    );
+
+    expect(printButton).not.toBeNull();
+    expect(navigation.printPending()).toBe(false);
+
+    const printCompleted = requestPrint(fixture);
+    fixture.detectChanges();
+
+    expect(navigation.printPending()).toBe(true);
+    expect(printButton?.disabled).toBe(true);
+    expect(printButton?.getAttribute('aria-label')).toBe('Preparing résumé for printing');
+    expect(printButton?.getAttribute('aria-busy')).toBe('true');
+    expect(print).not.toHaveBeenCalled();
+
+    navigation.printRequested.emit();
+    expect(navigation.printPending()).toBe(true);
+
+    for (const deferBlock of deferBlocks) {
+      await deferBlock.render(DeferBlockState.Complete);
+      fixture.detectChanges();
+    }
+    await printCompleted;
+    fixture.detectChanges();
+
+    expect(navigation.printPending()).toBe(false);
+    expect(printButton?.disabled).toBe(false);
+    expect(printButton?.getAttribute('aria-label')).toBe('Print résumé');
+    expect(printButton?.getAttribute('aria-busy')).toBe('false');
+    expect(print).toHaveBeenCalledOnce();
   });
 
   it('fades both theme directions and provides keyboard-named controls', () => {

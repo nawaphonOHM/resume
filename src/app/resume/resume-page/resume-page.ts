@@ -84,6 +84,9 @@ export default class ResumePage {
   /** Whether one user-triggered PDF generation request is currently running. */
   protected readonly downloadPending = signal(false);
 
+  /** Whether one user-triggered print preparation request is currently running. */
+  protected readonly printPending = signal(false);
+
   /** Deferred boundary identifiers exposed to successful and error settlement markers. */
   protected readonly deferBoundaries = RESUME_DEFER_BOUNDARIES;
 
@@ -125,17 +128,26 @@ export default class ResumePage {
 
   /** Renders and settles every printable boundary before opening the browser print dialog. */
   protected async printResume(): Promise<void> {
-    this.renderAllSections.set(true);
-    const view = this.document.defaultView;
-
-    if (!view || this.destroyed) {
+    if (this.printPending()) {
       return;
     }
 
-    await this.waitForBoundarySettlement();
+    this.printPending.set(true);
+    try {
+      this.renderAllSections.set(true);
+      const view = this.document.defaultView;
 
-    if (!this.destroyed) {
-      view.print();
+      if (!view || this.destroyed) {
+        return;
+      }
+
+      await this.waitForBoundarySettlement();
+
+      if (!this.destroyed) {
+        view.print();
+      }
+    } finally {
+      this.printPending.set(false);
     }
   }
 

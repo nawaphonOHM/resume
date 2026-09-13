@@ -48,7 +48,6 @@
 
 // Pair Material's semantic button tokens with a persistent visual selected-section state.
 .navigation-link {
-  position: relative;
   --mat-button-text-label-text-color: var(--resume-muted);
   --mat-button-text-hover-state-layer-color: var(--resume-brand);
   background-color: transparent;
@@ -59,15 +58,6 @@
     background-color 160ms ease,
     color 160ms ease,
     transform 160ms ease;
-}
-
-.navigation-link-label {
-  display: inline-block;
-  line-height: inherit;
-
-  &.navigation-link-label-hidden {
-    visibility: hidden;
-  }
 }
 
 .navigation-link-active {
@@ -82,14 +72,6 @@
   display: inline-flex;
   place-items: center;
   --mat-progress-spinner-active-indicator-color: var(--resume-brand);
-}
-
-.navigation-spinner-overlay {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
 }
 
 .menu-spinner {

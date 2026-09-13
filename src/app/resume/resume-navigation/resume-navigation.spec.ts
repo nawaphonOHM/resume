@@ -3,7 +3,6 @@
  * names, and parent-facing navigation interactions.
  */
 import { Component } from '@angular/core';
-import { ViewportScroller } from '@angular/common';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -41,7 +40,6 @@ describe('ResumeNavigation', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     history.replaceState(null, '', location.pathname);
   });
 
@@ -73,6 +71,8 @@ describe('ResumeNavigation', () => {
         .find((link) => link.getAttribute('href') === '/#experience')
         ?.getAttribute('aria-current'),
     ).toBe('location');
+    expect(navigationLinks.every((link) => link.getAttribute('aria-busy') === null)).toBe(true);
+    expect(element.querySelector('nav mat-progress-spinner')).toBeNull();
     expect(element.querySelector('.brand-mark')?.getAttribute('href')).toBe('/#about');
     expect(fixture.debugElement.queryAll(By.directive(RouterLink))).toHaveLength(6);
 
@@ -126,16 +126,107 @@ describe('ResumeNavigation', () => {
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
+    const print = element.querySelector<HTMLButtonElement>(
+      'button.desktop-control[aria-label="Print résumé"]',
+    );
     const download = element.querySelector<HTMLButtonElement>(
       'button.desktop-control[aria-label="Download résumé as PDF"]',
     );
 
     expect(element.querySelector('[aria-label="Switch to light theme"]')).not.toBeNull();
-    expect(element.querySelector('[aria-label="Print résumé"]')).not.toBeNull();
-    expect(element.querySelector('[aria-label="Open section menu"]')).not.toBeNull();
+    expect(print?.type).toBe('button');
+    expect(print?.querySelector('mat-icon')?.textContent?.trim()).toBe('print');
     expect(download?.type).toBe('button');
     expect(download?.querySelector('mat-icon')?.textContent?.trim()).toBe('download');
+    expect(element.querySelector('[aria-label="Open section menu"]')).not.toBeNull();
     expect(element.querySelector('a[download]')).toBeNull();
+  });
+
+  it('emits print requests from both responsive controls', async () => {
+    const fixture = TestBed.createComponent(ResumeNavigation);
+    fixture.componentRef.setInput('activeSection', 'about');
+    fixture.componentRef.setInput('theme', 'light');
+    fixture.detectChanges();
+    const printRequested = vi.fn();
+    fixture.componentInstance.printRequested.subscribe(printRequested);
+    const element = fixture.nativeElement as HTMLElement;
+
+    element
+      .querySelector<HTMLButtonElement>('button.desktop-control[aria-label="Print résumé"]')
+      ?.click();
+    const menu = await openMobileMenu(fixture);
+    const mobilePrint = Array.from(menu.querySelectorAll<HTMLButtonElement>('button')).find((btn) =>
+      btn.textContent?.includes('Print résumé'),
+    );
+
+    expect(printRequested).toHaveBeenCalledOnce();
+    expect(mobilePrint?.querySelector('mat-icon')?.textContent?.trim()).toBe('print');
+    expect(mobilePrint?.querySelector('span')?.textContent?.trim()).toBe('Print résumé');
+    mobilePrint?.click();
+    expect(printRequested).toHaveBeenCalledTimes(2);
+  });
+
+  it('disables both print controls and exposes MatProgressSpinner while pending', async () => {
+    const fixture = TestBed.createComponent(ResumeNavigation);
+    fixture.componentRef.setInput('activeSection', 'about');
+    fixture.componentRef.setInput('theme', 'light');
+    fixture.componentRef.setInput('printPending', true);
+    fixture.detectChanges();
+    const printRequested = vi.fn();
+    fixture.componentInstance.printRequested.subscribe(printRequested);
+    const element = fixture.nativeElement as HTMLElement;
+    const desktopPrint = element.querySelector<HTMLButtonElement>(
+      'button.desktop-control[aria-label="Preparing résumé for printing"]',
+    );
+    const menu = await openMobileMenu(fixture);
+    const mobilePrint = menu.querySelector<HTMLButtonElement>(
+      'button[aria-label="Preparing résumé for printing"]',
+    );
+
+    expect(desktopPrint?.disabled).toBe(true);
+    expect(desktopPrint?.getAttribute('aria-busy')).toBe('true');
+    expect(desktopPrint?.querySelector('mat-icon')).toBeNull();
+    const desktopSpinnerDebug = fixture.debugElement.query(
+      By.css(
+        'button.desktop-control[aria-label="Preparing résumé for printing"] mat-progress-spinner',
+      ),
+    );
+    expect(desktopSpinnerDebug).not.toBeNull();
+    const desktopSpinner = desktopSpinnerDebug.componentInstance as MatProgressSpinner;
+    expect(desktopSpinner.diameter).toBe(18);
+    expect(desktopSpinner.strokeWidth).toBe(2.5);
+    expect(desktopSpinner.mode).toBe('indeterminate');
+    expect(desktopSpinnerDebug.nativeElement.getAttribute('aria-hidden')).toBe('true');
+    expect(desktopSpinnerDebug.nativeElement.classList.contains('navigation-spinner')).toBe(true);
+
+    expect(mobilePrint?.disabled).toBe(true);
+    expect(mobilePrint?.getAttribute('aria-busy')).toBe('true');
+    expect(mobilePrint?.querySelector('mat-icon')).toBeNull();
+    const mobileSpinner = mobilePrint?.querySelector<HTMLElement>('mat-progress-spinner');
+    expect(mobileSpinner).not.toBeNull();
+    expect(mobileSpinner?.getAttribute('aria-hidden')).toBe('true');
+    expect(mobileSpinner?.classList.contains('menu-spinner')).toBe(true);
+    expect(mobilePrint?.querySelector('span')?.textContent?.trim()).toBe('Preparing to print…');
+
+    desktopPrint?.click();
+    mobilePrint?.click();
+    expect(printRequested).not.toHaveBeenCalled();
+
+    fixture.componentRef.setInput('printPending', false);
+    fixture.detectChanges();
+
+    expect(desktopPrint?.disabled).toBe(false);
+    expect(desktopPrint?.getAttribute('aria-label')).toBe('Print résumé');
+    expect(desktopPrint?.getAttribute('aria-busy')).toBe('false');
+    expect(desktopPrint?.querySelector('mat-icon')?.textContent?.trim()).toBe('print');
+    expect(desktopPrint?.querySelector('mat-progress-spinner')).toBeNull();
+
+    expect(mobilePrint?.disabled).toBe(false);
+    expect(mobilePrint?.getAttribute('aria-label')).toBe('Print résumé');
+    expect(mobilePrint?.getAttribute('aria-busy')).toBe('false');
+    expect(mobilePrint?.querySelector('mat-icon')?.textContent?.trim()).toBe('print');
+    expect(mobilePrint?.querySelector('mat-progress-spinner')).toBeNull();
+    expect(mobilePrint?.querySelector('span')?.textContent?.trim()).toBe('Print résumé');
   });
 
   it('emits download requests from both responsive controls', async () => {
@@ -164,7 +255,7 @@ describe('ResumeNavigation', () => {
     expect(downloadRequested).toHaveBeenCalledTimes(2);
   });
 
-  it('disables both download controls and exposes generation progress while pending', async () => {
+  it('disables both download controls and exposes MatProgressSpinner while pending', async () => {
     const fixture = TestBed.createComponent(ResumeNavigation);
     fixture.componentRef.setInput('activeSection', 'about');
     fixture.componentRef.setInput('theme', 'light');
@@ -183,14 +274,25 @@ describe('ResumeNavigation', () => {
 
     expect(desktopDownload?.disabled).toBe(true);
     expect(desktopDownload?.getAttribute('aria-busy')).toBe('true');
-    expect(desktopDownload?.querySelector('mat-icon')?.textContent?.trim()).toBe(
-      'progress_activity',
+    expect(desktopDownload?.querySelector('mat-icon')).toBeNull();
+    const desktopSpinnerDebug = fixture.debugElement.query(
+      By.css('button.desktop-control[aria-label="Generating résumé PDF"] mat-progress-spinner'),
     );
+    expect(desktopSpinnerDebug).not.toBeNull();
+    const desktopSpinner = desktopSpinnerDebug.componentInstance as MatProgressSpinner;
+    expect(desktopSpinner.diameter).toBe(18);
+    expect(desktopSpinner.strokeWidth).toBe(2.5);
+    expect(desktopSpinner.mode).toBe('indeterminate');
+    expect(desktopSpinnerDebug.nativeElement.getAttribute('aria-hidden')).toBe('true');
+    expect(desktopSpinnerDebug.nativeElement.classList.contains('navigation-spinner')).toBe(true);
+
     expect(mobileDownload?.disabled).toBe(true);
     expect(mobileDownload?.getAttribute('aria-busy')).toBe('true');
-    expect(mobileDownload?.querySelector('mat-icon')?.textContent?.trim()).toBe(
-      'progress_activity',
-    );
+    expect(mobileDownload?.querySelector('mat-icon')).toBeNull();
+    const mobileSpinner = mobileDownload?.querySelector<HTMLElement>('mat-progress-spinner');
+    expect(mobileSpinner).not.toBeNull();
+    expect(mobileSpinner?.getAttribute('aria-hidden')).toBe('true');
+    expect(mobileSpinner?.classList.contains('menu-spinner')).toBe(true);
     expect(mobileDownload?.querySelector('span')?.textContent?.trim()).toBe('Generating PDF…');
 
     desktopDownload?.click();
@@ -202,10 +304,15 @@ describe('ResumeNavigation', () => {
 
     expect(desktopDownload?.disabled).toBe(false);
     expect(desktopDownload?.getAttribute('aria-label')).toBe('Download résumé as PDF');
+    expect(desktopDownload?.getAttribute('aria-busy')).toBe('false');
     expect(desktopDownload?.querySelector('mat-icon')?.textContent?.trim()).toBe('download');
+    expect(desktopDownload?.querySelector('mat-progress-spinner')).toBeNull();
+
     expect(mobileDownload?.disabled).toBe(false);
     expect(mobileDownload?.getAttribute('aria-label')).toBe('Download résumé as PDF');
+    expect(mobileDownload?.getAttribute('aria-busy')).toBe('false');
     expect(mobileDownload?.querySelector('mat-icon')?.textContent?.trim()).toBe('download');
+    expect(mobileDownload?.querySelector('mat-progress-spinner')).toBeNull();
     expect(mobileDownload?.querySelector('span')?.textContent?.trim()).toBe('Download PDF');
   });
 
@@ -229,218 +336,5 @@ describe('ResumeNavigation', () => {
 
     expect(router.url).toBe('/#education');
     expect(themeToggled).toBe(true);
-  });
-
-  it('activates progress spinner on clicked desktop section link and restores label upon scroll settlement', () => {
-    const fixture = TestBed.createComponent(ResumeNavigation);
-    fixture.componentRef.setInput('activeSection', 'about');
-    fixture.componentRef.setInput('theme', 'light');
-    fixture.detectChanges();
-
-    const viewportScroller = TestBed.inject(ViewportScroller);
-    const scrollToAnchorSpy = vi.spyOn(viewportScroller, 'scrollToAnchor');
-
-    const element = fixture.nativeElement as HTMLElement;
-    const experienceLink = element.querySelector<HTMLAnchorElement>('nav a[href="/#experience"]');
-    const aboutLink = element.querySelector<HTMLAnchorElement>('nav a[href="/#about"]');
-    expect(experienceLink).not.toBeNull();
-    expect(aboutLink).not.toBeNull();
-
-    experienceLink?.click();
-    fixture.detectChanges();
-
-    expect(scrollToAnchorSpy).toHaveBeenCalledWith('experience');
-    expect(fixture.componentInstance.loadingSection()).toBe('experience');
-    expect(experienceLink?.getAttribute('aria-busy')).toBe('true');
-    expect(experienceLink?.getAttribute('aria-label')).toBe('Navigating to Experience');
-
-    const labelSpan = experienceLink?.querySelector('.navigation-link-label');
-    expect(labelSpan?.classList.contains('navigation-link-label-hidden')).toBe(true);
-    expect(labelSpan?.textContent?.trim()).toBe('Experience');
-
-    const spinnerDebug = fixture.debugElement.query(
-      By.css('nav a[href="/#experience"] mat-progress-spinner'),
-    );
-    expect(spinnerDebug).not.toBeNull();
-    const spinnerComponent = spinnerDebug.componentInstance as MatProgressSpinner;
-    expect(spinnerComponent.diameter).toBe(18);
-    expect(spinnerComponent.strokeWidth).toBe(2.5);
-    expect(spinnerComponent.mode).toBe('indeterminate');
-    expect(spinnerDebug.nativeElement.getAttribute('aria-hidden')).toBe('true');
-    expect(spinnerDebug.nativeElement.classList.contains('navigation-spinner-overlay')).toBe(true);
-
-    expect(aboutLink?.getAttribute('aria-busy')).toBe('false');
-    expect(aboutLink?.getAttribute('aria-label')).toBe('About');
-    expect(
-      aboutLink
-        ?.querySelector('.navigation-link-label')
-        ?.classList.contains('navigation-link-label-hidden'),
-    ).toBe(false);
-    expect(aboutLink?.querySelector('mat-progress-spinner')).toBeNull();
-
-    window.dispatchEvent(new Event('scrollend'));
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.loadingSection()).toBeNull();
-    expect(experienceLink?.getAttribute('aria-busy')).toBe('false');
-    expect(experienceLink?.getAttribute('aria-label')).toBe('Experience');
-    expect(labelSpan?.classList.contains('navigation-link-label-hidden')).toBe(false);
-    expect(experienceLink?.querySelector('mat-progress-spinner')).toBeNull();
-  });
-
-  it('clears desktop section loading state via fallback timer when scrollend is not emitted', () => {
-    vi.useFakeTimers();
-    const fixture = TestBed.createComponent(ResumeNavigation);
-    fixture.componentRef.setInput('activeSection', 'about');
-    fixture.componentRef.setInput('theme', 'light');
-    fixture.detectChanges();
-
-    const element = fixture.nativeElement as HTMLElement;
-    const skillsLink = element.querySelector<HTMLAnchorElement>('nav a[href="/#skills"]');
-    skillsLink?.click();
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.loadingSection()).toBe('skills');
-    expect(skillsLink?.getAttribute('aria-busy')).toBe('true');
-    expect(skillsLink?.querySelector('mat-progress-spinner')).not.toBeNull();
-
-    vi.advanceTimersByTime(499);
-    fixture.detectChanges();
-    expect(fixture.componentInstance.loadingSection()).toBe('skills');
-    expect(skillsLink?.querySelector('mat-progress-spinner')).not.toBeNull();
-
-    vi.advanceTimersByTime(1);
-    fixture.detectChanges();
-    expect(fixture.componentInstance.loadingSection()).toBeNull();
-    expect(skillsLink?.getAttribute('aria-busy')).toBe('false');
-    expect(skillsLink?.getAttribute('aria-label')).toBe('Skills');
-    expect(skillsLink?.querySelector('mat-progress-spinner')).toBeNull();
-  });
-
-  it('activates progress spinner in mobile menu item and restores chevron upon settlement', async () => {
-    const fixture = TestBed.createComponent(ResumeNavigation);
-    fixture.componentRef.setInput('activeSection', 'about');
-    fixture.componentRef.setInput('theme', 'light');
-    fixture.detectChanges();
-
-    const menu = await openMobileMenu(fixture);
-    const educationLink = menu.querySelector<HTMLAnchorElement>('a[href="/#education"]');
-    const profileLink = menu.querySelector<HTMLAnchorElement>('a[href="/#profile"]');
-    expect(educationLink).not.toBeNull();
-
-    expect(educationLink?.querySelector('mat-icon')?.textContent?.trim()).toBe('chevron_right');
-    expect(educationLink?.querySelector('mat-progress-spinner')).toBeNull();
-    expect(educationLink?.getAttribute('aria-busy')).toBe('false');
-    expect(educationLink?.getAttribute('aria-label')).toBe('Education');
-
-    educationLink?.click();
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.loadingSection()).toBe('education');
-    expect(educationLink?.getAttribute('aria-busy')).toBe('true');
-    expect(educationLink?.getAttribute('aria-label')).toBe('Navigating to Education');
-    expect(educationLink?.querySelector('span')?.textContent?.trim()).toBe('Education');
-
-    const mobileSpinner = educationLink?.querySelector<HTMLElement>('mat-progress-spinner');
-    expect(mobileSpinner).not.toBeNull();
-    expect(mobileSpinner?.getAttribute('aria-hidden')).toBe('true');
-    expect(mobileSpinner?.classList.contains('menu-spinner')).toBe(true);
-    expect(educationLink?.querySelector('mat-icon')).toBeNull();
-
-    expect(profileLink?.getAttribute('aria-busy')).toBe('false');
-    expect(profileLink?.getAttribute('aria-label')).toBe('Profile');
-    expect(profileLink?.querySelector('mat-icon')?.textContent?.trim()).toBe('chevron_right');
-    expect(profileLink?.querySelector('mat-progress-spinner')).toBeNull();
-
-    window.dispatchEvent(new Event('scrollend'));
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.loadingSection()).toBeNull();
-    expect(educationLink?.getAttribute('aria-busy')).toBe('false');
-    expect(educationLink?.getAttribute('aria-label')).toBe('Education');
-    expect(educationLink?.querySelector('mat-icon')?.textContent?.trim()).toBe('chevron_right');
-    expect(educationLink?.querySelector('mat-progress-spinner')).toBeNull();
-  });
-
-  it('transfers loading state and resets previous section when navigating successively', () => {
-    vi.useFakeTimers();
-    const fixture = TestBed.createComponent(ResumeNavigation);
-    fixture.componentRef.setInput('activeSection', 'about');
-    fixture.componentRef.setInput('theme', 'light');
-    fixture.detectChanges();
-
-    const element = fixture.nativeElement as HTMLElement;
-    const experienceLink = element.querySelector<HTMLAnchorElement>('nav a[href="/#experience"]');
-    const skillsLink = element.querySelector<HTMLAnchorElement>('nav a[href="/#skills"]');
-
-    experienceLink?.click();
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.loadingSection()).toBe('experience');
-    expect(experienceLink?.querySelector('mat-progress-spinner')).not.toBeNull();
-    expect(
-      experienceLink
-        ?.querySelector('.navigation-link-label')
-        ?.classList.contains('navigation-link-label-hidden'),
-    ).toBe(true);
-
-    vi.advanceTimersByTime(200);
-
-    skillsLink?.click();
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.loadingSection()).toBe('skills');
-    expect(experienceLink?.querySelector('mat-progress-spinner')).toBeNull();
-    expect(
-      experienceLink
-        ?.querySelector('.navigation-link-label')
-        ?.classList.contains('navigation-link-label-hidden'),
-    ).toBe(false);
-    expect(experienceLink?.getAttribute('aria-busy')).toBe('false');
-
-    expect(skillsLink?.querySelector('mat-progress-spinner')).not.toBeNull();
-    expect(
-      skillsLink
-        ?.querySelector('.navigation-link-label')
-        ?.classList.contains('navigation-link-label-hidden'),
-    ).toBe(true);
-    expect(skillsLink?.getAttribute('aria-busy')).toBe('true');
-
-    vi.advanceTimersByTime(500);
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.loadingSection()).toBeNull();
-    expect(skillsLink?.querySelector('mat-progress-spinner')).toBeNull();
-    expect(
-      skillsLink
-        ?.querySelector('.navigation-link-label')
-        ?.classList.contains('navigation-link-label-hidden'),
-    ).toBe(false);
-    expect(skillsLink?.getAttribute('aria-busy')).toBe('false');
-  });
-
-  it('cleans up pending timer and scroll listener upon component destruction', () => {
-    vi.useFakeTimers();
-    const clearTimeoutSpy = vi.spyOn(window, 'clearTimeout');
-    const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
-
-    const fixture = TestBed.createComponent(ResumeNavigation);
-    fixture.componentRef.setInput('activeSection', 'about');
-    fixture.componentRef.setInput('theme', 'light');
-    fixture.detectChanges();
-
-    const element = fixture.nativeElement as HTMLElement;
-    element.querySelector<HTMLAnchorElement>('nav a[href="/#education"]')?.click();
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.loadingSection()).toBe('education');
-
-    fixture.destroy();
-
-    expect(clearTimeoutSpy).toHaveBeenCalled();
-    expect(removeEventListenerSpy).toHaveBeenCalledWith('scrollend', expect.any(Function));
-
-    vi.advanceTimersByTime(500);
-    expect(fixture.componentInstance.loadingSection()).toBeNull();
   });
 });
