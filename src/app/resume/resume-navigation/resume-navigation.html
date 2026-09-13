@@ -11,10 +11,27 @@
           class="navigation-link"
           [class.navigation-link-active]="activeSection() === section.id"
           [attr.aria-current]="activeSection() === section.id ? 'location' : null"
+          [attr.aria-busy]="loadingSection() === section.id"
+          [attr.aria-label]="sectionAriaLabel(section)"
           routerLink="/"
           [fragment]="section.id"
+          (click)="onSectionNavigate(section.id, $event)"
         >
-          {{ section.label }}
+          <span
+            class="navigation-link-label"
+            [class.navigation-link-label-hidden]="loadingSection() === section.id"
+          >
+            {{ section.label }}
+          </span>
+          @if (loadingSection() === section.id) {
+            <mat-progress-spinner
+              mode="indeterminate"
+              diameter="18"
+              strokeWidth="2.5"
+              class="navigation-spinner navigation-spinner-overlay"
+              aria-hidden="true"
+            />
+          }
         </a>
       }
     </nav>
@@ -76,8 +93,21 @@
       routerLink="/"
       [fragment]="section.id"
       [attr.aria-current]="activeSection() === section.id ? 'location' : null"
+      [attr.aria-busy]="loadingSection() === section.id"
+      [attr.aria-label]="sectionAriaLabel(section)"
+      (click)="onSectionNavigate(section.id, $event)"
     >
-      <mat-icon aria-hidden="true">chevron_right</mat-icon>
+      @if (loadingSection() === section.id) {
+        <mat-progress-spinner
+          mode="indeterminate"
+          diameter="18"
+          strokeWidth="2.5"
+          class="navigation-spinner menu-spinner"
+          aria-hidden="true"
+        />
+      } @else {
+        <mat-icon aria-hidden="true">chevron_right</mat-icon>
+      }
       <span>{{ section.label }}</span>
     </a>
   }

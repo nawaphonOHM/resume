@@ -1,13 +1,16 @@
-import { Component, inject, input, output } from '@angular/core';
+import { DOCUMENT, ViewportScroller } from '@angular/common';
+import { Component, DestroyRef, inject, input, output, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 
 import type { ResumeTheme } from '../../core/theme.service';
+import type { ResumeNavigationSection } from '../../helper/interface/resume-navigation-section/resume-navigation-section.interface.ts';
 import type { ResumeSectionId } from '../../helper/type/resume-section-id.type.ts';
 import { RESUME_SECTIONS } from '../../helper/injection-token/resume-sections.variable.ts';
 /**
@@ -23,6 +26,7 @@ import { RESUME_SECTIONS } from '../../helper/injection-token/resume-sections.va
     MatDividerModule,
     MatIconModule,
     MatMenuModule,
+    MatProgressSpinner,
     MatToolbarModule,
     MatTooltipModule,
     RouterLink,
@@ -31,6 +35,13 @@ import { RESUME_SECTIONS } from '../../helper/injection-token/resume-sections.va
   styleUrl: './resume-navigation.scss',
 })
 export class ResumeNavigation {
+  private readonly document = inject(DOCUMENT);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly viewportScroller = inject(ViewportScroller);
+
+  private navigationTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private scrollEndCleanup: (() => void) | null = null;
+
   /** Section whose desktop and mobile links receive the active presentation. */
   readonly activeSection = input.required<ResumeSectionId>();
 
@@ -39,6 +50,9 @@ export class ResumeNavigation {
 
   /** Whether a PDF request is running and both responsive controls must remain disabled. */
   readonly downloadPending = input(false);
+
+  /** Active section navigation currently processing smooth scrolling. */
+  readonly loadingSection = signal<ResumeSectionId | null>(null);
 
   /** Requests that the parent switch to the opposite theme. */
   readonly themeToggled = output<void>();
@@ -51,6 +65,61 @@ export class ResumeNavigation {
 
   /** Shared section registry exposed to both desktop and mobile templates. */
   protected readonly sections = inject(RESUME_SECTIONS);
+
+  constructor() {
+    this.destroyRef.onDestroy(() => {
+      this.clearActiveNavigation();
+      this.loadingSection.set(null);
+    });
+  }
+
+  /**
+   * Smoothly scrolls to the targeted section and tracks the loading state until settled or timed out.
+   */
+  onSectionNavigate(sectionId: ResumeSectionId, _event?: MouseEvent): void {
+    this.clearActiveNavigation();
+    this.loadingSection.set(sectionId);
+
+    this.viewportScroller.scrollToAnchor(sectionId);
+
+    const settle = () => {
+      this.clearActiveNavigation();
+      if (this.loadingSection() === sectionId) {
+        this.loadingSection.set(null);
+      }
+    };
+
+    const targetWindow = this.document.defaultView;
+    if (targetWindow && typeof targetWindow.addEventListener === 'function') {
+      targetWindow.addEventListener('scrollend', settle, { once: true });
+      this.scrollEndCleanup = () => {
+        targetWindow.removeEventListener('scrollend', settle);
+      };
+    } else if (this.document && typeof this.document.addEventListener === 'function') {
+      this.document.addEventListener('scrollend', settle, { once: true });
+      this.scrollEndCleanup = () => {
+        this.document.removeEventListener('scrollend', settle);
+      };
+    }
+
+    this.navigationTimeoutId = setTimeout(settle, 500);
+  }
+
+  /** @returns The accessible action label for a section link reflecting in-flight navigation. */
+  protected sectionAriaLabel(section: ResumeNavigationSection): string {
+    return this.loadingSection() === section.id ? `Navigating to ${section.label}` : section.label;
+  }
+
+  private clearActiveNavigation(): void {
+    if (this.navigationTimeoutId !== null) {
+      clearTimeout(this.navigationTimeoutId);
+      this.navigationTimeoutId = null;
+    }
+    if (this.scrollEndCleanup) {
+      this.scrollEndCleanup();
+      this.scrollEndCleanup = null;
+    }
+  }
 
   /** @returns An accessible action label naming the theme that will be selected. */
   protected themeControlLabel(): string {
