@@ -1,10 +1,3 @@
-////
-/// Styles the résumé's introductory hero, calls to action, and decorative identity graphic.
-///
-/// Material button tokens preserve contrast on the branded panel; the visual is removed below
-/// desktop width, and print keeps only the compact, high-value identity and introduction content.
-////
-
 :host {
   display: block;
 }
@@ -19,7 +12,7 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: clamp(1.5rem, 4vw, 2.5rem);
   background:
-    radial-gradient(circle at 90% 10%, rgba(91, 170, 255, 0.24), transparent 34%),
+    radial-gradient(circle at 90% 10%, rgba(91, 170, 255, 0.24), #0000 34%),
     linear-gradient(135deg, var(--resume-sidebar), #123f6b 58%, #0c3155);
   color: #f6f9ff;
   box-shadow: var(--resume-shadow);
@@ -36,14 +29,13 @@
     border-radius: 50%;
     background: rgba(92, 174, 255, 0.1);
     content: '';
-    filter: blur(0.125rem);
+    filter: blur(2px);
   }
 }
 
 .hero-copy {
   position: relative;
   z-index: 1;
-  min-width: 0;
   max-width: 46rem;
 }
 
@@ -51,12 +43,10 @@
   display: flex;
   align-items: flex-start;
   gap: 0.65rem;
-  margin: 0 0 1.5rem;
+  margin-bottom: 1.5rem;
   color: #c9e2ff;
-  font-size: clamp(0.78rem, 1.6vw, 0.92rem);
-  font-weight: 700;
+  font: 700 clamp(0.78rem, 1.6vw, 0.92rem)/1.55 inherit;
   letter-spacing: 0.08em;
-  line-height: 1.55;
   text-transform: uppercase;
   text-wrap: pretty;
 }
@@ -66,74 +56,58 @@
   font-variant-numeric: tabular-nums;
   animation: 250ms ease-out;
 
-  &--slide-fade {
-    &.hero-clock-tick-a {
-      animation-name: a;
-    }
-
-    &.hero-clock-tick-b {
-      animation-name: b;
-    }
+  &--slide-fade.hero-clock-tick-a {
+    animation-name: a;
   }
-
-  &--opacity-pulse {
-    &.hero-clock-tick-a {
-      animation-name: c;
-    }
-
-    &.hero-clock-tick-b {
-      animation-name: d;
-    }
+  &--slide-fade.hero-clock-tick-b {
+    animation-name: b;
   }
-
-  &--soft-glow {
-    &.hero-clock-tick-a {
-      animation-name: e;
-    }
-
-    &.hero-clock-tick-b {
-      animation-name: f;
-    }
+  &--opacity-pulse.hero-clock-tick-a {
+    animation-name: c;
+  }
+  &--opacity-pulse.hero-clock-tick-b {
+    animation-name: d;
+  }
+  &--soft-glow.hero-clock-tick-a {
+    animation-name: e;
+  }
+  &--soft-glow.hero-clock-tick-b {
+    animation-name: f;
   }
 }
 
 @keyframes a {
-  from {
+  0% {
     opacity: 0.4;
-    transform: translateY(0.18rem);
+    transform: translateY(3px);
   }
 }
-
 @keyframes b {
-  from {
+  0% {
     opacity: 0.4;
-    transform: translateY(0.18rem);
+    transform: translateY(3px);
   }
 }
-
 @keyframes c {
-  from {
+  0% {
     opacity: 0.35;
   }
 }
-
 @keyframes d {
-  from {
+  0% {
     opacity: 0.35;
   }
 }
-
 @keyframes e {
-  from {
+  0% {
     opacity: 0.7;
-    text-shadow: 0 0 0.55rem rgba(169, 208, 255, 0.85);
+    text-shadow: 0 0 9px rgba(169, 208, 255, 0.85);
   }
 }
-
 @keyframes f {
-  from {
+  0% {
     opacity: 0.7;
-    text-shadow: 0 0 0.55rem rgba(169, 208, 255, 0.85);
+    text-shadow: 0 0 9px rgba(169, 208, 255, 0.85);
   }
 }
 
@@ -141,27 +115,31 @@
   flex: none;
   width: 0.65rem;
   height: 0.65rem;
-  margin-top: 0.25em;
-  border: 0.125rem solid rgba(255, 255, 255, 0.45);
+  margin-top: 4px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
   border-radius: 50%;
-  background: var(--status-dot-color);
-  box-shadow: 0 0 0 0.35rem color-mix(in srgb, var(--status-dot-color) 14%, transparent);
+  background: oklch(from var(--status-dot-color) var(--status-dot-luminance, 0.5) c h);
+  box-shadow: 0 0 0 0.35rem
+    color-mix(in srgb, var(--status-dot-color) calc(var(--status-dot-luminance, 0.5) * 28%), #0000);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-dot {
+    --status-dot-luminance: 0.5 !important;
+  }
 }
 
 h1 {
   margin: 0;
-  font-size: clamp(1.9rem, 9.5vw, 4.75rem);
-  font-weight: 800;
+  font: 800 clamp(1.9rem, 9.5vw, 4.75rem)/0.94 inherit;
   letter-spacing: -0.055em;
-  line-height: 0.94;
   text-wrap: balance;
 }
 
 .hero-role {
-  margin: 1.4rem 0 0;
+  margin-top: 1.4rem;
   color: #a9d0ff;
-  font-size: clamp(1.2rem, 2.6vw, 1.7rem);
-  font-weight: 650;
+  font: 650 clamp(1.2rem, 2.6vw, 1.7rem) inherit;
   letter-spacing: 0.01em;
 }
 
@@ -169,11 +147,9 @@ h1 {
   max-width: 42rem;
   margin: 1.25rem 0 2rem;
   color: #dbe9f8;
-  font-size: clamp(1rem, 1.8vw, 1.13rem);
-  line-height: 1.75;
+  font: clamp(1rem, 1.8vw, 1.13rem)/1.75 inherit;
 }
 
-// The orbital monogram is decorative and yields entirely when space cannot support two columns.
 .hero-visual {
   position: relative;
   z-index: 1;
@@ -185,12 +161,16 @@ h1 {
   justify-self: center;
 }
 
-.hero-orbit {
+.hero-orbit,
+.hero-monogram {
   position: absolute;
-  inset: 0;
-  border: 1px solid rgba(180, 218, 255, 0.28);
+  border: 1px solid;
   border-radius: 50%;
+}
 
+.hero-orbit {
+  inset: 0;
+  border-color: rgba(180, 218, 255, 0.28);
   &-inner {
     inset: 13%;
     border-style: dashed;
@@ -198,35 +178,26 @@ h1 {
 }
 
 .hero-monogram {
-  position: absolute;
   display: grid;
   width: 52%;
   aspect-ratio: 1;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
+  border-color: rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.11);
-  font-size: clamp(2rem, 5vw, 4.2rem);
-  font-weight: 800;
+  font: 800 clamp(2rem, 5vw, 4.2rem) inherit;
   letter-spacing: -0.06em;
   box-shadow: inset 0 0 2rem rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(0.5rem);
+  backdrop-filter: blur(8px);
 }
 
 .hero-code {
   position: absolute;
   color: #a9d0ff;
-  font:
-    700 0.9rem ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    monospace;
-
+  font: 700 0.9rem monospace;
   &-left {
     top: 18%;
     left: -3%;
   }
-
   &-right {
     right: -2%;
     bottom: 20%;
@@ -238,7 +209,6 @@ h1 {
     grid-template-columns: minmax(0, 1fr) minmax(11rem, 15rem);
     min-height: min(40rem, 100vh - 7rem);
   }
-
   .hero-visual {
     display: grid;
   }
@@ -250,7 +220,6 @@ h1 {
   }
 }
 
-// Reduce the hero to essential résumé content and retain its branded high-contrast identity.
 @media print {
   .hero-section {
     display: block;
@@ -259,40 +228,34 @@ h1 {
     background: #0b2847 !important;
     color: #fff !important;
     break-inside: avoid;
+    &::after {
+      display: none !important;
+    }
   }
-
-  .hero-section::after,
   .hero-visual,
-  .hero-copy > .flex {
+  .flex {
     display: none !important;
   }
-
   .hero-kicker {
     margin-bottom: 3mm;
     font-size: 7.5pt;
   }
-
   .status-dot {
     width: 1.5mm;
     height: 1.5mm;
     border-width: 0.3mm;
   }
-
   h1 {
-    font-size: 26pt;
+    font: 26pt/1 inherit;
     letter-spacing: -0.04em;
-    line-height: 1;
   }
-
   .hero-role {
     margin-top: 3mm;
     font-size: 12pt;
   }
-
   .hero-introduction {
     max-width: none;
-    margin: 3mm 0 0;
-    font-size: 8.5pt;
-    line-height: 1.45;
+    margin-top: 3mm;
+    font: 8.5pt/1.45 inherit;
   }
 }

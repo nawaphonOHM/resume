@@ -7,8 +7,12 @@ import { vi } from 'vitest';
 import { resumeData } from '../../helper/injection-token/resume.data.ts';
 import { HERO_CLOCK_TRANSITIONS } from '../../helper/injection-token/hero-clock-transitions.variable.ts';
 import { heroClockTransitionPicker } from '../../helper/injection-token/hero-clock-transition-picker.variable.ts';
+import { STATUS_LUMINANCE_PHI } from '../../helper/injection-token/status-luminance-parameters.phi.variable.ts';
 import type { HeroClockTransition } from '../../helper/type/hero-clock-transistion.type.ts';
 import { HeroSection } from './hero-section';
+import { STATUS_LUMINANCE_A } from '../../helper/injection-token/status-luminance-parameters.amplitude.variable.ts';
+import { STATUS_LUMINANCE_F } from '../../helper/injection-token/status-luminance-parameters.frequency.variable.ts';
+import { STATUS_LUMINANCE_OMEGA } from '../../helper/injection-token/status-luminance-parameters.omega.variable.ts';
 
 const ALL_CLOCK_TRANSITIONS: readonly HeroClockTransition[] = [
   'slide-fade',
@@ -88,6 +92,18 @@ function renderedStatusColor(element: HTMLElement): string {
       .querySelector<HTMLElement>('.status-dot')
       ?.style.getPropertyValue('--status-dot-color') ?? ''
   );
+}
+
+function renderedStatusLuminance(element: HTMLElement): string {
+  return (
+    element
+      .querySelector<HTMLElement>('.status-dot')
+      ?.style.getPropertyValue('--status-dot-luminance') ?? ''
+  );
+}
+
+function renderedStatusLuminanceNumber(element: HTMLElement): number {
+  return Number.parseFloat(renderedStatusLuminance(element));
 }
 
 describe('HeroSection', () => {
@@ -275,23 +291,133 @@ describe('HeroSection', () => {
     },
   );
 
-  it('clears its one-second interval when destroyed', () => {
+  describe('status dot luminance oscillation and custom property binding', () => {
+    it('binds both --status-dot-color and --status-dot-luminance custom properties to .status-dot', () => {
+      vi.setSystemTime(new Date('2026-01-02T01:04:05.000Z'));
+      const element = renderHero().nativeElement as HTMLElement;
+      const statusDot = element.querySelector<HTMLElement>('.status-dot');
+
+      expect(statusDot).not.toBeNull();
+      expect(renderedStatusColor(element)).toBeTruthy();
+      expect(renderedStatusLuminance(element)).toBe('1');
+    });
+
+    it('oscillates luminance across time advances adhering to 3 Hz sinusoidal cycle', () => {
+      const heroFixture = renderHero();
+      const element = heroFixture.nativeElement as HTMLElement;
+
+      // Initial at t = 0 ms: peak L(0) = 1.0
+      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(1.0, 5);
+
+      // Advance 5 frames (80 ms): falling near midpoint L(0.08) ≈ 0.53
+      vi.advanceTimersByTime(80);
+      heroFixture.detectChanges();
+      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(0.53, 2);
+
+      // Advance 5 more frames (total 160 ms): trough L(0.16) ≈ 0.004
+      vi.advanceTimersByTime(80);
+      heroFixture.detectChanges();
+      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(0.0, 1);
+
+      // Advance to full 3 Hz cycle (total 336 ms / 21 frames): peak L(0.336) ≈ 0.999
+      vi.advanceTimersByTime(176);
+      heroFixture.detectChanges();
+      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(1.0, 1);
+    });
+
+    it('alters oscillation amplitude when STATUS_LUMINANCE_A is overridden', () => {
+      TestBed.overrideProvider(STATUS_LUMINANCE_A, { useValue: 0.2 });
+      const heroFixture = renderHero();
+      const element = heroFixture.nativeElement as HTMLElement;
+
+      // Initial peak at t = 0: 0.5 + 0.2 = 0.7
+      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(0.7, 5);
+
+      // Trough at 160 ms (10 frames): 0.5 - 0.2 * 0.992 ≈ 0.30
+      vi.advanceTimersByTime(160);
+      heroFixture.detectChanges();
+      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(0.3, 1);
+    });
+
+    it('alters starting phase when STATUS_LUMINANCE_PHI is overridden', () => {
+      TestBed.overrideProvider(STATUS_LUMINANCE_PHI, { useValue: Math.PI });
+      const heroFixture = renderHero();
+      const element = heroFixture.nativeElement as HTMLElement;
+
+      // Initial at t = 0 with PHI = PI: 0.5 + 0.5 * cos(PI) = 0.0 (starts at trough)
+      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(0.0, 5);
+
+      // Peak at 160 ms (10 frames): 0.5 + 0.5 * cos(0.96pi + pi) ≈ 1.0
+      vi.advanceTimersByTime(160);
+      heroFixture.detectChanges();
+      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(1.0, 1);
+    });
+
+    it('alters oscillation period when STATUS_LUMINANCE_F is overridden', () => {
+      TestBed.overrideProvider(STATUS_LUMINANCE_F, { useValue: 1 });
+      const heroFixture = renderHero();
+      const element = heroFixture.nativeElement as HTMLElement;
+
+      // Initial peak at t = 0: 1.0
+      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(1.0, 5);
+
+      // At f = 1 Hz, half-period trough is at ~500 ms (32 frames / 512 ms): L ≈ 0.0
+      vi.advanceTimersByTime(512);
+      heroFixture.detectChanges();
+      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(0.0, 1);
+
+      // Full period peak at ~1000 ms (63 frames / 1008 ms): L ≈ 1.0
+      vi.advanceTimersByTime(496);
+      heroFixture.detectChanges();
+      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(1.0, 1);
+    });
+
+    it('alters oscillation period when STATUS_LUMINANCE_OMEGA is overridden directly', () => {
+      TestBed.overrideProvider(STATUS_LUMINANCE_OMEGA, { useValue: 4 * Math.PI });
+      const heroFixture = renderHero();
+      const element = heroFixture.nativeElement as HTMLElement;
+
+      // OMEGA = 4*PI implies f = 2 Hz, half-period is 250 ms (16 frames / 256 ms, trough L ≈ 0.0)
+      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(1.0, 5);
+
+      vi.advanceTimersByTime(256);
+      heroFixture.detectChanges();
+      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(0.0, 1);
+    });
+
+    it('declares reduced-motion style rule overriding luminance to a static midpoint', () => {
+      renderHero();
+      const styleElements = Array.from(document.querySelectorAll('style'));
+      const combinedCss = styleElements.map((el) => el.textContent ?? '').join('\n');
+
+      expect(combinedCss).toContain('prefers-reduced-motion');
+      expect(combinedCss).toContain('--status-dot-luminance');
+      expect(combinedCss).toContain('0.5');
+    });
+  });
+
+  it('clears its one-second interval and animation frame when destroyed', () => {
     vi.setSystemTime(new Date('2026-01-02T01:04:05.000Z'));
     const initialTimerCount = vi.getTimerCount();
     const setInterval = vi.spyOn(window, 'setInterval');
     const clearInterval = vi.spyOn(window, 'clearInterval');
+    const requestAnimationFrame = vi.spyOn(window, 'requestAnimationFrame');
+    const cancelAnimationFrame = vi.spyOn(window, 'cancelAnimationFrame');
     const heroFixture = renderHero();
     const clockTimerIndex = setInterval.mock.calls.findIndex(([, delay]) => delay === 1_000);
     const clockTimerId = setInterval.mock.results[clockTimerIndex]?.value;
+    const animationFrameId = requestAnimationFrame.mock.results[0]?.value;
 
     expect(clockTimerIndex).toBeGreaterThanOrEqual(0);
     expect(clockTimerId).toBeDefined();
-    expect(vi.getTimerCount()).toBe(initialTimerCount + 1);
+    expect(animationFrameId).toBeDefined();
+    expect(vi.getTimerCount()).toBe(initialTimerCount + 2);
 
     heroFixture.destroy();
     fixture = null;
 
     expect(clearInterval).toHaveBeenCalledWith(clockTimerId);
+    expect(cancelAnimationFrame).toHaveBeenCalledWith(animationFrameId);
     expect(vi.getTimerCount()).toBe(initialTimerCount);
   });
 });
