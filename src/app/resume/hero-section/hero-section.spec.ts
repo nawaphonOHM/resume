@@ -302,27 +302,27 @@ describe('HeroSection', () => {
       expect(renderedStatusLuminance(element)).toBe('1');
     });
 
-    it('oscillates luminance across time advances adhering to 3 Hz sinusoidal cycle', () => {
+    it('oscillates luminance across time advances adhering to 0.5 Hz sinusoidal cycle', () => {
       const heroFixture = renderHero();
       const element = heroFixture.nativeElement as HTMLElement;
 
       // Initial at t = 0 ms: peak L(0) = 1.0
       expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(1.0, 5);
 
-      // Advance 5 frames (80 ms): falling near midpoint L(0.08) ≈ 0.53
+      // Advance 5 frames (80 ms): beginning descent L(0.08) ≈ 0.98
       vi.advanceTimersByTime(80);
       heroFixture.detectChanges();
-      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(0.53, 2);
+      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(0.98, 2);
 
-      // Advance 5 more frames (total 160 ms): trough L(0.16) ≈ 0.004
+      // Advance 5 more frames (total 160 ms): continuing gradual descent L(0.16) ≈ 0.94
       vi.advanceTimersByTime(80);
       heroFixture.detectChanges();
-      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(0.0, 1);
+      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(0.9, 1);
 
-      // Advance to full 3 Hz cycle (total 336 ms / 21 frames): peak L(0.336) ≈ 0.999
+      // Advance 11 more frames (total 336 ms / 21 frames): descending toward midpoint L(0.336) ≈ 0.75
       vi.advanceTimersByTime(176);
       heroFixture.detectChanges();
-      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(1.0, 1);
+      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(0.7, 1);
     });
 
     it('alters oscillation amplitude when STATUS_LUMINANCE_A is overridden', () => {
@@ -333,10 +333,10 @@ describe('HeroSection', () => {
       // Initial peak at t = 0: 0.5 + 0.2 = 0.7
       expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(0.7, 5);
 
-      // Trough at 160 ms (10 frames): 0.5 - 0.2 * 0.992 ≈ 0.30
+      // Advance 160 ms (10 frames): 0.5 + 0.2 * cos(0.16pi) ≈ 0.68
       vi.advanceTimersByTime(160);
       heroFixture.detectChanges();
-      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(0.3, 1);
+      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(0.7, 1);
     });
 
     it('alters starting phase when STATUS_LUMINANCE_PHI is overridden', () => {
@@ -347,10 +347,10 @@ describe('HeroSection', () => {
       // Initial at t = 0 with PHI = PI: 0.5 + 0.5 * cos(PI) = 0.0 (starts at trough)
       expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(0.0, 5);
 
-      // Peak at 160 ms (10 frames): 0.5 + 0.5 * cos(0.96pi + pi) ≈ 1.0
+      // Advance 160 ms (10 frames): 0.5 + 0.5 * cos(0.16pi + pi) ≈ 0.06
       vi.advanceTimersByTime(160);
       heroFixture.detectChanges();
-      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(1.0, 1);
+      expect(renderedStatusLuminanceNumber(element)).toBeCloseTo(0.1, 1);
     });
 
     it('alters oscillation period when STATUS_LUMINANCE_F is overridden', () => {
