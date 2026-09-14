@@ -21,7 +21,7 @@
           [class.hero-clock--soft-glow]="clockTransition === 'soft-glow'"
           [class.hero-clock-tick-a]="isTickAlternate()"
           [class.hero-clock-tick-b]="!isTickAlternate()"
-          >{{ formattedTime() }}</time
+          >{{ currentInstant() | date: 'yyyy-MM-dd HH:mm:ss' : '+0700' }}</time
         ></span
       >
     </p>
