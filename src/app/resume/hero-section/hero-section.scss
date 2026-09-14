@@ -45,7 +45,9 @@
   gap: 0.65rem;
   margin-bottom: 1.5rem;
   color: #c9e2ff;
-  font: 700 clamp(0.78rem, 1.6vw, 0.92rem)/1.55 inherit;
+  font-size: clamp(0.78rem, 1.6vw, 0.92rem);
+  font-weight: 700;
+  line-height: 1.55;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   text-wrap: pretty;
@@ -55,7 +57,6 @@
   display: inline-block;
   font-variant-numeric: tabular-nums;
   animation: 250ms ease-out;
-
   &--slide-fade.hero-clock-tick-a {
     animation-name: a;
   }
@@ -73,41 +74,6 @@
   }
   &--soft-glow.hero-clock-tick-b {
     animation-name: f;
-  }
-}
-
-@keyframes a {
-  0% {
-    opacity: 0.4;
-    transform: translateY(3px);
-  }
-}
-@keyframes b {
-  0% {
-    opacity: 0.4;
-    transform: translateY(3px);
-  }
-}
-@keyframes c {
-  0% {
-    opacity: 0.35;
-  }
-}
-@keyframes d {
-  0% {
-    opacity: 0.35;
-  }
-}
-@keyframes e {
-  0% {
-    opacity: 0.7;
-    text-shadow: 0 0 9px rgba(169, 208, 255, 0.85);
-  }
-}
-@keyframes f {
-  0% {
-    opacity: 0.7;
-    text-shadow: 0 0 9px rgba(169, 208, 255, 0.85);
   }
 }
 
@@ -131,7 +97,9 @@
 
 h1 {
   margin: 0;
-  font: 800 clamp(1.9rem, 9.5vw, 4.75rem)/0.94 inherit;
+  font-size: clamp(1.9rem, 9.5vw, 4.75rem);
+  font-weight: 800;
+  line-height: 0.94;
   letter-spacing: -0.055em;
   text-wrap: balance;
 }
@@ -139,7 +107,8 @@ h1 {
 .hero-role {
   margin-top: 1.4rem;
   color: #a9d0ff;
-  font: 650 clamp(1.2rem, 2.6vw, 1.7rem) inherit;
+  font-size: clamp(1.2rem, 2.6vw, 1.7rem);
+  font-weight: 650;
   letter-spacing: 0.01em;
 }
 
@@ -147,7 +116,8 @@ h1 {
   max-width: 42rem;
   margin: 1.25rem 0 2rem;
   color: #dbe9f8;
-  font: clamp(1rem, 1.8vw, 1.13rem)/1.75 inherit;
+  font-size: clamp(1rem, 1.8vw, 1.13rem);
+  line-height: 1.75;
 }
 
 .hero-visual {
@@ -184,7 +154,8 @@ h1 {
   place-items: center;
   border-color: rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.11);
-  font: 800 clamp(2rem, 5vw, 4.2rem) inherit;
+  font-size: clamp(2rem, 5vw, 4.2rem);
+  font-weight: 800;
   letter-spacing: -0.06em;
   box-shadow: inset 0 0 2rem rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(8px);
@@ -193,7 +164,9 @@ h1 {
 .hero-code {
   position: absolute;
   color: #a9d0ff;
-  font: 700 0.9rem monospace;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 700;
   &-left {
     top: 18%;
     left: -3%;
@@ -246,7 +219,8 @@ h1 {
     border-width: 0.3mm;
   }
   h1 {
-    font: 26pt/1 inherit;
+    font-size: 26pt;
+    line-height: 1;
     letter-spacing: -0.04em;
   }
   .hero-role {
@@ -256,6 +230,7 @@ h1 {
   .hero-introduction {
     max-width: none;
     margin-top: 3mm;
-    font: 8.5pt/1.45 inherit;
+    font-size: 8.5pt;
+    line-height: 1.45;
   }
 }
