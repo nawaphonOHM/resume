@@ -17,6 +17,7 @@ import { CLOCK_UPDATE_INTERVAL_MS } from '../../helper/injection-token/clock-upd
 import { statusColorForUtcPlusSeven } from '../../helper/injection-token/status-color-for-utc-plus-seven.function.ts';
 import { heroClockTransitionPicker } from '../../helper/injection-token/hero-clock-transition-picker.variable.ts';
 import { calculateStatusLuminance } from '../../helper/injection-token/status-luminance.function.ts';
+import { calculateHeroCodePosition } from '../../helper/injection-token/hero-code-position.function.ts';
 
 /** Introduces the candidate and exposes the primary email contact action. */
 @Component({
@@ -31,6 +32,7 @@ export class HeroSection {
   private readonly clockUpdateIntervalMs = inject(CLOCK_UPDATE_INTERVAL_MS);
   private readonly statusColorForUtcPlusSeven = inject(statusColorForUtcPlusSeven);
   private readonly calculateStatusLuminanceFn = inject(calculateStatusLuminance);
+  private readonly calculateHeroCodePositionFn = inject(calculateHeroCodePosition);
 
   /** Selected transition effect applied on each clock tick. */
   protected readonly clockTransition = inject(heroClockTransitionPicker)();
@@ -49,7 +51,13 @@ export class HeroSection {
   /** Oscillating luminance level of the availability status indicator. */
   protected readonly statusLuminance = signal(this.calculateStatusLuminanceFn(0));
 
-  /** Starts browser clock synchronization and luminance oscillation after rendering, releasing them on destruction. */
+  /** Orbital coordinates for the left hero code badge. */
+  protected readonly leftCodePosition = signal(this.calculateHeroCodePositionFn(0).left);
+
+  /** Orbital coordinates for the right hero code badge. */
+  protected readonly rightCodePosition = signal(this.calculateHeroCodePositionFn(0).right);
+
+  /** Starts browser clock synchronization and visual animations after rendering, releasing them on destruction. */
   constructor() {
     afterNextRender(() => {
       const intervalId = window.setInterval(() => {
@@ -60,13 +68,16 @@ export class HeroSection {
       let animationFrameId: number;
       const startTimestamp = performance.now();
 
-      const animateLuminance = (currentTimestamp: DOMHighResTimeStamp) => {
+      const animateHeroVisuals = (currentTimestamp: DOMHighResTimeStamp) => {
         const elapsedSeconds = (currentTimestamp - startTimestamp) / 1000;
         this.statusLuminance.set(this.calculateStatusLuminanceFn(elapsedSeconds));
-        animationFrameId = window.requestAnimationFrame(animateLuminance);
+        const { left, right } = this.calculateHeroCodePositionFn(elapsedSeconds);
+        this.leftCodePosition.set(left);
+        this.rightCodePosition.set(right);
+        animationFrameId = window.requestAnimationFrame(animateHeroVisuals);
       };
 
-      animationFrameId = window.requestAnimationFrame(animateLuminance);
+      animationFrameId = window.requestAnimationFrame(animateHeroVisuals);
 
       this.destroyRef.onDestroy(() => {
         window.clearInterval(intervalId);

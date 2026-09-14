@@ -418,6 +418,53 @@ a {
     text-decoration: none;
   }
 
+  app-hero-section .hero-section {
+    display: block;
+    padding: 8mm 9mm;
+    border-radius: 3mm;
+    background: #0b2847 !important;
+    color: #fff !important;
+    break-inside: avoid;
+  }
+
+  app-hero-section .hero-section::after {
+    display: none !important;
+  }
+
+  app-hero-section .hero-visual,
+  app-hero-section .flex {
+    display: none !important;
+  }
+
+  app-hero-section .hero-kicker {
+    margin-bottom: 3mm;
+    font-size: 7.5pt;
+  }
+
+  app-hero-section .status-dot {
+    width: 1.5mm;
+    height: 1.5mm;
+    border-width: 0.3mm;
+  }
+
+  app-hero-section h1 {
+    font-size: 26pt;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  app-hero-section .hero-role {
+    margin-top: 3mm;
+    font-size: 12pt;
+  }
+
+  app-hero-section .hero-introduction {
+    max-width: none;
+    margin-top: 3mm;
+    font-size: 8.5pt;
+    line-height: 1.45;
+  }
+
   // Dedicate a page to employment history and compact its timeline without splitting entries.
   app-experience-timeline section {
     padding: 0 !important;

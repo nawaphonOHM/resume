@@ -13,6 +13,13 @@ import { HeroSection } from './hero-section';
 import { STATUS_LUMINANCE_A } from '../../helper/injection-token/status-luminance-parameters.amplitude.variable.ts';
 import { STATUS_LUMINANCE_F } from '../../helper/injection-token/status-luminance-parameters.frequency.variable.ts';
 import { STATUS_LUMINANCE_OMEGA } from '../../helper/injection-token/status-luminance-parameters.omega.variable.ts';
+import { HERO_CODE_A } from '../../helper/injection-token/hero-code-parameters.amplitude.variable.ts';
+import { HERO_CODE_F } from '../../helper/injection-token/hero-code-parameters.frequency.variable.ts';
+import { HERO_CODE_OMEGA } from '../../helper/injection-token/hero-code-parameters.omega.variable.ts';
+import { HERO_CODE_R } from '../../helper/injection-token/hero-code-parameters.radius.variable.ts';
+import { calculateHeroCodePosition } from '../../helper/injection-token/hero-code-position.function.ts';
+import { HERO_CODE_PHI_LEFT } from '../../helper/injection-token/hero-code-parameters.phi-left.variable.ts';
+import { HERO_CODE_PHI_RIGHT } from '../../helper/injection-token/hero-code-parameters.phi-right.variable.ts';
 
 const ALL_CLOCK_TRANSITIONS: readonly HeroClockTransition[] = [
   'slide-fade',
@@ -104,6 +111,38 @@ function renderedStatusLuminance(element: HTMLElement): string {
 
 function renderedStatusLuminanceNumber(element: HTMLElement): number {
   return Number.parseFloat(renderedStatusLuminance(element));
+}
+
+function renderedHeroCodeLeftX(element: HTMLElement): number {
+  return Number.parseFloat(
+    element
+      .querySelector<HTMLElement>('.hero-code-left')
+      ?.style.getPropertyValue('--hero-code-left-x') ?? '',
+  );
+}
+
+function renderedHeroCodeLeftY(element: HTMLElement): number {
+  return Number.parseFloat(
+    element
+      .querySelector<HTMLElement>('.hero-code-left')
+      ?.style.getPropertyValue('--hero-code-left-y') ?? '',
+  );
+}
+
+function renderedHeroCodeRightX(element: HTMLElement): number {
+  return Number.parseFloat(
+    element
+      .querySelector<HTMLElement>('.hero-code-right')
+      ?.style.getPropertyValue('--hero-code-right-x') ?? '',
+  );
+}
+
+function renderedHeroCodeRightY(element: HTMLElement): number {
+  return Number.parseFloat(
+    element
+      .querySelector<HTMLElement>('.hero-code-right')
+      ?.style.getPropertyValue('--hero-code-right-y') ?? '',
+  );
 }
 
 describe('HeroSection', () => {
@@ -396,6 +435,147 @@ describe('HeroSection', () => {
     });
   });
 
+  describe('hero code badges circular orbital motion and custom property bindings', () => {
+    it('binds initial circular orbital coordinates to .hero-code-left and .hero-code-right at t = 0', () => {
+      vi.setSystemTime(new Date('2026-01-02T01:04:05.000Z'));
+      const element = renderHero().nativeElement as HTMLElement;
+      const leftBadge = element.querySelector<HTMLElement>('.hero-code-left');
+      const rightBadge = element.querySelector<HTMLElement>('.hero-code-right');
+
+      expect(leftBadge).not.toBeNull();
+      expect(rightBadge).not.toBeNull();
+      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(-51.96, 2);
+      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(-30.0, 2);
+      expect(renderedHeroCodeRightX(element)).toBeCloseTo(51.96, 2);
+      expect(renderedHeroCodeRightY(element)).toBeCloseTo(30.0, 2);
+    });
+
+    it('evolves orbital coordinates smoothly over time adhering to angular frequency', () => {
+      TestBed.overrideProvider(HERO_CODE_F, { useValue: 1 });
+      const heroFixture = renderHero();
+      const element = heroFixture.nativeElement as HTMLElement;
+
+      // Initial at t = 0 (left at 7pi/6, right at pi/6)
+      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(-51.96, 2);
+      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(-30.0, 2);
+      expect(renderedHeroCodeRightX(element)).toBeCloseTo(51.96, 2);
+      expect(renderedHeroCodeRightY(element)).toBeCloseTo(30.0, 2);
+
+      // Advance 16 frames (256 ms, approx quarter cycle): left -> ~302° (31.94, -50.79), right -> ~122° (-31.94, 50.79)
+      vi.advanceTimersByTime(256);
+      heroFixture.detectChanges();
+      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(31.94, 1);
+      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(-50.79, 1);
+      expect(renderedHeroCodeRightX(element)).toBeCloseTo(-31.94, 1);
+      expect(renderedHeroCodeRightY(element)).toBeCloseTo(50.79, 1);
+
+      // Advance 16 more frames (total 512 ms / 32 frames, approx half cycle): left -> ~34° (49.55, 33.83), right -> ~214° (-49.55, -33.83)
+      vi.advanceTimersByTime(256);
+      heroFixture.detectChanges();
+      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(49.55, 1);
+      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(33.83, 1);
+      expect(renderedHeroCodeRightX(element)).toBeCloseTo(-49.55, 1);
+      expect(renderedHeroCodeRightY(element)).toBeCloseTo(-33.83, 1);
+
+      // Advance 31 more frames (total 1008 ms / 63 frames, approx full cycle): back near initial position
+      vi.advanceTimersByTime(496);
+      heroFixture.detectChanges();
+      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(-50.39, 1);
+      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(-32.57, 1);
+      expect(renderedHeroCodeRightX(element)).toBeCloseTo(50.39, 1);
+      expect(renderedHeroCodeRightY(element)).toBeCloseTo(32.57, 1);
+    });
+
+    it.each([
+      { date: '2026-01-01T00:00:00+07:00', expectedDay: 1 },
+      { date: '2026-01-15T12:00:00+07:00', expectedDay: 15 },
+      { date: '2026-01-31T23:59:59+07:00', expectedDay: 31 },
+      { date: '2026-12-31T18:00:00.000Z', expectedDay: 1 }, // 2027-01-01 01:00:00 UTC+7
+    ])(
+      'derives orbital frequency from current UTC+7 day of month ($date -> day $expectedDay)',
+      ({ date, expectedDay }) => {
+        vi.setSystemTime(new Date(date));
+        const expectedFrequency = expectedDay / 3600;
+        const expectedOmega = (2 * Math.PI * expectedDay) / 3600;
+
+        expect(TestBed.inject(HERO_CODE_F)).toBeCloseTo(expectedFrequency, 8);
+        expect(TestBed.inject(HERO_CODE_OMEGA)).toBeCloseTo(expectedOmega, 8);
+      },
+    );
+
+    it('alters orbital coordinates when HERO_CODE_A is overridden', () => {
+      TestBed.overrideProvider(HERO_CODE_A, { useValue: 0.5 });
+      const heroFixture = renderHero();
+      const element = heroFixture.nativeElement as HTMLElement;
+
+      // With A = 0.5, effective radius is 60 * 0.5 = 30
+      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(-25.98, 2);
+      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(-15.0, 2);
+      expect(renderedHeroCodeRightX(element)).toBeCloseTo(25.98, 2);
+      expect(renderedHeroCodeRightY(element)).toBeCloseTo(15.0, 2);
+    });
+
+    it('alters orbital radius when HERO_CODE_R is overridden', () => {
+      TestBed.overrideProvider(HERO_CODE_R, { useValue: 100 });
+      const heroFixture = renderHero();
+      const element = heroFixture.nativeElement as HTMLElement;
+
+      // With R = 100, A = 1, effective radius is 100
+      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(-86.6, 2);
+      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(-50.0, 2);
+      expect(renderedHeroCodeRightX(element)).toBeCloseTo(86.6, 2);
+      expect(renderedHeroCodeRightY(element)).toBeCloseTo(50.0, 2);
+    });
+
+    it('alters starting phase when HERO_CODE_PHI_LEFT and HERO_CODE_PHI_RIGHT are overridden', () => {
+      TestBed.overrideProvider(HERO_CODE_PHI_LEFT, { useValue: 0 });
+      TestBed.overrideProvider(HERO_CODE_PHI_RIGHT, { useValue: Math.PI });
+      const heroFixture = renderHero();
+      const element = heroFixture.nativeElement as HTMLElement;
+
+      // Left with phi = 0: (60 * cos(0), 60 * sin(0)) = (60, 0)
+      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(60.0, 2);
+      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(0.0, 2);
+
+      // Right with phi = PI: (60 * cos(PI), 60 * sin(PI)) = (-60, 0)
+      expect(renderedHeroCodeRightX(element)).toBeCloseTo(-60.0, 2);
+      expect(renderedHeroCodeRightY(element)).toBeCloseTo(0.0, 2);
+    });
+
+    it('alters orbital period when HERO_CODE_OMEGA is overridden directly', () => {
+      TestBed.overrideProvider(HERO_CODE_OMEGA, { useValue: Math.PI });
+      const heroFixture = renderHero();
+      const element = heroFixture.nativeElement as HTMLElement;
+
+      // At t = 0: Left (-51.96, -30), Right (51.96, 30)
+      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(-51.96, 2);
+      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(-30.0, 2);
+
+      // Advance 63 frames (1008 ms, phase advanced by 1.008 * PI = 181.44°): positions invert across origin
+      vi.advanceTimersByTime(1008);
+      heroFixture.detectChanges();
+      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(51.19, 1);
+      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(31.3, 1);
+      expect(renderedHeroCodeRightX(element)).toBeCloseTo(-51.19, 1);
+      expect(renderedHeroCodeRightY(element)).toBeCloseTo(-31.3, 1);
+    });
+
+    it('declares reduced-motion style rule overriding hero code coordinates to static default values', () => {
+      renderHero();
+      const styleElements = Array.from(document.querySelectorAll('style'));
+      const combinedCss = styleElements.map((el) => el.textContent ?? '').join('\n');
+
+      expect(combinedCss).toContain('prefers-reduced-motion');
+      expect(combinedCss).toContain('--hero-code-left-x');
+      expect(combinedCss).toContain('-51.96%');
+      expect(combinedCss).toContain('--hero-code-left-y');
+      expect(combinedCss).toContain('-30%');
+      expect(combinedCss).toContain('--hero-code-right-x');
+      expect(combinedCss).toContain('51.96%');
+      expect(combinedCss).toContain('30%');
+    });
+  });
+
   it('clears its one-second interval and animation frame when destroyed', () => {
     vi.setSystemTime(new Date('2026-01-02T01:04:05.000Z'));
     const initialTimerCount = vi.getTimerCount();
@@ -435,5 +615,23 @@ describe('heroClockTransitionPicker', () => {
 
     mathRandomSpy.mockReturnValue(0.8);
     expect(TestBed.runInInjectionContext(() => picker())).toBe('soft-glow');
+  });
+});
+
+describe('calculateHeroCodePosition', () => {
+  it('computes exact orbital coordinates given elapsed seconds and injected parameters', () => {
+    const calcFn = TestBed.inject(calculateHeroCodePosition);
+
+    const pos0 = calcFn(0);
+    expect(pos0.left.x).toBeCloseTo(-51.9615, 4);
+    expect(pos0.left.y).toBeCloseTo(-30.0, 4);
+    expect(pos0.right.x).toBeCloseTo(51.9615, 4);
+    expect(pos0.right.y).toBeCloseTo(30.0, 4);
+
+    const pos1 = calcFn(10);
+    expect(typeof pos1.left.x).toBe('number');
+    expect(typeof pos1.left.y).toBe('number');
+    expect(typeof pos1.right.x).toBe('number');
+    expect(typeof pos1.right.y).toBe('number');
   });
 });

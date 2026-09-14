@@ -49,7 +49,17 @@
     <div class="hero-orbit hero-orbit-outer"></div>
     <div class="hero-orbit hero-orbit-inner"></div>
     <div class="hero-monogram">NI</div>
-    <span class="hero-code hero-code-left font-mono">&lt;/&gt;</span>
-    <span class="hero-code hero-code-right font-mono">{{ '{ }' }}</span>
+    <span
+      class="hero-code hero-code-left font-mono"
+      [style.--hero-code-left-x.%]="leftCodePosition().x"
+      [style.--hero-code-left-y.%]="leftCodePosition().y"
+      >&lt;/&gt;</span
+    >
+    <span
+      class="hero-code hero-code-right font-mono"
+      [style.--hero-code-right-x.%]="rightCodePosition().x"
+      [style.--hero-code-right-y.%]="rightCodePosition().y"
+      >{{ '{ }' }}</span
+    >
   </div>
 </section>

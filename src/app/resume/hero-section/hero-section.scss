@@ -57,23 +57,32 @@
   display: inline-block;
   font-variant-numeric: tabular-nums;
   animation: 250ms ease-out;
-  &--slide-fade.hero-clock-tick-a {
-    animation-name: a;
+
+  &--slide-fade {
+    &.hero-clock-tick-a {
+      animation-name: a;
+    }
+    &.hero-clock-tick-b {
+      animation-name: b;
+    }
   }
-  &--slide-fade.hero-clock-tick-b {
-    animation-name: b;
+
+  &--opacity-pulse {
+    &.hero-clock-tick-a {
+      animation-name: c;
+    }
+    &.hero-clock-tick-b {
+      animation-name: d;
+    }
   }
-  &--opacity-pulse.hero-clock-tick-a {
-    animation-name: c;
-  }
-  &--opacity-pulse.hero-clock-tick-b {
-    animation-name: d;
-  }
-  &--soft-glow.hero-clock-tick-a {
-    animation-name: e;
-  }
-  &--soft-glow.hero-clock-tick-b {
-    animation-name: f;
+
+  &--soft-glow {
+    &.hero-clock-tick-a {
+      animation-name: e;
+    }
+    &.hero-clock-tick-b {
+      animation-name: f;
+    }
   }
 }
 
@@ -92,6 +101,16 @@
 @media (prefers-reduced-motion: reduce) {
   .status-dot {
     --status-dot-luminance: 0.5 !important;
+  }
+
+  .hero-code-left {
+    --hero-code-left-x: -51.96% !important;
+    --hero-code-left-y: -30% !important;
+  }
+
+  .hero-code-right {
+    --hero-code-right-x: 51.96% !important;
+    --hero-code-right-y: 30% !important;
   }
 }
 
@@ -132,8 +151,13 @@ h1 {
 }
 
 .hero-orbit,
-.hero-monogram {
+.hero-monogram,
+.hero-code {
   position: absolute;
+}
+
+.hero-orbit,
+.hero-monogram {
   border: 1px solid;
   border-radius: 50%;
 }
@@ -162,17 +186,19 @@ h1 {
 }
 
 .hero-code {
-  position: absolute;
   color: #a9d0ff;
   font-size: 0.9rem;
   font-weight: 700;
+  transform: translate(-50%, -50%);
+
   &-left {
-    top: 18%;
-    left: -3%;
+    top: calc(50% + var(--hero-code-left-y, -30%));
+    left: calc(50% + var(--hero-code-left-x, -51.96%));
   }
+
   &-right {
-    right: -2%;
-    bottom: 20%;
+    top: calc(50% + var(--hero-code-right-y, 30%));
+    left: calc(50% + var(--hero-code-right-x, 51.96%));
   }
 }
 
@@ -189,47 +215,5 @@ h1 {
 @media (max-width: 30rem) {
   .hero-section {
     padding-block: 3.25rem;
-  }
-}
-
-@media print {
-  .hero-section {
-    display: block;
-    padding: 8mm 9mm;
-    border-radius: 3mm;
-    background: #0b2847 !important;
-    color: #fff !important;
-    break-inside: avoid;
-    &::after {
-      display: none !important;
-    }
-  }
-  .hero-visual,
-  .flex {
-    display: none !important;
-  }
-  .hero-kicker {
-    margin-bottom: 3mm;
-    font-size: 7.5pt;
-  }
-  .status-dot {
-    width: 1.5mm;
-    height: 1.5mm;
-    border-width: 0.3mm;
-  }
-  h1 {
-    font-size: 26pt;
-    line-height: 1;
-    letter-spacing: -0.04em;
-  }
-  .hero-role {
-    margin-top: 3mm;
-    font-size: 12pt;
-  }
-  .hero-introduction {
-    max-width: none;
-    margin-top: 3mm;
-    font-size: 8.5pt;
-    line-height: 1.45;
   }
 }
