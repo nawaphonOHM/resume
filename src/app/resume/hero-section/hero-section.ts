@@ -8,7 +8,7 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DOCUMENT } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
@@ -38,6 +38,7 @@ export class HeroSection {
   private readonly calculateHeroCodePositionFn = inject(calculateHeroCodePosition);
   private readonly faviconService = inject(FaviconService);
   private readonly statusFaviconForStatusColor = inject(statusFaviconForStatusColor);
+  private readonly theDocument = inject(DOCUMENT);
 
   /** Selected transition effect applied on each clock tick. */
   protected readonly clockTransition = inject(heroClockTransitionPicker)();
@@ -69,7 +70,7 @@ export class HeroSection {
     });
 
     afterNextRender(() => {
-      const intervalId = window.setInterval(() => {
+      const intervalId = this.theDocument.defaultView?.setInterval(() => {
         this.currentInstant.set(new Date());
         this.isTickAlternate.update((v) => !v);
       }, this.clockUpdateIntervalMs);
@@ -83,14 +84,19 @@ export class HeroSection {
         const { left, right } = this.calculateHeroCodePositionFn(elapsedSeconds);
         this.leftCodePosition.set(left);
         this.rightCodePosition.set(right);
-        animationFrameId = window.requestAnimationFrame(animateHeroVisuals);
+
+        if (this.theDocument.defaultView) {
+          animationFrameId = this.theDocument.defaultView.requestAnimationFrame(animateHeroVisuals);
+        }
       };
 
-      animationFrameId = window.requestAnimationFrame(animateHeroVisuals);
+      if (this.theDocument.defaultView) {
+        animationFrameId = this.theDocument.defaultView.requestAnimationFrame(animateHeroVisuals);
+      }
 
       this.destroyRef.onDestroy(() => {
-        window.clearInterval(intervalId);
-        window.cancelAnimationFrame(animationFrameId);
+        this.theDocument.defaultView?.clearInterval(intervalId);
+        this.theDocument.defaultView?.cancelAnimationFrame(animationFrameId);
       });
     });
   }
