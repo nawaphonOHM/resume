@@ -26,8 +26,7 @@ import { SummarySection } from '../summary-section/summary-section';
 import { resumeData } from '../../helper/injection-token/resume.data.ts';
 import { ResumePdfService } from './service/resume-pdf/resume-pdf.service.ts';
 import { VIEWPORT_EVENT_THROTTLE_MS } from '../../helper/injection-token/viewport-event-throttle-ms.variable.ts';
-
-const SECTION_ACTIVATION_RATIO = 0.18;
+import { SECTION_ACTIVATION_RATIO } from '../../helper/injection-token/section-activation-ratio.variable.ts';
 
 /**
  * Composes the canonical résumé and coordinates navigation, theme, and PDF generation.
@@ -61,6 +60,7 @@ export default class ResumePage {
   private readonly viewportRuler = inject(ViewportRuler);
   private readonly sections = inject(RESUME_SECTIONS);
   private readonly viewportEventThrottleMs = inject(VIEWPORT_EVENT_THROTTLE_MS);
+  private readonly sectionActivationRatio = inject(SECTION_ACTIVATION_RATIO);
 
   /** Canonical profile distributed to the presentational section components. */
   protected readonly resume = inject(resumeData);
@@ -130,7 +130,7 @@ export default class ResumePage {
    */
   private updateActiveSection(): void {
     const viewport = this.viewportRuler.getViewportRect();
-    const activationLine = viewport.top + viewport.height * SECTION_ACTIVATION_RATIO;
+    const activationLine = viewport.top + viewport.height * this.sectionActivationRatio;
     const visibleSections: Array<{
       readonly id: ResumeSectionId;
       readonly top: number;
