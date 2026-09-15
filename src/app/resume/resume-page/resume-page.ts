@@ -25,8 +25,8 @@ import { RESUME_SECTIONS } from '../../helper/injection-token/resume-sections.va
 import { SummarySection } from '../summary-section/summary-section';
 import { resumeData } from '../../helper/injection-token/resume.data.ts';
 import { ResumePdfService } from './service/resume-pdf/resume-pdf.service.ts';
+import { VIEWPORT_EVENT_THROTTLE_MS } from '../../helper/injection-token/viewport-event-throttle-ms.variable.ts';
 
-const VIEWPORT_EVENT_THROTTLE_MS = 100;
 const SECTION_ACTIVATION_RATIO = 0.18;
 
 /**
@@ -60,6 +60,7 @@ export default class ResumePage {
   private readonly themeService = inject(ThemeService);
   private readonly viewportRuler = inject(ViewportRuler);
   private readonly sections = inject(RESUME_SECTIONS);
+  private readonly viewportEventThrottleMs = inject(VIEWPORT_EVENT_THROTTLE_MS);
 
   /** Canonical profile distributed to the presentational section components. */
   protected readonly resume = inject(resumeData);
@@ -86,8 +87,8 @@ export default class ResumePage {
 
     afterNextRender(() => {
       merge(
-        this.scrollDispatcher.scrolled(VIEWPORT_EVENT_THROTTLE_MS),
-        this.viewportRuler.change(VIEWPORT_EVENT_THROTTLE_MS),
+        this.scrollDispatcher.scrolled(this.viewportEventThrottleMs),
+        this.viewportRuler.change(this.viewportEventThrottleMs),
       )
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(() => {
