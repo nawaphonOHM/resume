@@ -4,7 +4,6 @@ import {
   Component,
   DestroyRef,
   ErrorHandler,
-  HostListener,
   afterNextRender,
   inject,
   signal,
@@ -51,6 +50,9 @@ import type { ResumePdfConfirmDialogResult } from '../../helper/type/resume-pdf-
   ],
   templateUrl: './resume-page.html',
   styleUrl: './resume-page.scss',
+  host: {
+    '(window:beforeprint)': 'prepareForNativePrint()',
+  },
 })
 export default class ResumePage {
   private readonly activatedRoute = inject(ActivatedRoute);
@@ -113,7 +115,6 @@ export default class ResumePage {
   }
 
   /** Starts loading all deferred content as a best effort before a native print dialog opens. */
-  @HostListener('window:beforeprint')
   protected prepareForNativePrint(): void {
     this.renderAllSections.set(true);
   }
