@@ -117,9 +117,21 @@ To understand the implementation and maintain the codebase, familiarity with the
 - **Subresource Integrity (SRI) and CSP alignment:** Pinned pdfmake CDN assets carry SHA-512 integrity digests in `src/app/helper/injection-token/pdfmake-core-asset.variable.ts` and `src/app/helper/injection-token/pdfmake-font-asset.variable.ts`; `src/app/helper/injection-token/create-cdn-script-loader.function.ts` applies them. Deployments must allow the corresponding CDN origins in `script-src`.
 - **Client-side binary validation and privacy checks:** Before download side effects, `src/app/helper/injection-token/validate-resume-pdf-bytes.function.ts` verifies the PDF magic bytes (`%PDF-`), minimum size, required links, and rejects `tel:` content. This is a structural and privacy safeguard, not a replacement for cryptographic signing of generated PDFs.
 
+### 7. Trigonometry, 2D Kinematics & Real-Time Animation Loops
+
+- **Circular orbital kinematics:** Hero section code badges execute continuous circular orbits computed via parametric trigonometric equations:
+  $$x(t) = r \cdot A \cdot \cos(\omega t + \phi), \quad y(t) = r \cdot A \cdot \sin(\omega t + \phi)$$
+  where $\omega = 2\pi f$, $r$ is orbital radius, $A$ is amplitude, and $\phi_{\text{left}}, \phi_{\text{right}}$ provide symmetric phase displacement (`src/app/helper/injection-token/hero-code-position.function.ts`, `src/app/helper/injection-token/hero-code-parameters.amplitude.variable.ts`, `src/app/helper/injection-token/hero-code-parameters.radius.variable.ts`).
+- **Harmonic luminance oscillation:** Availability status dot luminance follows clamped simple harmonic motion:
+  $$L(t) = \operatorname{clamp}(0.5 + A \cdot \cos(\omega t + \phi), 0, 1)$$
+  bound to the CSS custom property `--status-dot-luminance` for dynamic OKLCH color-mix glow effects (`src/app/helper/injection-token/status-luminance.function.ts`, `src/app/helper/injection-token/status-luminance-parameters.frequency.variable.ts`).
+- **Calendar-driven parameter derivation:** The orbital frequency parameter ($f$) dynamically derives from the current day of the month in UTC+7 ($f = \text{dayOfMonth} / \text{secondsPerHour}$), producing subtle deterministic variation across calendar days (`src/app/helper/injection-token/hero-code-parameters.frequency.variable.ts`).
+- **Frame loop scheduling & teardown:** `HeroSection` orchestrates a 60fps `requestAnimationFrame` loop initiated after initial render (`afterNextRender`), synchronizing signal state directly to CSS variables with explicit `cancelAnimationFrame` and `clearInterval` teardown via `DestroyRef.onDestroy` (`src/app/resume/hero-section/hero-section.ts`).
+- **Accessibility & reduced-motion fallbacks:** `@media (prefers-reduced-motion: reduce)` overrides dynamic CSS variables to fixed static coordinates and baseline luminance ($L = 0.5$) to prevent vestibular discomfort (`src/app/resume/hero-section/hero-section.scss`).
+
 ## Edit résumé content
 
-All publishable résumé facts live in `src/app/data/resume/resume.data.ts` and conform to the contracts in `src/app/helper/interface/resume-profile/resume-profile.interface.ts`. Update that data source rather than duplicating content in component templates.
+All publishable résumé facts live in `src/app/helper/injection-token/resume.data.ts` and conform to the contracts in `src/app/helper/interface/resume-profile/resume-profile.interface.ts`. Update that data source rather than duplicating content in component templates.
 
 The phone value must remain `Available on request`. Do not add a phone number, a `tel:` link, or the private source PDF anywhere under the project.
 
