@@ -1,13 +1,11 @@
 import { inject, InjectionToken } from '@angular/core';
-import type { HeroCodeCoordinates } from '../interface/hero-code-coordinates/hero-code-coordinates.interface.ts';
 import type { HeroCodeOrbitPositions } from '../interface/hero-code-orbit-positions/hero-code-orbit-positions.interface.ts';
 import { HERO_CODE_A } from './hero-code-parameters.amplitude.variable.ts';
 import { HERO_CODE_OMEGA } from './hero-code-parameters.omega.variable.ts';
-import { HERO_CODE_R } from './hero-code-parameters.radius.variable.ts';
 import { HERO_CODE_PHI_LEFT } from './hero-code-parameters.phi-left.variable.ts';
 import { HERO_CODE_PHI_RIGHT } from './hero-code-parameters.phi-right.variable.ts';
-
-export type { HeroCodeCoordinates, HeroCodeOrbitPositions };
+import { HERO_CODE_R_LEFT } from './hero-code-parameters.radius-left.variable.ts';
+import { HERO_CODE_R_RIGHT } from './hero-code-parameters.radius-right.variable.ts';
 
 /** Calculates circular orbital coordinates for the hero section code badges over time. */
 export const calculateHeroCodePosition = new InjectionToken<
@@ -15,19 +13,26 @@ export const calculateHeroCodePosition = new InjectionToken<
 >('calculateHeroCodePosition', {
   providedIn: 'root',
   factory: () => {
-    const fn = (A: number, omega: number, phiLeft: number, phiRight: number, r: number) => {
+    const fn = (
+      A: number,
+      omega: number,
+      phiLeft: number,
+      phiRight: number,
+      rLeft: number,
+      rRight: number,
+    ) => {
       return (elapsedSeconds: number): HeroCodeOrbitPositions => {
         const leftAngle = omega * elapsedSeconds + phiLeft;
         const rightAngle = omega * elapsedSeconds + phiRight;
 
         return {
           left: {
-            x: r * A * Math.cos(leftAngle),
-            y: r * A * Math.sin(leftAngle),
+            x: rLeft * A * Math.cos(leftAngle),
+            y: rLeft * A * Math.sin(leftAngle),
           },
           right: {
-            x: r * A * Math.cos(rightAngle),
-            y: r * A * Math.sin(rightAngle),
+            x: rRight * A * Math.cos(rightAngle),
+            y: rRight * A * Math.sin(rightAngle),
           },
         };
       };
@@ -38,7 +43,8 @@ export const calculateHeroCodePosition = new InjectionToken<
       inject(HERO_CODE_OMEGA),
       inject(HERO_CODE_PHI_LEFT),
       inject(HERO_CODE_PHI_RIGHT),
-      inject(HERO_CODE_R),
+      inject(HERO_CODE_R_LEFT),
+      inject(HERO_CODE_R_RIGHT),
     );
   },
 });
