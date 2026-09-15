@@ -32,6 +32,16 @@ const AVAILABLE_COLOR = '#92C353';
 const LIMITED_COLOR = '#F7A600';
 const UNAVAILABLE_COLOR = '#D1D1D1';
 
+const AVAILABLE_FAVICON = 'https://resume-images.ohm-mho.space/favicons/available/favicon.svg';
+const LIMITED_FAVICON = 'https://resume-images.ohm-mho.space/favicons/limited/favicon.svg';
+const UNAVAILABLE_FAVICON = 'https://resume-images.ohm-mho.space/favicons/unavailable/favicon.svg';
+
+const COLOR_TO_FAVICON: Record<string, string> = {
+  [AVAILABLE_COLOR]: AVAILABLE_FAVICON,
+  [LIMITED_COLOR]: LIMITED_FAVICON,
+  [UNAVAILABLE_COLOR]: UNAVAILABLE_FAVICON,
+};
+
 interface AvailabilityBoundaryCase {
   readonly label: string;
   readonly instantBeforeBoundary: string;
@@ -146,10 +156,23 @@ function renderedHeroCodeRightY(element: HTMLElement): number {
   );
 }
 
+function renderedFaviconHref(): string {
+  const link = document.head.querySelector<HTMLLinkElement>('link[rel="icon"], link[rel~="icon"]');
+  return link?.getAttribute('href') ?? '';
+}
+
+function cleanupHeadIconLinks(): void {
+  const existingLinks = document.head.querySelectorAll<HTMLLinkElement>(
+    'link[rel="icon"], link[rel~="icon"]',
+  );
+  existingLinks.forEach((link) => link.remove());
+}
+
 describe('HeroSection', () => {
   let fixture: ComponentFixture<HeroSection> | null;
 
   beforeEach(async () => {
+    cleanupHeadIconLinks();
     await TestBed.configureTestingModule({
       imports: [HeroSection],
       providers: [provideRouter([])],
@@ -160,6 +183,7 @@ describe('HeroSection', () => {
 
   afterEach(() => {
     fixture?.destroy();
+    cleanupHeadIconLinks();
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
@@ -330,6 +354,79 @@ describe('HeroSection', () => {
       expect(renderedStatusColor(element)).toBe(colorAtBoundary);
     },
   );
+
+  describe('dynamic favicon synchronization', () => {
+    it('sets the available favicon on initial render during workday working hours', () => {
+      vi.setSystemTime(new Date('2026-01-05T10:00:00+07:00'));
+      renderHero();
+
+      expect(renderedFaviconHref()).toBe(AVAILABLE_FAVICON);
+    });
+
+    it('sets the limited favicon on initial render during off-hours or weekends', () => {
+      vi.setSystemTime(new Date('2026-01-05T07:00:00+07:00'));
+      renderHero();
+
+      expect(renderedFaviconHref()).toBe(LIMITED_FAVICON);
+
+      vi.setSystemTime(new Date('2026-01-10T14:00:00+07:00'));
+      fixture?.destroy();
+      renderHero();
+
+      expect(renderedFaviconHref()).toBe(LIMITED_FAVICON);
+    });
+
+    it('sets the unavailable favicon on initial render during night hours', () => {
+      vi.setSystemTime(new Date('2026-01-05T23:00:00+07:00'));
+      renderHero();
+
+      expect(renderedFaviconHref()).toBe(UNAVAILABLE_FAVICON);
+    });
+
+    it.each(AVAILABILITY_BOUNDARIES)(
+      'synchronizes the document favicon at $label UTC+7',
+      ({ instantBeforeBoundary, colorBeforeBoundary, colorAtBoundary }) => {
+        vi.setSystemTime(new Date(instantBeforeBoundary));
+        const heroFixture = renderHero();
+
+        expect(renderedFaviconHref()).toBe(COLOR_TO_FAVICON[colorBeforeBoundary]);
+
+        vi.advanceTimersByTime(1_000);
+        heroFixture.detectChanges();
+
+        expect(renderedFaviconHref()).toBe(COLOR_TO_FAVICON[colorAtBoundary]);
+      },
+    );
+
+    it('updates existing link[rel="icon"] element in place without creating duplicates', () => {
+      const initialLink = document.createElement('link');
+      initialLink.setAttribute('rel', 'icon');
+      initialLink.setAttribute('type', 'image/svg+xml');
+      initialLink.setAttribute('href', 'https://resume-images.ohm-mho.space/favicon.svg');
+      document.head.appendChild(initialLink);
+
+      vi.setSystemTime(new Date('2026-01-05T10:00:00+07:00'));
+      renderHero();
+
+      const iconLinks = document.head.querySelectorAll<HTMLLinkElement>('link[rel="icon"]');
+      expect(iconLinks.length).toBe(1);
+      expect(iconLinks[0].getAttribute('href')).toBe(AVAILABLE_FAVICON);
+      expect(renderedFaviconHref()).toBe(AVAILABLE_FAVICON);
+    });
+
+    it('refreshes the favicon when system time updates across clock ticks', () => {
+      vi.setSystemTime(new Date('2026-01-02T10:59:58.000Z'));
+      const heroFixture = renderHero();
+
+      expect(renderedFaviconHref()).toBe(AVAILABLE_FAVICON);
+
+      vi.setSystemTime(new Date('2026-01-02T11:04:30.000Z'));
+      vi.advanceTimersByTime(1_000);
+      heroFixture.detectChanges();
+
+      expect(renderedFaviconHref()).toBe(LIMITED_FAVICON);
+    });
+  });
 
   describe('status dot luminance oscillation and custom property binding', () => {
     it('binds both --status-dot-color and --status-dot-luminance custom properties to .status-dot', () => {

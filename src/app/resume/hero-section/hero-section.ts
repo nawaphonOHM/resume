@@ -3,6 +3,7 @@ import {
   DestroyRef,
   afterNextRender,
   computed,
+  effect,
   inject,
   input,
   signal,
@@ -18,6 +19,8 @@ import { statusColorForUtcPlusSeven } from '../../helper/injection-token/status-
 import { heroClockTransitionPicker } from '../../helper/injection-token/hero-clock-transition-picker.variable.ts';
 import { calculateStatusLuminance } from '../../helper/injection-token/status-luminance.function.ts';
 import { calculateHeroCodePosition } from '../../helper/injection-token/hero-code-position.function.ts';
+import { FaviconService } from '../../core/favicon.service.ts';
+import { statusFaviconForStatusColor } from '../../helper/injection-token/status-favicon-for-status-color.function.ts';
 
 /** Introduces the candidate and exposes the primary email contact action. */
 @Component({
@@ -33,6 +36,8 @@ export class HeroSection {
   private readonly statusColorForUtcPlusSeven = inject(statusColorForUtcPlusSeven);
   private readonly calculateStatusLuminanceFn = inject(calculateStatusLuminance);
   private readonly calculateHeroCodePositionFn = inject(calculateHeroCodePosition);
+  private readonly faviconService = inject(FaviconService);
+  private readonly statusFaviconForStatusColor = inject(statusFaviconForStatusColor);
 
   /** Selected transition effect applied on each clock tick. */
   protected readonly clockTransition = inject(heroClockTransitionPicker)();
@@ -59,6 +64,10 @@ export class HeroSection {
 
   /** Starts browser clock synchronization and visual animations after rendering, releasing them on destruction. */
   constructor() {
+    effect(() => {
+      this.faviconService.setFavicon(this.statusFaviconForStatusColor(this.statusColor()));
+    });
+
     afterNextRender(() => {
       const intervalId = window.setInterval(() => {
         this.currentInstant.set(new Date());
