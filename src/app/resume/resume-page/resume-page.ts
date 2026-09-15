@@ -10,9 +10,10 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatDialog } from '@angular/material/dialog';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { merge } from 'rxjs';
+import { firstValueFrom, merge } from 'rxjs';
 
 import { ThemeService } from '../../core/theme.service';
 import { EducationSection } from '../education-section/education-section';
@@ -24,9 +25,11 @@ import type { ResumeSectionId } from '../../helper/type/resume-section-id.type.t
 import { RESUME_SECTIONS } from '../../helper/injection-token/resume-sections.variable.ts';
 import { SummarySection } from '../summary-section/summary-section';
 import { resumeData } from '../../helper/injection-token/resume.data.ts';
+import { ResumePdfConfirmDialog } from './dialog/resume-pdf-confirm-dialog/resume-pdf-confirm-dialog.ts';
 import { ResumePdfService } from './service/resume-pdf/resume-pdf.service.ts';
 import { VIEWPORT_EVENT_THROTTLE_MS } from '../../helper/injection-token/viewport-event-throttle-ms.variable.ts';
 import { SECTION_ACTIVATION_RATIO } from '../../helper/injection-token/section-activation-ratio.variable.ts';
+import type { ResumePdfConfirmDialogResult } from '../../helper/type/resume-pdf-confirm-dialog-result.type.ts';
 
 /**
  * Composes the canonical résumé and coordinates navigation, theme, and PDF generation.
@@ -51,6 +54,7 @@ import { SECTION_ACTIVATION_RATIO } from '../../helper/injection-token/section-a
 })
 export default class ResumePage {
   private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly dialog = inject(MatDialog);
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
   private readonly errorHandler = inject(ErrorHandler);
@@ -67,6 +71,9 @@ export default class ResumePage {
 
   /** Section currently represented as active in responsive navigation. */
   protected readonly activeSection = signal<ResumeSectionId>('about');
+
+  /** Availability of the remote PDF asset for download. */
+  protected readonly downloadAvailable = this.resumePdfService.isAvailable;
 
   /** Whether one user-triggered PDF generation request is currently running. */
   protected readonly downloadPending = signal(false);
@@ -115,6 +122,20 @@ export default class ResumePage {
   protected async downloadResume(): Promise<void> {
     if (this.downloadPending()) {
       return;
+    }
+
+    if (this.downloadAvailable() === false) {
+      const dialogRef = this.dialog.open<
+        ResumePdfConfirmDialog,
+        undefined,
+        ResumePdfConfirmDialogResult
+      >(ResumePdfConfirmDialog, {
+        role: 'alertdialog',
+      });
+      const confirmed = await firstValueFrom(dialogRef.afterClosed());
+      if (!confirmed) {
+        return;
+      }
     }
 
     this.downloadPending.set(true);

@@ -3,9 +3,16 @@
  * download controls, image-zoom-preview bindings, and viewport-tracking lifecycle.
  */
 import { ScrollDispatcher, ViewportRuler } from '@angular/cdk/scrolling';
-import { APP_BOOTSTRAP_LISTENER, ApplicationRef, ErrorHandler } from '@angular/core';
+import {
+  APP_BOOTSTRAP_LISTENER,
+  ApplicationRef,
+  ErrorHandler,
+  signal,
+  type WritableSignal,
+} from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { DeferBlockBehavior, DeferBlockState, TestBed } from '@angular/core/testing';
+import { MatDialog } from '@angular/material/dialog';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { By } from '@angular/platform-browser';
@@ -35,6 +42,7 @@ import type { ResumeSectionId } from '../../helper/type/resume-section-id.type.t
 import ResumePage from './resume-page';
 import type { TechnologyIconPresentation } from '../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
 import type { BrandLogo } from '../../helper/interface/brand-logo/brand-logo.interface.ts';
+import { ResumePdfConfirmDialog } from './dialog/resume-pdf-confirm-dialog/resume-pdf-confirm-dialog.ts';
 import { ResumePdfService } from './service/resume-pdf/resume-pdf.service.ts';
 
 const TECHNOLOGY_ICON_FALLBACK_LABELS = ['REST APIs', 'Caffeine'] as const;
@@ -146,6 +154,7 @@ describe('ResumePage', () => {
 
   /** PDF download fixture used to isolate page orchestration from the lazy runtime. */
   let download: ReturnType<typeof vi.fn<ResumePdfService['download']>>;
+  let isAvailable: WritableSignal<boolean | null>;
 
   /** Angular error-handler fixture that records rejected download attempts. */
   let handleError: ReturnType<typeof vi.fn<ErrorHandler['handleError']>>;
@@ -178,6 +187,7 @@ describe('ResumePage', () => {
       Promise.resolve(optimizedPresentation(icon)),
     );
     download = vi.fn<ResumePdfService['download']>(() => Promise.resolve());
+    isAvailable = signal<boolean | null>(true);
     handleError = vi.fn<ErrorHandler['handleError']>();
 
     await TestBed.configureTestingModule({
@@ -193,7 +203,7 @@ describe('ResumePage', () => {
           withRouterConfig({ onSameUrlNavigation: 'reload' }),
         ),
         { provide: TechnologyIconContrastService, useValue: { optimize } },
-        { provide: ResumePdfService, useValue: { download } },
+        { provide: ResumePdfService, useValue: { download, isAvailable } },
         { provide: ErrorHandler, useValue: { handleError } },
       ],
     }).compileComponents();
@@ -217,6 +227,7 @@ describe('ResumePage', () => {
   });
 
   afterEach(() => {
+    TestBed.inject(MatDialog).closeAll();
     TestBed.resetTestingModule();
     vi.restoreAllMocks();
     localStorage.clear();
@@ -983,6 +994,155 @@ describe('ResumePage', () => {
     expect(handleError).toHaveBeenCalledOnce();
     expect(downloadButton?.disabled).toBe(false);
     expect(navigation.downloadProgress()).toBeNull();
+  });
+
+  it('downloads directly without opening dialog when PDF asset is available or checking', async () => {
+    const dialog = TestBed.inject(MatDialog);
+    const openSpy = vi.spyOn(dialog, 'open');
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    const downloadButton = element.querySelector<HTMLButtonElement>(
+      'button.desktop-control[aria-label="Download résumé as PDF"]',
+    );
+
+    // 1. Available state (isAvailable = true)
+    downloadButton?.click();
+    fixture.detectChanges();
+    await vi.waitFor(() => expect(download).toHaveBeenCalledOnce());
+    expect(openSpy).not.toHaveBeenCalled();
+
+    // 2. Checking state (isAvailable = null)
+    isAvailable.set(null);
+    fixture.detectChanges();
+    downloadButton?.click();
+    fixture.detectChanges();
+    await vi.waitFor(() => expect(download).toHaveBeenCalledTimes(2));
+    expect(openSpy).not.toHaveBeenCalled();
+  });
+
+  it('binds downloadAvailable to navigation to render unavailable state on desktop and mobile', async () => {
+    isAvailable.set(false);
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    const desktopButton = element.querySelector<HTMLButtonElement>(
+      'button.desktop-control[aria-label="Download résumé as PDF (file may be unavailable)"]',
+    );
+
+    expect(desktopButton).not.toBeNull();
+    expect(desktopButton?.querySelector('mat-icon')?.textContent?.trim()).toBe('file_download_off');
+
+    const menu = await openMobileMenu(fixture);
+    const mobileButton = menu.querySelector<HTMLButtonElement>(
+      'button[aria-label="Download résumé as PDF (file may be unavailable)"]',
+    );
+    expect(mobileButton).not.toBeNull();
+    expect(mobileButton?.querySelector('mat-icon')?.textContent?.trim()).toBe('file_download_off');
+    expect(mobileButton?.querySelector('span')?.textContent?.trim()).toBe(
+      'Download PDF (unavailable)',
+    );
+  });
+
+  it('opens alertdialog confirmation modal when unavailable and does not download if cancelled', async () => {
+    isAvailable.set(false);
+    const dialog = TestBed.inject(MatDialog);
+    const openSpy = vi.spyOn(dialog, 'open');
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    const navigation = fixture.debugElement.query(By.directive(ResumeNavigation))
+      .componentInstance as ResumeNavigation;
+    const downloadButton = element.querySelector<HTMLButtonElement>(
+      'button.desktop-control[aria-label="Download résumé as PDF (file may be unavailable)"]',
+    );
+
+    downloadButton?.click();
+    fixture.detectChanges();
+
+    expect(openSpy).toHaveBeenCalledOnce();
+    expect(openSpy).toHaveBeenCalledWith(ResumePdfConfirmDialog, { role: 'alertdialog' });
+
+    const dialogContainer = document.querySelector<HTMLElement>('[role="alertdialog"]');
+    expect(dialogContainer).not.toBeNull();
+    expect(dialogContainer?.textContent).toContain(
+      'The file may be unavailable. Do you confirm to continue?',
+    );
+
+    const cancelButton = Array.from(
+      dialogContainer?.querySelectorAll<HTMLButtonElement>('button') ?? [],
+    ).find((btn) => btn.textContent?.trim() === 'Cancel');
+    expect(cancelButton).not.toBeNull();
+    cancelButton?.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(download).not.toHaveBeenCalled();
+    expect(navigation.downloadPending()).toBe(false);
+  });
+
+  it('opens confirmation dialog when unavailable and initiates download when user confirms', async () => {
+    isAvailable.set(false);
+    const dialog = TestBed.inject(MatDialog);
+    const openSpy = vi.spyOn(dialog, 'open');
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    const navigation = fixture.debugElement.query(By.directive(ResumeNavigation))
+      .componentInstance as ResumeNavigation;
+    const downloadButton = element.querySelector<HTMLButtonElement>(
+      'button.desktop-control[aria-label="Download résumé as PDF (file may be unavailable)"]',
+    );
+
+    downloadButton?.click();
+    fixture.detectChanges();
+
+    expect(openSpy).toHaveBeenCalledOnce();
+    expect(openSpy).toHaveBeenCalledWith(ResumePdfConfirmDialog, { role: 'alertdialog' });
+
+    const dialogContainer = document.querySelector<HTMLElement>('[role="alertdialog"]');
+    const continueButton = Array.from(
+      dialogContainer?.querySelectorAll<HTMLButtonElement>('button') ?? [],
+    ).find((btn) => btn.textContent?.trim() === 'Continue');
+    expect(continueButton).not.toBeNull();
+    continueButton?.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await vi.waitFor(() => expect(download).toHaveBeenCalledOnce());
+    expect(download).toHaveBeenCalledOnce();
+    expect(navigation.downloadPending()).toBe(false);
+  });
+
+  it('mobile navigation triggers confirmation dialog when unavailable and confirms download', async () => {
+    isAvailable.set(false);
+    const dialog = TestBed.inject(MatDialog);
+    const openSpy = vi.spyOn(dialog, 'open');
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+
+    const menu = await openMobileMenu(fixture);
+    const mobileButton = menu.querySelector<HTMLButtonElement>(
+      'button[aria-label="Download résumé as PDF (file may be unavailable)"]',
+    );
+    expect(mobileButton).not.toBeNull();
+    mobileButton?.click();
+    fixture.detectChanges();
+
+    expect(openSpy).toHaveBeenCalledOnce();
+    expect(openSpy).toHaveBeenCalledWith(ResumePdfConfirmDialog, { role: 'alertdialog' });
+
+    const dialogContainer = document.querySelector<HTMLElement>('[role="alertdialog"]');
+    const continueButton = Array.from(
+      dialogContainer?.querySelectorAll<HTMLButtonElement>('button') ?? [],
+    ).find((btn) => btn.textContent?.trim() === 'Continue');
+    expect(continueButton).not.toBeNull();
+    continueButton?.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await vi.waitFor(() => expect(download).toHaveBeenCalledOnce());
+    expect(download).toHaveBeenCalledOnce();
   });
 
   it('synchronizes active navigation with recognized Router fragments only', async () => {

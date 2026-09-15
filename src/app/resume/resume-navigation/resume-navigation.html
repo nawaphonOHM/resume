@@ -51,6 +51,8 @@
             class="navigation-spinner"
             aria-hidden="true"
           />
+        } @else if (downloadAvailable() === false) {
+          <mat-icon aria-hidden="true">file_download_off</mat-icon>
         } @else {
           <mat-icon aria-hidden="true">download</mat-icon>
         }
@@ -101,6 +103,8 @@
         class="navigation-spinner menu-spinner"
         aria-hidden="true"
       />
+    } @else if (downloadAvailable() === false) {
+      <mat-icon aria-hidden="true">file_download_off</mat-icon>
     } @else {
       <mat-icon aria-hidden="true">download</mat-icon>
     }

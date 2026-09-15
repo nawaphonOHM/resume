@@ -1,7 +1,8 @@
 /**
- * Verifies remote PDF streaming download, live progress calculation, DOM anchor dispatch,
- * URL resource cleanup, and platform isolation for ResumePdfService.
+ * Verifies remote PDF availability check, streaming download, live progress calculation,
+ * DOM anchor dispatch, URL resource cleanup, and platform isolation for ResumePdfService.
  */
+import { isPlatformBrowser } from '@angular/common';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
@@ -59,7 +60,10 @@ describe('ResumePdfService', () => {
     restoreProperty(window.URL, 'revokeObjectURL', originalRevokeObjectUrl);
   });
 
-  function setupService(providers: unknown[] = []): {
+  function setupService(
+    providers: unknown[] = [],
+    options: { autoFlushHead?: boolean; headStatus?: number } = {},
+  ): {
     service: ResumePdfService;
     httpMock: HttpTestingController;
   } {
@@ -67,14 +71,28 @@ describe('ResumePdfService', () => {
       providers: [provideHttpClient(), provideHttpClientTesting(), ResumePdfService, ...providers],
     });
 
+    const isBrowser = isPlatformBrowser(TestBed.inject(PLATFORM_ID));
+    const service = TestBed.inject(ResumePdfService);
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    if (isBrowser && options.autoFlushHead !== false) {
+      const downloadUrl = TestBed.inject(RESUME_PDF_DOWNLOAD_URL);
+      const headReq = httpMock.expectOne({ method: 'HEAD', url: downloadUrl });
+      const status = options.headStatus ?? 200;
+      headReq.flush(null, {
+        status,
+        statusText: status >= 200 && status < 300 ? 'OK' : 'Error',
+      });
+    }
+
     return {
-      service: TestBed.inject(ResumePdfService),
-      httpMock: TestBed.inject(HttpTestingController),
+      service,
+      httpMock,
     };
   }
 
   it('provides the expected default injection tokens for PDF URL and filename', () => {
-    const { service } = setupService();
+    const { service, httpMock } = setupService();
     expect(service).toBeDefined();
 
     const downloadUrl = TestBed.inject(RESUME_PDF_DOWNLOAD_URL);
@@ -84,6 +102,136 @@ describe('ResumePdfService', () => {
       'https://resume-images.ohm-mho.space/downloadable-resume/Nawaphon_Isarathanachaikul.pdf',
     );
     expect(filename).toBe('nawaphon-isarathanachaikul-resume-profile.pdf');
+    httpMock.verify();
+  });
+
+  it('initiates an HTTP HEAD check on browser startup and marks availability as true on 2xx status', async () => {
+    const { service, httpMock } = setupService([], { autoFlushHead: false });
+    expect(service.isAvailable()).toBeNull();
+
+    const headReq = httpMock.expectOne({
+      method: 'HEAD',
+      url: 'https://resume-images.ohm-mho.space/downloadable-resume/Nawaphon_Isarathanachaikul.pdf',
+    });
+    headReq.flush(null, { status: 200, statusText: 'OK' });
+
+    // Allow promise resolution inside service
+    await Promise.resolve();
+
+    expect(service.isAvailable()).toBe(true);
+    httpMock.verify();
+  });
+
+  it('marks availability as true when checkAvailability is invoked directly and returns 200 OK', async () => {
+    const { service, httpMock } = setupService([], { autoFlushHead: true });
+    const checkPromise = service.checkAvailability();
+
+    const headReq = httpMock.expectOne({
+      method: 'HEAD',
+      url: 'https://resume-images.ohm-mho.space/downloadable-resume/Nawaphon_Isarathanachaikul.pdf',
+    });
+    headReq.flush(null, { status: 200, statusText: 'OK' });
+
+    const result = await checkPromise;
+    expect(result).toBe(true);
+    expect(service.isAvailable()).toBe(true);
+    httpMock.verify();
+  });
+
+  it('marks availability as true for non-200 2xx status (e.g. 204 No Content)', async () => {
+    const { service, httpMock } = setupService([], { autoFlushHead: true });
+    const checkPromise = service.checkAvailability();
+
+    const headReq = httpMock.expectOne({
+      method: 'HEAD',
+      url: 'https://resume-images.ohm-mho.space/downloadable-resume/Nawaphon_Isarathanachaikul.pdf',
+    });
+    headReq.flush(null, { status: 204, statusText: 'No Content' });
+
+    const result = await checkPromise;
+    expect(result).toBe(true);
+    expect(service.isAvailable()).toBe(true);
+    httpMock.verify();
+  });
+
+  it('marks availability as false when HEAD request returns a 4xx error (e.g. 404 Not Found)', async () => {
+    const { service, httpMock } = setupService([], { autoFlushHead: false });
+    const headReq = httpMock.expectOne({
+      method: 'HEAD',
+      url: 'https://resume-images.ohm-mho.space/downloadable-resume/Nawaphon_Isarathanachaikul.pdf',
+    });
+    headReq.flush(null, { status: 404, statusText: 'Not Found' });
+
+    await Promise.resolve();
+
+    expect(service.isAvailable()).toBe(false);
+    httpMock.verify();
+  });
+
+  it('marks availability as false and does not throw when checkAvailability receives 500 error', async () => {
+    const { service, httpMock } = setupService([], { autoFlushHead: true });
+    const checkPromise = service.checkAvailability();
+
+    const headReq = httpMock.expectOne({
+      method: 'HEAD',
+      url: 'https://resume-images.ohm-mho.space/downloadable-resume/Nawaphon_Isarathanachaikul.pdf',
+    });
+    headReq.flush(null, { status: 500, statusText: 'Internal Server Error' });
+
+    const result = await checkPromise;
+    expect(result).toBe(false);
+    expect(service.isAvailable()).toBe(false);
+    httpMock.verify();
+  });
+
+  it('marks availability as false when HEAD request encounters a network error', async () => {
+    const { service, httpMock } = setupService([], { autoFlushHead: true });
+    const checkPromise = service.checkAvailability();
+
+    const headReq = httpMock.expectOne({
+      method: 'HEAD',
+      url: 'https://resume-images.ohm-mho.space/downloadable-resume/Nawaphon_Isarathanachaikul.pdf',
+    });
+    headReq.error(new ProgressEvent('error'));
+
+    const result = await checkPromise;
+    expect(result).toBe(false);
+    expect(service.isAvailable()).toBe(false);
+    httpMock.verify();
+  });
+
+  it('does not dispatch HEAD request on server platform and returns false from checkAvailability', async () => {
+    const { service, httpMock } = setupService([{ provide: PLATFORM_ID, useValue: 'server' }]);
+    expect(service.isAvailable()).toBeNull();
+
+    httpMock.expectNone(
+      'https://resume-images.ohm-mho.space/downloadable-resume/Nawaphon_Isarathanachaikul.pdf',
+    );
+
+    const result = await service.checkAvailability();
+    expect(result).toBe(false);
+    expect(service.isAvailable()).toBe(false);
+
+    httpMock.expectNone(
+      'https://resume-images.ohm-mho.space/downloadable-resume/Nawaphon_Isarathanachaikul.pdf',
+    );
+    httpMock.verify();
+  });
+
+  it('dispatches HEAD request to overridden custom download URL token', async () => {
+    const customUrl = 'https://custom-domain.com/custom-resume.pdf';
+    const { service, httpMock } = setupService(
+      [{ provide: RESUME_PDF_DOWNLOAD_URL, useValue: customUrl }],
+      { autoFlushHead: false },
+    );
+
+    const headReq = httpMock.expectOne({ method: 'HEAD', url: customUrl });
+    headReq.flush(null, { status: 200, statusText: 'OK' });
+
+    await Promise.resolve();
+
+    expect(service.isAvailable()).toBe(true);
+    httpMock.verify();
   });
 
   it('fetches the PDF asset with reportProgress and observe events', async () => {

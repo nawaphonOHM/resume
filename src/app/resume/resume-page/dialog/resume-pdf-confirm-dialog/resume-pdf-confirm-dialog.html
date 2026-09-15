@@ -1,0 +1,8 @@
+<h2 mat-dialog-title>Confirm Download</h2>
+<mat-dialog-content>
+  <p>The file may be unavailable. Do you confirm to continue?</p>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button [mat-dialog-close]="false">Cancel</button>
+  <button mat-flat-button [mat-dialog-close]="true" cdkFocusInitial>Continue</button>
+</mat-dialog-actions>

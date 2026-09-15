@@ -39,6 +39,9 @@ export class ResumeNavigation {
   /** Current theme used to derive the opposite-theme control label and icon. */
   readonly theme = input.required<ResumeTheme>();
 
+  /** Whether the remote PDF asset is known to be available (null = checking/unknown, true = available, false = unavailable). */
+  readonly downloadAvailable = input<boolean | null>(null);
+
   /** Whether a PDF request is running and both responsive controls must remain disabled. */
   readonly downloadPending = input(false);
 
@@ -72,7 +75,9 @@ export class ResumeNavigation {
   /** @returns The accessible label describing the current PDF download state. */
   protected downloadControlLabel(): string {
     if (!this.downloadPending()) {
-      return 'Download résumé as PDF';
+      return this.downloadAvailable() === false
+        ? 'Download résumé as PDF (file may be unavailable)'
+        : 'Download résumé as PDF';
     }
 
     const progress = this.downloadProgress();
@@ -84,7 +89,7 @@ export class ResumeNavigation {
   /** @returns The concise mobile-menu label for the current PDF download state. */
   protected downloadControlText(): string {
     if (!this.downloadPending()) {
-      return 'Download PDF';
+      return this.downloadAvailable() === false ? 'Download PDF (unavailable)' : 'Download PDF';
     }
 
     const progress = this.downloadProgress();
