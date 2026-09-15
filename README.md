@@ -20,7 +20,7 @@ A high-performance, single-page interactive curriculum vitae and professional po
 - **Physics-Driven Orbital Badges**: Hero section code badge kinematics computed in 60fps frame loops via parametric trigonometry ($x = r \cdot A \cos(\omega t + \phi)$, $y = r \cdot A \sin(\omega t + \phi)$) with deterministic frequency derived from the calendar day of the month ($f = \text{dayOfMonth} / 3600\text{ Hz}$).
 - **Client-Side OpenCV.js CLAHE Image Enhancement**: Real-time contrast optimization for dark technology icons using WebAssembly CLAHE in CIE $L^*a^*b^*$ color space with cooperative idle scheduling (`requestIdleCallback`) and explicit C++ memory management.
 - **Smart Image Zoom Previews**: Image preview overlay powered by Angular CDK Overlay with `ResizeObserver`-driven downscale detection and automatic viewport collision containment.
-- **On-Demand Streaming PDF Download**: User-triggered résumé PDF download using Angular `HttpClient` event streaming with live percentage progress tracking and automatic object URL cleanup.
+- **Resilient Streaming PDF Download & Pre-Flight Verification**: User-triggered résumé PDF download featuring pre-flight remote asset availability verification (`HEAD` request), reactive availability status signaling (`isAvailable`), accessible confirmation alert dialog (`ResumePdfConfirmDialog`) for proceeding with unverified or unavailable assets, Angular `HttpClient` event streaming with real-time percentage progress tracking, and automatic object URL cleanup.
 - **Material 3 Theme System & Print Foundation**: CSS `@property` color token interpolation supporting Light, Dark, and System modes with dedicated A4 print layout stylesheets and WCAG AA accessibility compliance.
 
 ## Technology Stack
@@ -79,6 +79,8 @@ graph TD
         ROUTES -->|loadComponent| RESUME_PAGE["ResumePage<br/>resume-page.ts"]
         RESUME_PAGE --> NAV["ResumeNavigation"]
         NAV -.->|themeToggled| RESUME_PAGE
+        NAV -.->|downloadRequested| RESUME_PAGE
+        RESUME_PAGE -.->|confirm on unavailable| PDF_DIALOG["ResumePdfConfirmDialog<br/>dialog/resume-pdf-confirm-dialog/"]
         RESUME_PAGE --> HERO["HeroSection"]
         RESUME_PAGE --> SUMMARY["SummarySection"]
         RESUME_PAGE --> EXPERIENCE["ExperienceTimeline"]
@@ -95,7 +97,7 @@ graph TD
         ZOOM_DIRECTIVE --> ZOOM_SERVICE["ImageZoomService"]
         ZOOM_SERVICE -->|CDK Overlay| ZOOM_PREVIEW["ImageZoomPreview"]
         RESUME_PAGE --> THEME_SERVICE["ThemeService"]
-        RESUME_PAGE --> PDF_SERVICE["ResumePdfService"]
+        RESUME_PAGE --> PDF_SERVICE["ResumePdfService<br/>HEAD pre-flight & GET stream"]
         TECHNOLOGY_ICON --> CONTRAST_SERVICE["TechnologyIconContrastService"]
     end
 
@@ -112,7 +114,7 @@ graph TD
     end
 
     subgraph External["External Assets & CDN Runtimes"]
-        PDF_SERVICE -.->|stream GET with progress| PDF_ASSET["DigitalOcean Spaces CDN<br/>Hosted PDF Asset"]
+        PDF_SERVICE -.->|HEAD check & GET stream| PDF_ASSET["DigitalOcean Spaces CDN<br/>Hosted PDF Asset"]
         CONTRAST_SERVICE -.->|lazy ESM import| OPENCV_CDN["jsDelivr CDN<br/>@techstark/opencv-js"]
         EXPERIENCE -.->|remote images| DO_SPACES["DigitalOcean Spaces CDN<br/>image assets"]
         EDUCATION -.->|remote images| DO_SPACES
@@ -260,18 +262,35 @@ Located at `src/app/directive/image-zome/image-zoom.directive.ts` and `src/app/r
   `ImageZoomService` positions previews using connected position strategies (`IMAGE_ZOOM_POSITIONS` trying right, left, bottom, top with `ORIGIN_GAP = 12px`), enforces boundary margins (`VIEWPORT_MARGIN = 16px`), accounts for frame padding/borders (`PANEL_CHROME_PX = 26px`), and clamps maximum viewport share (`IMAGE_MAX_VIEWPORT_RATIO = 0.20`).
 - **Global Dismissals**: Subscribes to outside clicks, `Escape` keypresses, and route navigation.
 
-### 7. On-Demand Streaming PDF Download with Real-Time Progress
+### 7. On-Demand Streaming PDF Download & Availability Verification System
 
-Located at `src/app/resume/resume-page/service/resume-pdf/resume-pdf.service.ts`:
+Located at `src/app/resume/resume-page/service/resume-pdf/resume-pdf.service.ts` and `src/app/resume/resume-page/dialog/resume-pdf-confirm-dialog/`:
 
-- **HTTP Event Streaming**: Requests the remote résumé PDF (`https://resume-images.ohm-mho.space/downloadable-resume/Nawaphon_Isarathanachaikul.pdf`) via Angular `HttpClient` with `{ reportDownloadProgress: true, observe: 'events', responseType: 'blob' }`.
-- **Live Percentage Calculation**: Listens to `HttpEventType.DownloadProgress` events, deriving download percentage as $\operatorname{clamp}\left(\left\lfloor \frac{\text{loaded}}{\text{total}} \times 100 \right\rfloor, 0, 100\right)$.
+- **Pre-Flight Remote Asset Availability Verification (`checkAvailability`)**:
+  When running in a browser environment (`isPlatformBrowser(this.platformId)`), `ResumePdfService` automatically initiates an asynchronous `HEAD` request to `RESUME_PDF_DOWNLOAD_URL` to verify whether the hosted asset returns an active `2xx` HTTP response status. The state is published via a reactive read-only signal:
+  ```typescript
+  readonly isAvailable: Signal<boolean | null> = this._isAvailable.asReadonly();
+  ```
+  where `null` represents verification in progress, `true` confirms asset availability, and `false` handles network errors, non-2xx status codes, or non-browser (SSR) execution.
+- **Visual Warning & Responsive Navigation States**:
+  `ResumeNavigation` receives the `downloadAvailable` input signal to dynamically adjust its action indicators:
+  - When unavailable (`downloadAvailable() === false`), the download trigger displays a `file_download_off` Material icon with a tooltip (_"Resume PDF might be unavailable. Click to confirm download anyway."_) and an accessibility label (_"Download résumé as PDF (file may be unavailable)"_).
+  - When verified or checking, standard `download` iconography and labels are shown.
+- **Accessible Confirmation Dialog (`ResumePdfConfirmDialog`)**:
+  If a user initiates a download while `downloadAvailable() === false`, `ResumePage` intercepts the request and opens `ResumePdfConfirmDialog` configured with `role: 'alertdialog'`:
+  - **Cancel**: Emits `false` (`ResumePdfConfirmDialogResult`), aborting the download without triggering network requests or pending progress states.
+  - **Continue**: Emits `true`, allowing the user to proceed with the binary streaming request.
+- **HTTP Event Streaming & Progress Observation**:
+  Streams the remote résumé PDF (`https://resume-images.ohm-mho.space/downloadable-resume/Nawaphon_Isarathanachaikul.pdf`) via Angular `HttpClient` using `{ reportDownloadProgress: true, observe: 'events', responseType: 'blob' }`.
+- **Live Percentage Calculation**:
+  Observes `HttpEventType.DownloadProgress` events, calculating real-time download percentage as:
+  $$\text{percentage} = \operatorname{clamp}\left(\left\lfloor \frac{\text{loaded}}{\text{total}} \times 100 \right\rfloor, 0, 100\right)$$
 - **Dynamic Spinner UI States**:
-  - Renders `mat-progress-spinner` in `mode="indeterminate"` while establishing connection or if `total` is unknown.
-  - Dynamically transitions to `mode="determinate"` with `[value]="downloadProgress()"` as bytes arrive.
-  - Provides accessible `aria-busy="true"` and live progress `aria-label` updates.
+  - Renders `mat-progress-spinner` in `mode="indeterminate"` while establishing the HTTP stream or when the `total` content length is indeterminate.
+  - Smoothly transitions to `mode="determinate"` with `[value]="downloadProgress()"` as streamed data arrives.
+  - Emits live `aria-busy="true"` and descriptive `aria-label` updates (_"Downloading résumé PDF (45%)"_).
 - **Blob Download & Guaranteed Object URL Revocation**:
-  Constructs a temporary anchor element to trigger file saving (`nawaphon-isarathanachaikul-resume-profile.pdf`), with guaranteed `window.URL.revokeObjectURL()` cleanup in a `finally` block.
+  Constructs a temporary anchor element to trigger browser file saving (`nawaphon-isarathanachaikul-resume-profile.pdf`), ensuring deterministic `window.URL.revokeObjectURL()` cleanup in a `finally` block.
 
 ---
 
@@ -401,7 +420,8 @@ The portfolio is engineered to meet strict accessibility standards:
 - **Keyboard Navigation & Focus Management**: High-visibility focus indicators are configured globally via `:focus-visible { outline: 0.1875rem solid var(--resume-focus); outline-offset: 0.1875rem; }`.
 - **Screen Reader Announcements & ARIA Live Regions**:
   - The HTML pre-bootstrap splash loader and Angular `@defer` loading placeholders employ `role="status"`, `aria-live="polite"`, `aria-busy="true"`, and descriptive `aria-label` tags to communicate loading states.
-  - The PDF download button dynamically announces progress updates with live `aria-label` and `aria-busy` attributes.
+  - The PDF download button dynamically announces state transitions, warning indicators for unavailable files, and live progress updates with `aria-label` and `aria-busy` attributes.
+  - The PDF confirmation modal (`ResumePdfConfirmDialog`) implements `role="alertdialog"` with focused action buttons for keyboard and screen reader accessibility.
   - Decorative image preview overlays created via the Angular CDK are marked as decorative (`aria-hidden="true"`) to screen readers, with dismissal handled automatically via outside-click or the Escape key.
 - **Motion Reduction (`prefers-reduced-motion: reduce`)**:
   - CSS animations, transitions, and smooth scrolling are neutralized globally (`animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important;`).
@@ -455,6 +475,8 @@ resume/
 │   │   │   └── type/             # TypeScript union types & type aliases
 │   │   │       ├── card-surfaces.type.ts
 │   │   │       ├── colors.type.ts
+│   │   │       ├── download-progress-callback.type.ts
+│   │   │       ├── resume-pdf-confirm-dialog-result.type.ts
 │   │   │       ├── status-color.type.ts
 │   │   │       └── ...
 │   │   ├── resume/               # Routed page & presentational feature components
@@ -497,6 +519,11 @@ resume/
 │   │   │   │   ├── resume-navigation.scss
 │   │   │   │   └── resume-navigation.spec.ts
 │   │   │   ├── resume-page/               # Main routed container component
+│   │   │   │   ├── dialog/
+│   │   │   │   │   └── resume-pdf-confirm-dialog/
+│   │   │   │   │       ├── resume-pdf-confirm-dialog.ts
+│   │   │   │   │       ├── resume-pdf-confirm-dialog.html
+│   │   │   │   │       └── resume-pdf-confirm-dialog.spec.ts
 │   │   │   │   ├── service/resume-pdf/
 │   │   │   │   │   ├── resume-pdf.service.ts
 │   │   │   │   │   └── resume-pdf.service.spec.ts
