@@ -3,11 +3,9 @@
 <app-resume-navigation
   [activeSection]="activeSection()"
   [downloadPending]="downloadPending()"
-  [printPending]="printPending()"
   [theme]="theme()"
   (downloadRequested)="downloadResume()"
   (themeToggled)="toggleTheme()"
-  (printRequested)="printResume()"
 />
 
 <main id="main-content" tabindex="-1">
@@ -15,10 +13,7 @@
     <app-hero-section [profile]="resume" />
 
     @defer (on viewport; when renderAllSections()) {
-      <app-summary-section
-        [attr.data-resume-defer-settled]="deferBoundaries.summary"
-        [summary]="resume.summary"
-      />
+      <app-summary-section [summary]="resume.summary" />
     } @placeholder {
       <section
         id="about"
@@ -51,7 +46,6 @@
         class="resume-defer-error resume-defer-anchor resume-defer-reserve--summary scroll-mt-24"
         data-resume-defer-error
         data-resume-section
-        [attr.data-resume-defer-settled]="deferBoundaries.summary"
         role="alert"
         aria-labelledby="about-error-title"
         tabindex="-1"
@@ -67,10 +61,7 @@
     }
 
     @defer (on viewport; when renderAllSections()) {
-      <app-experience-timeline
-        [attr.data-resume-defer-settled]="deferBoundaries.experience"
-        [experience]="resume.experience"
-      />
+      <app-experience-timeline [experience]="resume.experience" />
     } @placeholder {
       <section
         id="experience"
@@ -103,7 +94,6 @@
         class="resume-defer-error resume-defer-anchor resume-defer-reserve--experience scroll-mt-24"
         data-resume-defer-error
         data-resume-section
-        [attr.data-resume-defer-settled]="deferBoundaries.experience"
         role="alert"
         aria-labelledby="experience-error-title"
         tabindex="-1"
@@ -120,10 +110,7 @@
 
     @defer (on viewport; when renderAllSections()) {
       <app-education-section [education]="resume.education" />
-      <app-profile-sidebar
-        [attr.data-resume-defer-settled]="deferBoundaries.educationProfile"
-        [profile]="resume"
-      />
+      <app-profile-sidebar [profile]="resume" />
     } @placeholder {
       <div
         class="resume-defer-placeholder resume-defer-placeholder--education-profile"
@@ -205,7 +192,6 @@
       <div
         class="resume-defer-error resume-defer-error--education-profile"
         data-resume-defer-error
-        [attr.data-resume-defer-settled]="deferBoundaries.educationProfile"
         role="alert"
         aria-label="Education, skills, and profile sections are unavailable"
       >

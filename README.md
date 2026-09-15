@@ -110,7 +110,7 @@ To understand the implementation and maintain the codebase, familiarity with the
 ### 5. Computational Geometry & DOM Observers
 
 - **Viewport geometry and collision prevention:** `ImageZoomService` uses overlay rectangles from `getBoundingClientRect()`, viewport margins, and min/max bounds to keep popover previews within the viewport, including after CDK positioning (`src/app/resume/image-zoom-preview/service/image-zoom.service.ts`).
-- **Layout stabilization:** `ResizeObserver` repositions a preview when image decoding or layout changes its size. `ResumePage` uses `MutationObserver` to wait for deferred boundary markers before opening the native print dialog (`src/app/resume/image-zoom-preview/service/image-zoom.service.ts`, `src/app/resume/resume-page/resume-page.ts`).
+- **Layout stabilization:** `ResizeObserver` repositions a preview when image decoding or layout changes its size (`src/app/resume/image-zoom-preview/service/image-zoom.service.ts`).
 
 ### 6. Web Security & Cryptography
 

@@ -119,114 +119,23 @@ describe('ResumeNavigation', () => {
     ).toHaveLength(1);
   });
 
-  it('provides accessible labels for theme, print, menu, and download controls', () => {
+  it('provides accessible labels for theme, menu, and download controls', () => {
     const fixture = TestBed.createComponent(ResumeNavigation);
     fixture.componentRef.setInput('activeSection', 'about');
     fixture.componentRef.setInput('theme', 'dark');
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    const print = element.querySelector<HTMLButtonElement>(
-      'button.desktop-control[aria-label="Print résumé"]',
-    );
     const download = element.querySelector<HTMLButtonElement>(
       'button.desktop-control[aria-label="Download résumé as PDF"]',
     );
 
     expect(element.querySelector('[aria-label="Switch to light theme"]')).not.toBeNull();
-    expect(print?.type).toBe('button');
-    expect(print?.querySelector('mat-icon')?.textContent?.trim()).toBe('print');
     expect(download?.type).toBe('button');
     expect(download?.querySelector('mat-icon')?.textContent?.trim()).toBe('download');
     expect(element.querySelector('[aria-label="Open section menu"]')).not.toBeNull();
+    expect(element.querySelector('[aria-label="Print résumé"]')).toBeNull();
     expect(element.querySelector('a[download]')).toBeNull();
-  });
-
-  it('emits print requests from both responsive controls', async () => {
-    const fixture = TestBed.createComponent(ResumeNavigation);
-    fixture.componentRef.setInput('activeSection', 'about');
-    fixture.componentRef.setInput('theme', 'light');
-    fixture.detectChanges();
-    const printRequested = vi.fn();
-    fixture.componentInstance.printRequested.subscribe(printRequested);
-    const element = fixture.nativeElement as HTMLElement;
-
-    element
-      .querySelector<HTMLButtonElement>('button.desktop-control[aria-label="Print résumé"]')
-      ?.click();
-    const menu = await openMobileMenu(fixture);
-    const mobilePrint = Array.from(menu.querySelectorAll<HTMLButtonElement>('button')).find((btn) =>
-      btn.textContent?.includes('Print résumé'),
-    );
-
-    expect(printRequested).toHaveBeenCalledOnce();
-    expect(mobilePrint?.querySelector('mat-icon')?.textContent?.trim()).toBe('print');
-    expect(mobilePrint?.querySelector('span')?.textContent?.trim()).toBe('Print résumé');
-    mobilePrint?.click();
-    expect(printRequested).toHaveBeenCalledTimes(2);
-  });
-
-  it('disables both print controls and exposes MatProgressSpinner while pending', async () => {
-    const fixture = TestBed.createComponent(ResumeNavigation);
-    fixture.componentRef.setInput('activeSection', 'about');
-    fixture.componentRef.setInput('theme', 'light');
-    fixture.componentRef.setInput('printPending', true);
-    fixture.detectChanges();
-    const printRequested = vi.fn();
-    fixture.componentInstance.printRequested.subscribe(printRequested);
-    const element = fixture.nativeElement as HTMLElement;
-    const desktopPrint = element.querySelector<HTMLButtonElement>(
-      'button.desktop-control[aria-label="Preparing résumé for printing"]',
-    );
-    const menu = await openMobileMenu(fixture);
-    const mobilePrint = menu.querySelector<HTMLButtonElement>(
-      'button[aria-label="Preparing résumé for printing"]',
-    );
-
-    expect(desktopPrint?.disabled).toBe(true);
-    expect(desktopPrint?.getAttribute('aria-busy')).toBe('true');
-    expect(desktopPrint?.querySelector('mat-icon')).toBeNull();
-    const desktopSpinnerDebug = fixture.debugElement.query(
-      By.css(
-        'button.desktop-control[aria-label="Preparing résumé for printing"] mat-progress-spinner',
-      ),
-    );
-    expect(desktopSpinnerDebug).not.toBeNull();
-    const desktopSpinner = desktopSpinnerDebug.componentInstance as MatProgressSpinner;
-    expect(desktopSpinner.diameter).toBe(18);
-    expect(desktopSpinner.strokeWidth).toBe(2.5);
-    expect(desktopSpinner.mode).toBe('indeterminate');
-    expect(desktopSpinnerDebug.nativeElement.getAttribute('aria-hidden')).toBe('true');
-    expect(desktopSpinnerDebug.nativeElement.classList.contains('navigation-spinner')).toBe(true);
-
-    expect(mobilePrint?.disabled).toBe(true);
-    expect(mobilePrint?.getAttribute('aria-busy')).toBe('true');
-    expect(mobilePrint?.querySelector('mat-icon')).toBeNull();
-    const mobileSpinner = mobilePrint?.querySelector<HTMLElement>('mat-progress-spinner');
-    expect(mobileSpinner).not.toBeNull();
-    expect(mobileSpinner?.getAttribute('aria-hidden')).toBe('true');
-    expect(mobileSpinner?.classList.contains('menu-spinner')).toBe(true);
-    expect(mobilePrint?.querySelector('span')?.textContent?.trim()).toBe('Preparing to print…');
-
-    desktopPrint?.click();
-    mobilePrint?.click();
-    expect(printRequested).not.toHaveBeenCalled();
-
-    fixture.componentRef.setInput('printPending', false);
-    fixture.detectChanges();
-
-    expect(desktopPrint?.disabled).toBe(false);
-    expect(desktopPrint?.getAttribute('aria-label')).toBe('Print résumé');
-    expect(desktopPrint?.getAttribute('aria-busy')).toBe('false');
-    expect(desktopPrint?.querySelector('mat-icon')?.textContent?.trim()).toBe('print');
-    expect(desktopPrint?.querySelector('mat-progress-spinner')).toBeNull();
-
-    expect(mobilePrint?.disabled).toBe(false);
-    expect(mobilePrint?.getAttribute('aria-label')).toBe('Print résumé');
-    expect(mobilePrint?.getAttribute('aria-busy')).toBe('false');
-    expect(mobilePrint?.querySelector('mat-icon')?.textContent?.trim()).toBe('print');
-    expect(mobilePrint?.querySelector('mat-progress-spinner')).toBeNull();
-    expect(mobilePrint?.querySelector('span')?.textContent?.trim()).toBe('Print résumé');
   });
 
   it('emits download requests from both responsive controls', async () => {

@@ -26,20 +26,11 @@ import { SummarySection } from '../summary-section/summary-section';
 import { resumeData } from '../../helper/injection-token/resume.data.ts';
 import { ResumePdfService } from './service/resume-pdf/resume-pdf.service.ts';
 
-/** Stable identifiers shared by deferred content and its printable fallback states. */
-export const RESUME_DEFER_BOUNDARIES = {
-  summary: 'summary',
-  experience: 'experience',
-  educationProfile: 'education-profile',
-} as const;
-
 const VIEWPORT_EVENT_THROTTLE_MS = 100;
 const SECTION_ACTIVATION_RATIO = 0.18;
-const DEFER_SETTLEMENT_ATTRIBUTE = 'data-resume-defer-settled';
-const DEFER_BOUNDARY_IDS = Object.values(RESUME_DEFER_BOUNDARIES);
 
 /**
- * Composes the canonical résumé and coordinates navigation, theme, printing, and PDF generation.
+ * Composes the canonical résumé and coordinates navigation, theme, and PDF generation.
  *
  * @remarks Recognized routed fragments and observable viewport sections share responsibility for
  * active navigation state, while the Router owns URL, history, scrolling, and target focus.
@@ -70,11 +61,6 @@ export default class ResumePage {
   private readonly viewportRuler = inject(ViewportRuler);
   private readonly sections = inject(RESUME_SECTIONS);
 
-  private boundaryReadiness?: Promise<void>;
-  private boundaryReadinessObserver?: MutationObserver;
-  private resolveBoundaryReadiness?: () => void;
-  private destroyed = false;
-
   /** Canonical profile distributed to the presentational section components. */
   protected readonly resume = inject(resumeData);
 
@@ -84,12 +70,6 @@ export default class ResumePage {
   /** Whether one user-triggered PDF generation request is currently running. */
   protected readonly downloadPending = signal(false);
 
-  /** Whether one user-triggered print preparation request is currently running. */
-  protected readonly printPending = signal(false);
-
-  /** Deferred boundary identifiers exposed to successful and error settlement markers. */
-  protected readonly deferBoundaries = RESUME_DEFER_BOUNDARIES;
-
   /** Forces every post-hero boundary to render when a later app-controlled action requires it. */
   protected readonly renderAllSections = signal(false);
 
@@ -98,11 +78,6 @@ export default class ResumePage {
 
   /** Synchronizes routed fragments immediately and defers viewport tracking until initial render. */
   constructor() {
-    this.destroyRef.onDestroy(() => {
-      this.destroyed = true;
-      this.settleBoundaryReadiness();
-    });
-
     this.activatedRoute.fragment.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((fragment) => {
       if (this.isSectionId(fragment)) {
         this.activeSection.set(fragment);
@@ -124,31 +99,6 @@ export default class ResumePage {
   /** Delegates explicit theme switching and persistence to the theme service. */
   protected toggleTheme(): void {
     this.themeService.toggle();
-  }
-
-  /** Renders and settles every printable boundary before opening the browser print dialog. */
-  protected async printResume(): Promise<void> {
-    if (this.printPending()) {
-      return;
-    }
-
-    this.printPending.set(true);
-    try {
-      this.renderAllSections.set(true);
-      const view = this.document.defaultView;
-
-      if (!view || this.destroyed) {
-        return;
-      }
-
-      await this.waitForBoundarySettlement();
-
-      if (!this.destroyed) {
-        view.print();
-      }
-    } finally {
-      this.printPending.set(false);
-    }
   }
 
   /** Starts loading all deferred content as a best effort before a native print dialog opens. */
@@ -214,65 +164,6 @@ export default class ResumePage {
     if (activeSection) {
       this.activeSection.set(activeSection.id);
     }
-  }
-
-  /** Returns one cached promise that resolves when all printable boundaries have settled. */
-  private waitForBoundarySettlement(): Promise<void> {
-    if (this.boundaryReadiness) {
-      return this.boundaryReadiness;
-    }
-
-    const main = this.document.querySelector<HTMLElement>('main#main-content');
-
-    if (!main || this.haveAllBoundariesSettled(main)) {
-      this.boundaryReadiness = Promise.resolve();
-      return this.boundaryReadiness;
-    }
-
-    const MutationObserverConstructor = this.document.defaultView?.MutationObserver;
-
-    if (!MutationObserverConstructor) {
-      this.boundaryReadiness = Promise.resolve();
-      return this.boundaryReadiness;
-    }
-
-    this.boundaryReadiness = new Promise<void>((resolve) => {
-      this.resolveBoundaryReadiness = resolve;
-      this.boundaryReadinessObserver = new MutationObserverConstructor(() => {
-        if (this.haveAllBoundariesSettled(main)) {
-          this.settleBoundaryReadiness();
-        }
-      });
-      this.boundaryReadinessObserver.observe(main, {
-        attributes: true,
-        attributeFilter: [DEFER_SETTLEMENT_ATTRIBUTE],
-        childList: true,
-        subtree: true,
-      });
-
-      if (this.haveAllBoundariesSettled(main)) {
-        this.settleBoundaryReadiness();
-      }
-    });
-    return this.boundaryReadiness;
-  }
-
-  /** @returns Whether each deferred boundary has one success or error marker below the page main. */
-  private haveAllBoundariesSettled(main: ParentNode): boolean {
-    const settledBoundaries = new Set(
-      Array.from(main.querySelectorAll<HTMLElement>(`[${DEFER_SETTLEMENT_ATTRIBUTE}]`)).map(
-        (element) => element.getAttribute(DEFER_SETTLEMENT_ATTRIBUTE),
-      ),
-    );
-    return DEFER_BOUNDARY_IDS.every((boundary) => settledBoundaries.has(boundary));
-  }
-
-  /** Disconnects and resolves an active readiness wait on settlement or component destruction. */
-  private settleBoundaryReadiness(): void {
-    this.boundaryReadinessObserver?.disconnect();
-    this.boundaryReadinessObserver = undefined;
-    this.resolveBoundaryReadiness?.();
-    this.resolveBoundaryReadiness = undefined;
   }
 
   /** @returns Whether a fragment value belongs to the shared section registry. */

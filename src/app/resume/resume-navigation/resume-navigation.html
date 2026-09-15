@@ -36,29 +36,6 @@
         mat-icon-button
         class="desktop-control"
         type="button"
-        [disabled]="printPending()"
-        [attr.aria-label]="printControlLabel()"
-        [attr.aria-busy]="printPending()"
-        [matTooltip]="printControlLabel()"
-        (click)="printRequested.emit()"
-      >
-        @if (printPending()) {
-          <mat-progress-spinner
-            mode="indeterminate"
-            diameter="18"
-            strokeWidth="2.5"
-            class="navigation-spinner"
-            aria-hidden="true"
-          />
-        } @else {
-          <mat-icon aria-hidden="true">print</mat-icon>
-        }
-      </button>
-
-      <button
-        mat-icon-button
-        class="desktop-control"
-        type="button"
         [disabled]="downloadPending()"
         [attr.aria-label]="downloadControlLabel()"
         [attr.aria-busy]="downloadPending()"
@@ -106,27 +83,6 @@
 
   <mat-divider></mat-divider>
 
-  <button
-    mat-menu-item
-    type="button"
-    [disabled]="printPending()"
-    [attr.aria-label]="printControlLabel()"
-    [attr.aria-busy]="printPending()"
-    (click)="printRequested.emit()"
-  >
-    @if (printPending()) {
-      <mat-progress-spinner
-        mode="indeterminate"
-        diameter="18"
-        strokeWidth="2.5"
-        class="navigation-spinner menu-spinner"
-        aria-hidden="true"
-      />
-    } @else {
-      <mat-icon aria-hidden="true">print</mat-icon>
-    }
-    <span>{{ printControlText() }}</span>
-  </button>
   <button
     mat-menu-item
     type="button"

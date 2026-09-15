@@ -1,5 +1,5 @@
 /**
- * Exercises the composed résumé, section accessibility, navigation orchestration, theme, print,
+ * Exercises the composed résumé, section accessibility, navigation orchestration, theme,
  * download controls, image-zoom-preview bindings, and viewport-tracking lifecycle.
  */
 import { ScrollDispatcher, ViewportRuler } from '@angular/cdk/scrolling';
@@ -32,7 +32,7 @@ import type { ResumeProfile } from '../../helper/interface/resume-profile/resume
 import { ImageZoomDirective } from '../../directive/image-zome/image-zoom.directive.ts';
 import { ResumeNavigation } from '../resume-navigation/resume-navigation';
 import type { ResumeSectionId } from '../../helper/type/resume-section-id.type.ts';
-import ResumePage, { RESUME_DEFER_BOUNDARIES } from './resume-page';
+import ResumePage from './resume-page';
 import type { TechnologyIconPresentation } from '../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
 import type { BrandLogo } from '../../helper/interface/brand-logo/brand-logo.interface.ts';
 import { ResumePdfService } from './service/resume-pdf/resume-pdf.service.ts';
@@ -91,15 +91,6 @@ async function renderDeferredSections(fixture: ComponentFixture<ResumePage>): Pr
     await deferBlock.render(DeferBlockState.Complete);
   }
   fixture.detectChanges();
-}
-
-/** Invokes the page-level print workflow while retaining its asynchronous completion handle. */
-function requestPrint(fixture: ComponentFixture<ResumePage>): Promise<void> {
-  return (
-    fixture.componentInstance as unknown as {
-      printResume(): Promise<void>;
-    }
-  ).printResume();
 }
 
 /** Supplies viewport-relative section bounds while retaining the element for replacement checks. */
@@ -289,10 +280,9 @@ describe('ResumePage', () => {
       expect(spinnerDebug.nativeElement.classList.contains('resume-defer-spinner')).toBe(true);
     }
     expect(groupedPlaceholder?.querySelectorAll(':scope > section')).toHaveLength(3);
-    expect(element.querySelectorAll('[data-resume-defer-settled]')).toHaveLength(0);
   });
 
-  it('renders every deferred boundary once and marks complete content as settled', async () => {
+  it('renders every deferred boundary once when complete', async () => {
     const fixture = TestBed.createComponent(ResumePage);
     await renderDeferredSections(fixture);
     const element = fixture.nativeElement as HTMLElement;
@@ -301,9 +291,6 @@ describe('ResumePage', () => {
         'app-summary-section, app-experience-timeline, app-education-section, app-profile-sidebar',
       ),
     );
-    const settledHosts = Array.from(
-      element.querySelectorAll<HTMLElement>('[data-resume-defer-settled]'),
-    );
 
     expect(hosts.map(({ tagName }) => tagName.toLowerCase())).toEqual([
       'app-summary-section',
@@ -311,25 +298,12 @@ describe('ResumePage', () => {
       'app-education-section',
       'app-profile-sidebar',
     ]);
-    expect(settledHosts.map((host) => host.getAttribute('data-resume-defer-settled'))).toEqual(
-      Object.values(RESUME_DEFER_BOUNDARIES),
-    );
-    expect(settledHosts.map(({ tagName }) => tagName.toLowerCase())).toEqual([
-      'app-summary-section',
-      'app-experience-timeline',
-      'app-profile-sidebar',
-    ]);
     expect(element.querySelectorAll('[data-resume-defer-placeholder]')).toHaveLength(0);
     expect(element.querySelectorAll('[data-resume-section]')).toHaveLength(5);
     expect(element.querySelectorAll('.resume-defer-spinner')).toHaveLength(0);
-
-    fixture.detectChanges();
-    expect(Array.from(element.querySelectorAll('[data-resume-defer-settled]'))).toEqual(
-      settledHosts,
-    );
   });
 
-  it('preserves every fragment target and settlement marker in deferred error states', async () => {
+  it('preserves every fragment target in deferred error states', async () => {
     const fixture = TestBed.createComponent(ResumePage);
     fixture.detectChanges();
     const deferBlocks = await fixture.getDeferBlocks();
@@ -351,9 +325,6 @@ describe('ResumePage', () => {
       'alert',
       'alert',
     ]);
-    expect(errorRoots.map((root) => root.getAttribute('data-resume-defer-settled'))).toEqual(
-      Object.values(RESUME_DEFER_BOUNDARIES),
-    );
     expect(anchors.map(({ id }) => id)).toEqual([
       'about',
       'experience',
@@ -867,96 +838,6 @@ describe('ResumePage', () => {
     expect(text('footer p')).toBe(`${RESUME.name} · ${RESUME.title}`);
   });
 
-  it('waits to print until every deferred boundary has completed', async () => {
-    const print = vi.fn();
-    Object.defineProperty(window, 'print', { configurable: true, value: print });
-    const fixture = TestBed.createComponent(ResumePage);
-    fixture.detectChanges();
-    const deferBlocks = await fixture.getDeferBlocks();
-    const main = fixture.nativeElement.querySelector('main#main-content') as HTMLElement;
-    const observe = vi.spyOn(window.MutationObserver.prototype, 'observe');
-    const disconnect = vi.spyOn(window.MutationObserver.prototype, 'disconnect');
-
-    const printCompleted = requestPrint(fixture);
-
-    expect(print).not.toHaveBeenCalled();
-    expect(observe).toHaveBeenCalledOnce();
-    expect(observe).toHaveBeenCalledWith(main, {
-      attributes: true,
-      attributeFilter: ['data-resume-defer-settled'],
-      childList: true,
-      subtree: true,
-    });
-
-    await deferBlocks[0].render(DeferBlockState.Complete);
-    fixture.detectChanges();
-    await deferBlocks[1].render(DeferBlockState.Complete);
-    fixture.detectChanges();
-    expect(print).not.toHaveBeenCalled();
-
-    await deferBlocks[2].render(DeferBlockState.Complete);
-    fixture.detectChanges();
-    await printCompleted;
-
-    expect(print).toHaveBeenCalledOnce();
-    expect(disconnect).toHaveBeenCalledOnce();
-  });
-
-  it('treats deferred error fallbacks as settled before printing', async () => {
-    const print = vi.fn();
-    Object.defineProperty(window, 'print', { configurable: true, value: print });
-    const fixture = TestBed.createComponent(ResumePage);
-    fixture.detectChanges();
-    const deferBlocks = await fixture.getDeferBlocks();
-
-    const printCompleted = requestPrint(fixture);
-
-    for (const [index, deferBlock] of deferBlocks.entries()) {
-      await deferBlock.render(DeferBlockState.Error);
-      fixture.detectChanges();
-
-      if (index < deferBlocks.length - 1) {
-        expect(print).not.toHaveBeenCalled();
-      }
-    }
-    await printCompleted;
-
-    expect(print).toHaveBeenCalledOnce();
-    expect(
-      fixture.nativeElement.querySelectorAll(
-        '[data-resume-defer-error][data-resume-defer-settled]',
-      ),
-    ).toHaveLength(3);
-  });
-
-  it('reuses settled print readiness for later print requests', async () => {
-    const print = vi.fn();
-    Object.defineProperty(window, 'print', { configurable: true, value: print });
-    const fixture = TestBed.createComponent(ResumePage);
-    fixture.detectChanges();
-    const deferBlocks = await fixture.getDeferBlocks();
-    const observe = vi.spyOn(window.MutationObserver.prototype, 'observe');
-
-    const firstPrint = requestPrint(fixture);
-    for (const deferBlock of deferBlocks) {
-      await deferBlock.render(DeferBlockState.Complete);
-      fixture.detectChanges();
-    }
-    await firstPrint;
-    fixture.detectChanges();
-
-    const printButton = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
-      '[aria-label="Print résumé"]',
-    );
-    expect(printButton).not.toBeNull();
-    printButton!.click();
-    await Promise.resolve();
-    fixture.detectChanges();
-
-    expect(print).toHaveBeenCalledTimes(2);
-    expect(observe).toHaveBeenCalledOnce();
-  });
-
   it('requests all boundaries synchronously for native printing without opening a dialog', async () => {
     const print = vi.fn();
     Object.defineProperty(window, 'print', { configurable: true, value: print });
@@ -972,64 +853,6 @@ describe('ResumePage', () => {
     expect(component.renderAllSections()).toBe(true);
     expect(print).not.toHaveBeenCalled();
     expect(element.querySelectorAll('[data-resume-defer-placeholder]')).toHaveLength(3);
-    expect(element.querySelectorAll('[data-resume-defer-settled]')).toHaveLength(0);
-  });
-
-  it('disconnects a pending print wait when the page is destroyed', async () => {
-    const print = vi.fn();
-    Object.defineProperty(window, 'print', { configurable: true, value: print });
-    const fixture = TestBed.createComponent(ResumePage);
-    fixture.detectChanges();
-    const disconnect = vi.spyOn(window.MutationObserver.prototype, 'disconnect');
-
-    const printCompleted = requestPrint(fixture);
-    fixture.destroy();
-    await printCompleted;
-
-    expect(disconnect).toHaveBeenCalledOnce();
-    expect(print).not.toHaveBeenCalled();
-  });
-
-  it('shares print pending state with navigation and disables print button while preparing boundaries', async () => {
-    const print = vi.fn();
-    Object.defineProperty(window, 'print', { configurable: true, value: print });
-    const fixture = TestBed.createComponent(ResumePage);
-    fixture.detectChanges();
-    const deferBlocks = await fixture.getDeferBlocks();
-    const element = fixture.nativeElement as HTMLElement;
-    const navigation = fixture.debugElement.query(By.directive(ResumeNavigation))
-      .componentInstance as ResumeNavigation;
-    const printButton = element.querySelector<HTMLButtonElement>(
-      'button.desktop-control[aria-label="Print résumé"]',
-    );
-
-    expect(printButton).not.toBeNull();
-    expect(navigation.printPending()).toBe(false);
-
-    const printCompleted = requestPrint(fixture);
-    fixture.detectChanges();
-
-    expect(navigation.printPending()).toBe(true);
-    expect(printButton?.disabled).toBe(true);
-    expect(printButton?.getAttribute('aria-label')).toBe('Preparing résumé for printing');
-    expect(printButton?.getAttribute('aria-busy')).toBe('true');
-    expect(print).not.toHaveBeenCalled();
-
-    navigation.printRequested.emit();
-    expect(navigation.printPending()).toBe(true);
-
-    for (const deferBlock of deferBlocks) {
-      await deferBlock.render(DeferBlockState.Complete);
-      fixture.detectChanges();
-    }
-    await printCompleted;
-    fixture.detectChanges();
-
-    expect(navigation.printPending()).toBe(false);
-    expect(printButton?.disabled).toBe(false);
-    expect(printButton?.getAttribute('aria-label')).toBe('Print résumé');
-    expect(printButton?.getAttribute('aria-busy')).toBe('false');
-    expect(print).toHaveBeenCalledOnce();
   });
 
   it('fades both theme directions and provides keyboard-named controls', () => {
@@ -1066,9 +889,6 @@ describe('ResumePage', () => {
 
     const downloadButton = element.querySelector<HTMLButtonElement>(
       'button[aria-label="Download résumé as PDF"]',
-    );
-    expect(element.querySelector<HTMLButtonElement>('[aria-label="Print résumé"]')?.type).toBe(
-      'button',
     );
     expect(downloadButton?.type).toBe('button');
   });
