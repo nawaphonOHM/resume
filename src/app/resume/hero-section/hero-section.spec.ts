@@ -589,6 +589,32 @@ describe('HeroSection', () => {
       expect(combinedCss).toContain('43.3%');
       expect(combinedCss).toContain('25%');
     });
+
+    it('renders left and right hero code badges intact on a single line with exact text content', () => {
+      const element = renderHero().nativeElement as HTMLElement;
+      const leftBadge = element.querySelector<HTMLElement>('.hero-code-left');
+      const rightBadge = element.querySelector<HTMLElement>('.hero-code-right');
+
+      expect(leftBadge).not.toBeNull();
+      expect(rightBadge).not.toBeNull();
+
+      expect(leftBadge?.textContent).toBe('</>');
+      expect(leftBadge?.textContent?.length).toBe(3);
+      expect(leftBadge?.textContent).not.toContain('\n');
+
+      expect(rightBadge?.textContent).toBe('{ }');
+      expect(rightBadge?.textContent?.length).toBe(3);
+      expect(rightBadge?.textContent).not.toContain('\n');
+    });
+
+    it('declares non-wrapping and 3ch minimum width style rules for hero code badges', () => {
+      renderHero();
+      const styleElements = Array.from(document.querySelectorAll('style'));
+      const combinedCss = styleElements.map((el) => el.textContent ?? '').join('\n');
+
+      expect(combinedCss).toContain('white-space: nowrap');
+      expect(combinedCss).toContain('min-width: 3ch');
+    });
   });
 
   it('clears its one-second interval and animation frame when destroyed', () => {

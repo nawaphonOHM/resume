@@ -186,9 +186,11 @@ h1 {
 }
 
 .hero-code {
+  min-width: 3ch;
   color: #a9d0ff;
   font-size: 0.9rem;
   font-weight: 700;
+  white-space: nowrap;
   transform: translate(-50%, -50%);
 
   &-left {
