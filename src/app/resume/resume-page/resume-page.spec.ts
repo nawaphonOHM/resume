@@ -894,8 +894,12 @@ describe('ResumePage', () => {
   });
 
   it('shares pending state with navigation and prevents duplicate download requests', async () => {
+    let progressCallback: ((progress: number | null) => void) | undefined;
     const pendingDownload = deferred<void>();
-    download.mockReturnValueOnce(pendingDownload.promise);
+    download.mockImplementationOnce((onProgress) => {
+      progressCallback = onProgress;
+      return pendingDownload.promise;
+    });
     const fixture = TestBed.createComponent(ResumePage);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
@@ -909,8 +913,14 @@ describe('ResumePage', () => {
     fixture.detectChanges();
 
     expect(navigation.downloadPending()).toBe(true);
+    expect(navigation.downloadProgress()).toBeNull();
     expect(downloadButton?.disabled).toBe(true);
-    expect(downloadButton?.getAttribute('aria-label')).toBe('Generating résumé PDF');
+    expect(downloadButton?.getAttribute('aria-label')).toBe('Downloading résumé PDF');
+
+    progressCallback?.(45);
+    fixture.detectChanges();
+    expect(navigation.downloadProgress()).toBe(45);
+    expect(downloadButton?.getAttribute('aria-label')).toBe('Downloading résumé PDF (45%)');
 
     navigation.downloadRequested.emit();
     expect(navigation.downloadPending()).toBe(true);
@@ -922,6 +932,7 @@ describe('ResumePage', () => {
     fixture.detectChanges();
 
     expect(navigation.downloadPending()).toBe(false);
+    expect(navigation.downloadProgress()).toBeNull();
     expect(downloadButton?.disabled).toBe(false);
     expect(downloadButton?.getAttribute('aria-label')).toBe('Download résumé as PDF');
     expect(handleError).not.toHaveBeenCalled();
@@ -929,7 +940,14 @@ describe('ResumePage', () => {
 
   it('reports a rejected download, restores controls, and allows retry', async () => {
     const failure = new Error('Synthetic download failure');
-    download.mockRejectedValueOnce(failure).mockResolvedValueOnce(undefined);
+    let progressCallback: ((progress: number | null) => void) | undefined;
+    download
+      .mockImplementationOnce((onProgress) => {
+        progressCallback = onProgress;
+        progressCallback?.(60);
+        return Promise.reject(failure);
+      })
+      .mockResolvedValueOnce(undefined);
     const fixture = TestBed.createComponent(ResumePage);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
@@ -942,14 +960,13 @@ describe('ResumePage', () => {
     downloadButton?.click();
     fixture.detectChanges();
 
-    expect(navigation.downloadPending()).toBe(true);
     expect(downloadButton?.disabled).toBe(true);
-    expect(downloadButton?.getAttribute('aria-label')).toBe('Generating résumé PDF');
     await vi.waitFor(() => expect(handleError).toHaveBeenCalledOnce());
     expect(download).toHaveBeenCalledOnce();
     expect(handleError).toHaveBeenCalledOnce();
     expect(handleError).toHaveBeenCalledWith(failure);
     expect(navigation.downloadPending()).toBe(false);
+    expect(navigation.downloadProgress()).toBeNull();
     fixture.detectChanges();
     expect(downloadButton?.disabled).toBe(false);
     expect(downloadButton?.getAttribute('aria-label')).toBe('Download résumé as PDF');
@@ -965,6 +982,7 @@ describe('ResumePage', () => {
     expect(download).toHaveBeenCalledTimes(2);
     expect(handleError).toHaveBeenCalledOnce();
     expect(downloadButton?.disabled).toBe(false);
+    expect(navigation.downloadProgress()).toBeNull();
   });
 
   it('synchronizes active navigation with recognized Router fragments only', async () => {

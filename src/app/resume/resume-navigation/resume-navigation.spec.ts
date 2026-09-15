@@ -164,51 +164,127 @@ describe('ResumeNavigation', () => {
     expect(downloadRequested).toHaveBeenCalledTimes(2);
   });
 
-  it('disables both download controls and exposes MatProgressSpinner while pending', async () => {
+  it('disables both download controls and renders indeterminate spinner on download start', async () => {
     const fixture = TestBed.createComponent(ResumeNavigation);
     fixture.componentRef.setInput('activeSection', 'about');
     fixture.componentRef.setInput('theme', 'light');
     fixture.componentRef.setInput('downloadPending', true);
+    fixture.componentRef.setInput('downloadProgress', null);
     fixture.detectChanges();
     const downloadRequested = vi.fn();
     fixture.componentInstance.downloadRequested.subscribe(downloadRequested);
     const element = fixture.nativeElement as HTMLElement;
     const desktopDownload = element.querySelector<HTMLButtonElement>(
-      'button.desktop-control[aria-label="Generating résumé PDF"]',
+      'button.desktop-control[aria-label="Downloading résumé PDF"]',
     );
     const menu = await openMobileMenu(fixture);
     const mobileDownload = menu.querySelector<HTMLButtonElement>(
-      'button[aria-label="Generating résumé PDF"]',
+      'button[aria-label="Downloading résumé PDF"]',
     );
 
     expect(desktopDownload?.disabled).toBe(true);
     expect(desktopDownload?.getAttribute('aria-busy')).toBe('true');
     expect(desktopDownload?.querySelector('mat-icon')).toBeNull();
     const desktopSpinnerDebug = fixture.debugElement.query(
-      By.css('button.desktop-control[aria-label="Generating résumé PDF"] mat-progress-spinner'),
+      By.css('button.desktop-control[aria-label="Downloading résumé PDF"] mat-progress-spinner'),
     );
     expect(desktopSpinnerDebug).not.toBeNull();
     const desktopSpinner = desktopSpinnerDebug.componentInstance as MatProgressSpinner;
     expect(desktopSpinner.diameter).toBe(18);
     expect(desktopSpinner.strokeWidth).toBe(2.5);
     expect(desktopSpinner.mode).toBe('indeterminate');
+    expect(desktopSpinner.value).toBe(0);
     expect(desktopSpinnerDebug.nativeElement.getAttribute('aria-hidden')).toBe('true');
     expect(desktopSpinnerDebug.nativeElement.classList.contains('navigation-spinner')).toBe(true);
 
     expect(mobileDownload?.disabled).toBe(true);
     expect(mobileDownload?.getAttribute('aria-busy')).toBe('true');
     expect(mobileDownload?.querySelector('mat-icon')).toBeNull();
-    const mobileSpinner = mobileDownload?.querySelector<HTMLElement>('mat-progress-spinner');
-    expect(mobileSpinner).not.toBeNull();
-    expect(mobileSpinner?.getAttribute('aria-hidden')).toBe('true');
-    expect(mobileSpinner?.classList.contains('menu-spinner')).toBe(true);
-    expect(mobileDownload?.querySelector('span')?.textContent?.trim()).toBe('Generating PDF…');
+    const mobileSpinnerDebug = fixture.debugElement.query(
+      By.css('button[aria-label="Downloading résumé PDF"] mat-progress-spinner.menu-spinner'),
+    );
+    expect(mobileSpinnerDebug).not.toBeNull();
+    const mobileSpinner = mobileSpinnerDebug.componentInstance as MatProgressSpinner;
+    expect(mobileSpinner.mode).toBe('indeterminate');
+    expect(mobileSpinner.value).toBe(0);
+    expect(mobileSpinnerDebug.nativeElement.getAttribute('aria-hidden')).toBe('true');
+    expect(mobileDownload?.querySelector('span')?.textContent?.trim()).toBe('Downloading PDF…');
 
     desktopDownload?.click();
     mobileDownload?.click();
     expect(downloadRequested).not.toHaveBeenCalled();
+  });
 
+  it('switches to determinate spinner with explicit progress values and accessible labels', async () => {
+    const fixture = TestBed.createComponent(ResumeNavigation);
+    fixture.componentRef.setInput('activeSection', 'about');
+    fixture.componentRef.setInput('theme', 'light');
+    fixture.componentRef.setInput('downloadPending', true);
+    fixture.componentRef.setInput('downloadProgress', 50);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const desktopDownload = element.querySelector<HTMLButtonElement>(
+      'button.desktop-control[aria-label="Downloading résumé PDF (50%)"]',
+    );
+    const menu = await openMobileMenu(fixture);
+    const mobileDownload = menu.querySelector<HTMLButtonElement>(
+      'button[aria-label="Downloading résumé PDF (50%)"]',
+    );
+
+    const desktopSpinner = fixture.debugElement.query(
+      By.css('button.desktop-control mat-progress-spinner'),
+    ).componentInstance as MatProgressSpinner;
+    const mobileSpinner = fixture.debugElement.query(
+      By.css('button.mat-mdc-menu-item mat-progress-spinner'),
+    ).componentInstance as MatProgressSpinner;
+
+    expect(desktopDownload?.disabled).toBe(true);
+    expect(desktopDownload?.getAttribute('aria-busy')).toBe('true');
+    expect(desktopDownload?.getAttribute('aria-label')).toBe('Downloading résumé PDF (50%)');
+    expect(desktopSpinner.mode).toBe('determinate');
+    expect(desktopSpinner.value).toBe(50);
+
+    expect(mobileDownload?.disabled).toBe(true);
+    expect(mobileDownload?.getAttribute('aria-busy')).toBe('true');
+    expect(mobileDownload?.getAttribute('aria-label')).toBe('Downloading résumé PDF (50%)');
+    expect(mobileSpinner.mode).toBe('determinate');
+    expect(mobileSpinner.value).toBe(50);
+    expect(mobileDownload?.querySelector('span')?.textContent?.trim()).toBe(
+      'Downloading PDF (50%)',
+    );
+
+    // Progress updates to 100%
+    fixture.componentRef.setInput('downloadProgress', 100);
+    fixture.detectChanges();
+
+    expect(desktopDownload?.getAttribute('aria-label')).toBe('Downloading résumé PDF (100%)');
+    expect(desktopSpinner.value).toBe(100);
+    expect(mobileDownload?.getAttribute('aria-label')).toBe('Downloading résumé PDF (100%)');
+    expect(mobileDownload?.querySelector('span')?.textContent?.trim()).toBe(
+      'Downloading PDF (100%)',
+    );
+  });
+
+  it('restores download controls and labels to idle state after download finishes', async () => {
+    const fixture = TestBed.createComponent(ResumeNavigation);
+    fixture.componentRef.setInput('activeSection', 'about');
+    fixture.componentRef.setInput('theme', 'light');
+    fixture.componentRef.setInput('downloadPending', true);
+    fixture.componentRef.setInput('downloadProgress', 75);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const desktopDownload = element.querySelector<HTMLButtonElement>('button.desktop-control');
+    const menu = await openMobileMenu(fixture);
+    const mobileDownload = menu.querySelector<HTMLButtonElement>('button.mat-mdc-menu-item');
+
+    expect(desktopDownload?.disabled).toBe(true);
+    expect(mobileDownload?.disabled).toBe(true);
+
+    // Reset to idle
     fixture.componentRef.setInput('downloadPending', false);
+    fixture.componentRef.setInput('downloadProgress', null);
     fixture.detectChanges();
 
     expect(desktopDownload?.disabled).toBe(false);

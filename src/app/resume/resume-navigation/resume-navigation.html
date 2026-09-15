@@ -44,7 +44,8 @@
       >
         @if (downloadPending()) {
           <mat-progress-spinner
-            mode="indeterminate"
+            [mode]="downloadSpinnerMode()"
+            [value]="downloadProgress() ?? 0"
             diameter="18"
             strokeWidth="2.5"
             class="navigation-spinner"
@@ -93,7 +94,8 @@
   >
     @if (downloadPending()) {
       <mat-progress-spinner
-        mode="indeterminate"
+        [mode]="downloadSpinnerMode()"
+        [value]="downloadProgress() ?? 0"
         diameter="18"
         strokeWidth="2.5"
         class="navigation-spinner menu-spinner"

@@ -1,4 +1,5 @@
 import { DOCUMENT, ViewportScroller } from '@angular/common';
+import { provideHttpClient } from '@angular/common/http';
 import { inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, withInMemoryScrolling, withRouterConfig } from '@angular/router';
 import type { ApplicationConfig } from '@angular/core';
@@ -29,6 +30,7 @@ function configureViewportOffset(): void {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    provideHttpClient(),
     provideRouter(
       routes,
       withInMemoryScrolling({

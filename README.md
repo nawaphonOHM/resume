@@ -59,15 +59,15 @@ graph TD
 
     subgraph DataTokens["Canonical Data & Injection Tokens"]
         RESUME_DATA["resumeData<br/>resume.data.ts"] --> RESUME_PAGE
-        RESUME_DATA --> PDF_SERVICE
+        PDF_URL["RESUME_PDF_DOWNLOAD_URL"] --> PDF_SERVICE
+        PDF_NAME["RESUME_PDF_FILENAME"] --> PDF_SERVICE
         SECTIONS_TOKEN["RESUME_SECTIONS"] --> RESUME_PAGE
         SECTIONS_TOKEN --> NAV
-        PDF_HELPERS["PDF generators & validators"] --> PDF_SERVICE
         CONTRAST_HELPERS["CLAHE contrast helpers"] --> CONTRAST_SERVICE
     end
 
-    subgraph External["External CDN Runtimes & Assets"]
-        PDF_SERVICE -.->|lazy SRI scripts| PDFMAKE_CDN["cdnjs<br/>pdfmake + Roboto fonts"]
+    subgraph External["External Assets & Runtimes"]
+        PDF_SERVICE -.->|stream GET with progress| PDF_ASSET["DigitalOcean Spaces<br/>Hosted PDF Asset"]
         CONTRAST_SERVICE -.->|lazy ESM import| OPENCV_CDN["jsdelivr<br/>@techstark/opencv-js"]
         EXPERIENCE -.->|remote images| DO_SPACES["DigitalOcean Spaces<br/>image assets"]
         EDUCATION -.->|remote images| DO_SPACES
@@ -79,8 +79,8 @@ graph TD
 - **Application Shell:** `main.ts` bootstraps the standalone `App` with `appConfig`; the route configuration lazy-loads the résumé page.
 - **Routed Components:** `ResumePage` coordinates the résumé sections, navigation, responsive behavior, and presentation of the canonical profile content.
 - **Services & Overlays:** Theme and PDF services handle browser capabilities, while the image-zoom directive delegates overlay rendering to `ImageZoomService` and `ImageZoomPreview`; the technology icon component uses the contrast service.
-- **Data & Helper Tokens:** `resumeData` is the canonical résumé source, `RESUME_SECTIONS` supplies shared section metadata, and dedicated PDF and CLAHE helpers keep specialized processing separate from components.
-- **External Runtime CDNs:** `cdnjs` supplies the on-demand PDF runtime and Roboto fonts, `jsdelivr` supplies OpenCV, and DigitalOcean Spaces hosts the remote image assets.
+- **Data & Helper Tokens:** `resumeData` is the canonical résumé source, `RESUME_SECTIONS` supplies shared section metadata, and CLAHE helpers keep specialized processing separate from components.
+- **External Runtime & Assets:** DigitalOcean Spaces hosts the remote PDF asset and image assets, while `jsdelivr` supplies OpenCV.
 
 ## Computer Science Concepts & Prerequisites
 
@@ -101,7 +101,7 @@ To understand the implementation and maintain the codebase, familiarity with the
 
 - **Cooperative idle scheduling:** `requestIdleCallback` (with a timeout fallback) defers canvas rasterization and OpenCV initialization until after the initial render, reducing main-thread jank in `TechnologyIconContrastService`.
 - **Exponential backoff with a fixed jitter term:** OpenCV CDN retries use an exponentially increasing delay plus the configured jitter value (`src/app/helper/injection-token/open-cv-retry-delay-multiplier.variable.ts`, `src/app/helper/injection-token/open-cv-retry-jitter-ms.variable.ts`). The current implementation does not generate random jitter.
-- **In-flight Promise deduplication:** `TechnologyIconContrastService` caches optimization promises by icon and intrinsic size, while `ResumePdfService` caches the PDF runtime promise and clears it after failure so a later request can retry (`src/app/resume/experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts`, `src/app/resume/resume-page/service/resume-pdf/resume-pdf.service.ts`).
+- **In-flight deduplication & state tracking:** `TechnologyIconContrastService` caches optimization promises by icon and intrinsic size, while `ResumePage` tracks pending download state and live percentage signals (`src/app/resume/experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts`, `src/app/resume/resume-page/resume-page.ts`).
 
 ### 4. Memory Management & WebAssembly Interop
 
@@ -112,10 +112,11 @@ To understand the implementation and maintain the codebase, familiarity with the
 - **Viewport geometry and collision prevention:** `ImageZoomService` uses overlay rectangles from `getBoundingClientRect()`, viewport margins, and min/max bounds to keep popover previews within the viewport, including after CDK positioning (`src/app/resume/image-zoom-preview/service/image-zoom.service.ts`).
 - **Layout stabilization:** `ResizeObserver` repositions a preview when image decoding or layout changes its size (`src/app/resume/image-zoom-preview/service/image-zoom.service.ts`).
 
-### 6. Web Security & Cryptography
+### 6. Streaming & Reactive Download Lifecycle
 
-- **Subresource Integrity (SRI) and CSP alignment:** Pinned pdfmake CDN assets carry SHA-512 integrity digests in `src/app/helper/injection-token/pdfmake-core-asset.variable.ts` and `src/app/helper/injection-token/pdfmake-font-asset.variable.ts`; `src/app/helper/injection-token/create-cdn-script-loader.function.ts` applies them. Deployments must allow the corresponding CDN origins in `script-src`.
-- **Client-side binary validation and privacy checks:** Before download side effects, `src/app/helper/injection-token/validate-resume-pdf-bytes.function.ts` verifies the PDF magic bytes (`%PDF-`), minimum size, required links, and rejects `tel:` content. This is a structural and privacy safeguard, not a replacement for cryptographic signing of generated PDFs.
+- **Streaming HTTP & Progress Tracking:** Angular's `HttpClient` requests the hosted PDF asset with `reportProgress: true` and `observe: 'events'`, emitting percentage updates as bytes arrive from DigitalOcean Spaces.
+- **Dynamic Indicator Modes:** The progress spinner seamlessly renders in `indeterminate` mode before byte transfers or when size is unknown, switching dynamically to `determinate` mode with precise percentages when `total` is available.
+- **DOM & Resource Management:** Blob downloads trigger a temporary hidden anchor click with explicit cleanup (`URL.revokeObjectURL`) guaranteed in `finally` blocks.
 
 ### 7. Trigonometry, 2D Kinematics & Real-Time Animation Loops
 
@@ -137,24 +138,18 @@ The phone value must remain `Available on request`. Do not add a phone number, a
 
 ## Static assets
 
-All project-owned images are served from the DigitalOcean Space origin `https://resume-images.ohm-mho.space`. Résumé and technology image object keys start directly with the root-level `/company-logos/...`, `/link-logos/...`, `/technology-icons/...`, or `/university-logos/...` category paths. The favicon is served separately from `/favicon.svg`, and object URLs must not include `/public`.
+All project-owned images and the downloadable PDF are served from the DigitalOcean Space origin `https://resume-images.ohm-mho.space`. Résumé and technology image object keys start directly with the root-level `/company-logos/...`, `/link-logos/...`, `/technology-icons/...`, or `/university-logos/...` category paths. The favicon is served separately from `/favicon.svg`, and object URLs must not include `/public`.
 
-The Space must allow unauthenticated public `GET` requests. It must also return an appropriate `Access-Control-Allow-Origin` header for canvas-based technology-icon contrast optimization. If an image or CORS access fails, the application does not use a local fallback or custom placeholder.
-
-The résumé PDF is generated in the browser and is not a local static asset. There is no stable `/downloads/...` PDF URL to configure or deploy.
+The Space must allow unauthenticated public `GET` requests. It must also return an appropriate `Access-Control-Allow-Origin` header for canvas-based technology-icon contrast optimization and PDF streaming. If an image or CORS access fails, the application does not use a local fallback or custom placeholder.
 
 ## On-demand résumé PDF
 
-Activating either Download PDF control generates the résumé directly from the canonical typed résumé data. Only after the first activation, the browser loads these immutable cdnjs assets in order (core first, then the Roboto virtual fonts):
+Activating either Download PDF control streams the canonical résumé PDF asset from the remote URL (`https://resume-images.ohm-mho.space/downloadable-resume/Nawaphon_Isarathanachaikul.pdf`) using Angular's `HttpClient`.
 
-- `https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.3/pdfmake.min.js` (`sha512-EkS5jkn3vXRWIdphIy51xskMZggNip3Or8kpe/FlM5XaQeiK2GZJ9OwrIEbXl6txKWsHNtm4OXtxzkkz41Mspw==`)
-- `https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.3/vfs_fonts.min.js` (`sha512-rpvsrDF7BNgiFOXqkKyyoJ46jZ8nwQ3NJJAmpYnYKuZHfzwR2wpz5cAaPX09RCj9un5E+ErATIqy4CZBcuNogA==`)
-
-Both scripts use Subresource Integrity, anonymous CORS, and a no-referrer policy. Successful and in-flight loads are reused, while a CDN outage, blocked script, integrity mismatch, or incompatible runtime fails the current request without creating a download and leaves both controls retryable. Production has no bundled fallback.
-
-Deployments that enforce Content Security Policy must allow `https://cdnjs.cloudflare.com` in `script-src`. Do not use cdnjs's `latest` alias. When upgrading, update both pinned CDN versions, both published SRI hashes, and the exact development-only `pdfmake` version together; the npm package is used solely as the network-independent integration-test fixture.
-
-Before starting the download, the application verifies the PDF header, minimum size, required links, content safeguards, and absence of phone or `tel:` data. Installation, production builds, and initial page loads perform no PDF generation.
+- While the stream prepares or when total size is uncomputable, the button displays a `mat-progress-spinner` in `mode="indeterminate"`.
+- When byte progress is received, the spinner dynamically switches to `mode="determinate"` reflecting live downloaded percentage `[value]="downloadProgress()"`.
+- The controls maintain full WCAG AA compliance with `aria-busy="true"` and dynamic `aria-label` updates during downloads.
+- Once downloaded as a `Blob`, a browser download is triggered with filename `nawaphon-isarathanachaikul-resume-profile.pdf` and object URLs are revoked immediately.
 
 ## Runtime OpenCV dependency
 
@@ -170,7 +165,7 @@ npm run format:check
 npm test
 ```
 
-Prettier formats TypeScript, Angular templates, styles, JSON, and Markdown. The test command runs the Angular/Vitest suite, including the PDF document, privacy, lazy-loading, download, and retry coverage.
+Prettier formats TypeScript, Angular templates, styles, JSON, and Markdown. The test command runs the Angular/Vitest suite, including the PDF download stream, progress tracking, accessibility, contrast optimization, and retry coverage.
 
 ## Production build
 
@@ -178,7 +173,7 @@ Prettier formats TypeScript, Angular templates, styles, JSON, and Markdown. The 
 npm run build
 ```
 
-The production command compiles only the Angular application. It emits neither a generated résumé PDF nor bundled or lazy `pdfmake`/virtual-font runtime chunks, and its `index.html` contains no eager cdnjs script tag, preconnect, or preload for them. The first PDF-runtime request occurs only after a user activates a Download PDF control.
+The production command compiles only the static Angular application. It emits neither bundled PDF generator chunks nor legacy script dependencies.
 
 Upload the contents of this directory to a web root:
 

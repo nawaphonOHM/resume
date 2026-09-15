@@ -71,6 +71,9 @@ export default class ResumePage {
   /** Whether one user-triggered PDF generation request is currently running. */
   protected readonly downloadPending = signal(false);
 
+  /** Current download progress percentage (0..100) or null if indeterminate/idle. */
+  protected readonly downloadProgress = signal<number | null>(null);
+
   /** Forces every post-hero boundary to render when a later app-controlled action requires it. */
   protected readonly renderAllSections = signal(false);
 
@@ -108,19 +111,21 @@ export default class ResumePage {
     this.renderAllSections.set(true);
   }
 
-  /** Generates the PDF once per request while preserving retry behavior after any outcome. */
+  /** Streams the PDF once per request while preserving retry behavior after any outcome. */
   protected async downloadResume(): Promise<void> {
     if (this.downloadPending()) {
       return;
     }
 
     this.downloadPending.set(true);
+    this.downloadProgress.set(null);
     try {
-      await this.resumePdfService.download();
+      await this.resumePdfService.download((progress) => this.downloadProgress.set(progress));
     } catch (error: unknown) {
       this.errorHandler.handleError(error);
     } finally {
       this.downloadPending.set(false);
+      this.downloadProgress.set(null);
     }
   }
 

@@ -1,9 +1,9 @@
-import { Component, inject, input, output } from '@angular/core';
+import { computed, Component, inject, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatProgressSpinner, type ProgressSpinnerMode } from '@angular/material/progress-spinner';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
@@ -42,11 +42,19 @@ export class ResumeNavigation {
   /** Whether a PDF request is running and both responsive controls must remain disabled. */
   readonly downloadPending = input(false);
 
+  /** Current download progress percentage (0..100) or null if indeterminate/idle. */
+  readonly downloadProgress = input<number | null>(null);
+
   /** Requests that the parent switch to the opposite theme. */
   readonly themeToggled = output<void>();
 
   /** Requests on-demand PDF generation without coupling navigation to the browser runtime. */
   readonly downloadRequested = output<void>();
+
+  /** Progress spinner mode based on whether determinate progress is known. */
+  protected readonly downloadSpinnerMode = computed<ProgressSpinnerMode>(() =>
+    typeof this.downloadProgress() === 'number' ? 'determinate' : 'indeterminate',
+  );
 
   /** Shared section registry exposed to both desktop and mobile templates. */
   protected readonly sections = inject(RESUME_SECTIONS);
@@ -63,11 +71,23 @@ export class ResumeNavigation {
 
   /** @returns The accessible label describing the current PDF download state. */
   protected downloadControlLabel(): string {
-    return this.downloadPending() ? 'Generating résumé PDF' : 'Download résumé as PDF';
+    if (!this.downloadPending()) {
+      return 'Download résumé as PDF';
+    }
+
+    const progress = this.downloadProgress();
+    return typeof progress === 'number'
+      ? `Downloading résumé PDF (${progress}%)`
+      : 'Downloading résumé PDF';
   }
 
   /** @returns The concise mobile-menu label for the current PDF download state. */
   protected downloadControlText(): string {
-    return this.downloadPending() ? 'Generating PDF…' : 'Download PDF';
+    if (!this.downloadPending()) {
+      return 'Download PDF';
+    }
+
+    const progress = this.downloadProgress();
+    return typeof progress === 'number' ? `Downloading PDF (${progress}%)` : 'Downloading PDF…';
   }
 }
