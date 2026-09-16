@@ -27,7 +27,7 @@ import { SplitPipe } from '../../helper/pipe/split-pipe.ts';
 /** Introduces the candidate and exposes the primary email contact action. */
 @Component({
   selector: 'app-hero-section',
-  imports: [MatButtonModule, MatIconModule, RouterLink, DatePipe, TokenPipe, SplitPipe],
+  imports: [MatButtonModule, MatIconModule, RouterLink, DatePipe, SlicePipe, TokenPipe, SplitPipe],
   templateUrl: './hero-section.html',
   styleUrl: './hero-section.scss',
 })
