@@ -254,7 +254,7 @@ Located at `src/app/helper/directive/image-zome/image-zoom.directive.ts` and `sr
 - **Downscale Detection via `ResizeObserver`**:
   `ImageZoomDirective` inspects the host image's natural dimensions against its rendered content box (excluding border and padding).
   $$\text{containedScale} = \min\left(\frac{\text{width}_{\text{content}}}{\text{naturalWidth}}, \frac{\text{height}_{\text{content}}}{\text{naturalHeight}}\right)$$
-  An image is eligible for zoom if and only if $\text{containedScale} < 1 - \text{DOWNSCALE\_TOLERANCE}$ ($\text{DOWNSCALE\_TOLERANCE} = 0.01$). 1:1, upscaled, or broken images remain inert.
+  An image is eligible for zoom if and only if $\text{containedScale} < 1 - \text{DOWNSCALE\_TOLERANCE}$ (with `DOWNSCALE_TOLERANCE = 0.01` and `INITIAL_IMAGE_STATE` injected via Angular `InjectionToken`). 1:1, upscaled, or broken images remain inert.
 - **Dual Interaction Ownership**:
   - **Hover Mode**: Pointer hover (`pointerenter`) opens the preview with `pointer-events: none` on the overlay pane to prevent cursor flickering. `pointerleave` closes the preview.
   - **Touch Mode**: Mobile touch tap (`click`) toggles the preview open with interactive overlay dismissal.
@@ -277,7 +277,8 @@ Located at `src/app/resume/resume-page/service/resume-pdf/resume-pdf.service.ts`
   - When unavailable (`downloadAvailable() === false`), the download trigger displays a `file_download_off` Material icon with a tooltip (_"Resume PDF might be unavailable. Click to confirm download anyway."_) and an accessibility label (_"Download résumé as PDF (file may be unavailable)"_).
   - When verified or checking, standard `download` iconography and labels are shown.
 - **Accessible Confirmation Dialog (`ResumePdfConfirmDialog`)**:
-  If a user initiates a download while `downloadAvailable() === false`, `ResumePage` intercepts the request and opens `ResumePdfConfirmDialog` configured with `role: 'alertdialog'`:
+  If a user initiates a download while `downloadAvailable() === false`, `ResumePage` intercepts the request and opens `ResumePdfConfirmDialog` configured with `{ role: 'alertdialog', disableClose: true }`:
+  - **Modal Persistence (`disableClose: true`)**: Disables outside/backdrop clicks and Escape dismissal to enforce explicit user resolution through modal action buttons.
   - **Cancel**: Emits `false` (`ResumePdfConfirmDialogResult`), aborting the download without triggering network requests or pending progress states.
   - **Continue**: Emits `true`, allowing the user to proceed with the binary streaming request.
 - **HTTP Event Streaming & Progress Observation**:
@@ -421,7 +422,7 @@ The portfolio is engineered to meet strict accessibility standards:
 - **Screen Reader Announcements & ARIA Live Regions**:
   - The HTML pre-bootstrap splash loader and Angular `@defer` loading placeholders employ `role="status"`, `aria-live="polite"`, `aria-busy="true"`, and descriptive `aria-label` tags to communicate loading states.
   - The PDF download button dynamically announces state transitions, warning indicators for unavailable files, and live progress updates with `aria-label` and `aria-busy` attributes.
-  - The PDF confirmation modal (`ResumePdfConfirmDialog`) implements `role="alertdialog"` with focused action buttons for keyboard and screen reader accessibility.
+  - The PDF confirmation modal (`ResumePdfConfirmDialog`) implements `role="alertdialog"` with `disableClose: true` and focused action buttons for keyboard and screen reader accessibility.
   - Decorative image preview overlays created via the Angular CDK are marked as decorative (`aria-hidden="true"`) to screen readers, with dismissal handled automatically via outside-click or the Escape key.
 - **Motion Reduction (`prefers-reduced-motion: reduce`)**:
   - CSS animations, transitions, and smooth scrolling are neutralized globally (`animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important;`).
@@ -456,6 +457,8 @@ resume/
 │   │   │   │       └── image-zoom.directive.spec.ts
 │   │   │   ├── injection-token/  # 60+ tree-shakable InjectionTokens & math functions
 │   │   │   │   ├── clahe-*.variable.ts    # CLAHE parameters (clip limit, tile target)
+│   │   │   │   ├── downscale-tolerance.variable.ts
+│   │   │   │   ├── initial-image-state.variable.ts
 │   │   │   │   ├── hero-code-*.variable.ts# Kinematic orbit parameters (radii, phase, omega)
 │   │   │   │   ├── hero-code-position.function.ts
 │   │   │   │   ├── status-*.variable.ts   # Availability scheduling & luminance constants
@@ -476,6 +479,7 @@ resume/
 │   │   │       ├── card-surfaces.type.ts
 │   │   │       ├── colors.type.ts
 │   │   │       ├── download-progress-callback.type.ts
+│   │   │       ├── image-zoom-payload.type.ts
 │   │   │       ├── resume-pdf-confirm-dialog-result.type.ts
 │   │   │       ├── status-color.type.ts
 │   │   │       └── ...
