@@ -8,7 +8,7 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { DatePipe, DOCUMENT } from '@angular/common';
+import { DatePipe, DOCUMENT, SlicePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
@@ -21,12 +21,13 @@ import { calculateStatusLuminance } from '../../helper/injection-token/status-lu
 import { calculateHeroCodePosition } from '../../helper/injection-token/hero-code-position.function.ts';
 import { FaviconService } from '../../helper/core/favicon.service.ts';
 import { statusFaviconForStatusColor } from '../../helper/injection-token/status-favicon-for-status-color.function.ts';
+import { TokenPipe } from '../../helper/pipe/token.pipe.ts';
 import { SplitPipe } from '../../helper/pipe/split-pipe.ts';
 
 /** Introduces the candidate and exposes the primary email contact action. */
 @Component({
   selector: 'app-hero-section',
-  imports: [MatButtonModule, MatIconModule, RouterLink, DatePipe, SplitPipe],
+  imports: [MatButtonModule, MatIconModule, RouterLink, DatePipe, TokenPipe, SplitPipe],
   templateUrl: './hero-section.html',
   styleUrl: './hero-section.scss',
 })
