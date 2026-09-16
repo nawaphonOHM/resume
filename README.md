@@ -138,7 +138,7 @@ The application fully embraces Angular's standalone component architecture and f
     computation: () => true,
   });
   ```
-- **Reactive Side Effects (`effect`)**: `HeroSection` and `ThemeService` use `effect()` to synchronize reactive Signal states (such as active theme and dynamic availability status) with external browser APIs like `document.head` favicon links, `localStorage`, and DOM class lists.
+- **Reactive Side Effects (`effect`)**: `HeroSection` uses `effect()` to synchronize the dynamic availability status color with `document.head` favicon links via `FaviconService`, and `ImageZoomDirective` uses `effect()` to cleanly tear down CDK overlay preview state on cleanup.
 - **Native Control Flow**: All Angular HTML templates use native `@if`, `@else`, `@for (item of items; track item.id)`, and `@switch` blocks, avoiding legacy structural directives (`*ngIf`, `*ngFor`).
 
 ### 2. Inverted Dependency Injection Architecture
@@ -148,7 +148,8 @@ Rather than relying on large monolithic service classes with hardcoded configura
 - **Kinematics & Orbital Badges**: `HERO_CODE_R_LEFT`, `HERO_CODE_R_RIGHT`, `HERO_CODE_PHI_LEFT`, `HERO_CODE_PHI_RIGHT`, `HERO_CODE_A`, `HERO_CODE_F`, `HERO_CODE_OMEGA`, `calculateHeroCodePosition`.
 - **Availability Scheduling & Photometry**: `UTC_PLUS_SEVEN_OFFSET_MS`, `CLOCK_UPDATE_INTERVAL_MS`, `STATUS_LUMINANCE_A`, `STATUS_LUMINANCE_F`, `STATUS_LUMINANCE_OMEGA`, `STATUS_LUMINANCE_PHI`, `calculateStatusLuminance`, `statusColor`, `statusColorForUtcPlusSeven`, `statusFaviconForStatusColor`.
 - **Computer Vision & CLAHE**: `OPEN_CV_CDN_URL`, `TECHNOLOGY_ICON_OPEN_CV_LOADER`, `CLAHE_CLIP_LIMIT`, `CLAHE_TILE_PIXEL_TARGET`, `MIN_CLAHE_TILES`, `MAX_CLAHE_TILES`, `IDLE_TIMEOUT_MS`, `OPEN_CV_RETRY_COUNT`, `OPEN_CV_RETRY_DELAY_MS`, `OPEN_CV_RETRY_DELAY_MULTIPLIER`, `OPEN_CV_RETRY_JITTER_MS`, `dispose`, `normalizeOpenCvExport`, `linearizeChannel`, `relativeLuminance`.
-- **Overlay & Geometry**: `VIEWPORT_MARGIN`, `IMAGE_MAX_VIEWPORT_RATIO`, `ORIGIN_GAP`, `PANEL_CHROME_PX`, `IMAGE_ZOOM_POSITIONS`, `IMAGE_ZOOM_PREVIEW_DATA`.
+- **Overlay & Geometry**: `VIEWPORT_MARGIN`, `IMAGE_MAX_VIEWPORT_RATIO`, `ORIGIN_GAP`, `PANEL_CHROME_PX`, `IMAGE_ZOOM_POSITIONS`, `IMAGE_ZOOM_PREVIEW_DATA`, `DOWNSCALE_TOLERANCE`, `INITIAL_IMAGE_STATE`.
+- **Theme & Storage**: `RESUME_THEME_STORAGE_KEY`, `THEME_CLASSES`, `THEME_TRANSITION_CLASS`, `THEME_TRANSITION_DURATION_MS`.
 - **PDF & Navigation**: `RESUME_PDF_DOWNLOAD_URL`, `RESUME_PDF_FILENAME`, `RESUME_SECTIONS`, `SECTION_ACTIVATION_RATIO`, `VIEWPORT_EVENT_THROTTLE_MS`, `resumeData`.
 
 **Architectural Benefits:**
@@ -393,12 +394,17 @@ Tailwind CSS v4 utilities consume semantic custom properties through `@theme inl
 
 ### 4. Dynamic Theme Switching & Interpolation Lifecycle
 
-Managed by `ThemeService` (`src/app/helper/core/theme.service.ts`):
+Managed by `ThemeService` (`src/app/helper/core/theme.service.ts`) with theme configuration parameters modularized via Angular `InjectionToken`s:
 
-1. **State & Persistence**: Theme state is exposed as an Angular Signal (`theme = signal<ResumeTheme>('light')`, `isDark = computed(...)`), persisted to `localStorage` under `resume-profile-theme` with defensive try/catch handling.
-2. **System Preference Synchronization**: Listens to `window.matchMedia('(prefers-color-scheme: dark)')` to follow OS preferences until the user explicitly toggles a choice.
-3. **Smooth 250ms Color Interpolation**: On theme toggling, `ThemeService` adds the transient class `html.resume-theme-transitioning` for $250\text{ ms}$, allowing registered `@property` color tokens to interpolate smoothly without JavaScript frame overhead.
-4. **Print Lifecycle Coordination**: Automatically intercepts `beforeprint` and `afterprint` window events to apply print-safe light styling during printing without erasing user theme preferences.
+1. **Injected Configuration Tokens**:
+   - `RESUME_THEME_STORAGE_KEY`: Browser storage key (`resume-profile-theme`) for persisting user theme preferences.
+   - `THEME_CLASSES`: Mutually exclusive root DOM classes (`resume-theme-light`, `resume-theme-dark`).
+   - `THEME_TRANSITION_CLASS`: Transient root marker class (`resume-theme-transitioning`).
+   - `THEME_TRANSITION_DURATION_MS`: Duration ($250\text{ ms}$) enabling smooth CSS color token interpolation.
+2. **State & Persistence**: Theme state is exposed as an Angular Signal (`theme = signal<ResumeTheme>('light')`, `isDark = computed(...)`), persisted to `localStorage` under `RESUME_THEME_STORAGE_KEY` with defensive error handling.
+3. **System Preference Synchronization**: Listens to `window.matchMedia('(prefers-color-scheme: dark)')` to follow OS preferences until the user explicitly toggles a choice.
+4. **Smooth 250ms Color Interpolation**: On theme toggling, `ThemeService` adds the transient class `THEME_TRANSITION_CLASS` for `THEME_TRANSITION_DURATION_MS` ($250\text{ ms}$), allowing registered `@property` color tokens to interpolate smoothly without JavaScript frame overhead. Rapid toggling debounces the cleanup timer to prevent premature class removal.
+5. **Print Lifecycle Coordination**: Automatically intercepts `beforeprint` and `afterprint` window events to apply print-safe light styling (`resume-theme-light`) during printing without modifying user theme preferences or storage.
 
 ### 5. Dedicated A4 Print Layout Foundation
 
@@ -461,6 +467,10 @@ resume/
 │   │   │   │   ├── initial-image-state.variable.ts
 │   │   │   │   ├── hero-code-*.variable.ts# Kinematic orbit parameters (radii, phase, omega)
 │   │   │   │   ├── hero-code-position.function.ts
+│   │   │   │   ├── resume-theme-storage-key.variable.ts
+│   │   │   │   ├── theme-classes.variable.ts
+│   │   │   │   ├── theme-transition-class.variable.ts
+│   │   │   │   ├── theme-transition-duration-ms.variable.ts
 │   │   │   │   ├── status-*.variable.ts   # Availability scheduling & luminance constants
 │   │   │   │   ├── status-luminance.function.ts
 │   │   │   │   ├── status-color-for-utc-plus-seven.function.ts
@@ -481,6 +491,7 @@ resume/
 │   │   │       ├── download-progress-callback.type.ts
 │   │   │       ├── image-zoom-payload.type.ts
 │   │   │       ├── resume-pdf-confirm-dialog-result.type.ts
+│   │   │       ├── resume-theme.type.ts
 │   │   │       ├── status-color.type.ts
 │   │   │       └── ...
 │   │   ├── resume/               # Routed page & presentational feature components
