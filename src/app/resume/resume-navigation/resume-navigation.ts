@@ -8,7 +8,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 
-import type { ResumeTheme } from '../../helper/core/theme.service';
+import type { ResumeTheme } from '../../helper/type/resume-theme.type.ts';
 import type { ResumeSectionId } from '../../helper/type/resume-section-id.type.ts';
 import { RESUME_SECTIONS } from '../../helper/injection-token/resume-sections.variable.ts';
 /**

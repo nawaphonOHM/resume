@@ -1,20 +1,10 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { DestroyRef, PLATFORM_ID, computed, inject, signal, Service } from '@angular/core';
-
-/** Color schemes that can be selected and persisted for the résumé. */
-export type ResumeTheme = 'light' | 'dark';
-
-/** Browser storage key containing the reader's explicit theme preference. */
-export const RESUME_THEME_STORAGE_KEY = 'resume-profile-theme';
-
-/** Mutually exclusive root classes managed by the service. */
-const THEME_CLASSES = ['resume-theme-light', 'resume-theme-dark'] as const;
-
-/** Root marker that enables the stylesheet's animated token transition. */
-const THEME_TRANSITION_CLASS = 'resume-theme-transitioning';
-
-/** Time after which the transient theme-transition marker is removed. */
-const THEME_TRANSITION_DURATION_MS = 250;
+import type { ResumeTheme } from '../type/resume-theme.type.ts';
+import { RESUME_THEME_STORAGE_KEY } from '../injection-token/resume-theme-storage-key.variable.ts';
+import { THEME_CLASSES } from '../injection-token/theme-classes.variable.ts';
+import { THEME_TRANSITION_CLASS } from '../injection-token/theme-transition-class.variable.ts';
+import { THEME_TRANSITION_DURATION_MS } from '../injection-token/theme-transition-duration-ms.variable.ts';
 
 /**
  * Resolves the active résumé theme and synchronizes it with document classes.
@@ -58,6 +48,10 @@ export class ThemeService {
   private readonly document = inject(DOCUMENT);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly resumeThemeStorageKey = inject(RESUME_THEME_STORAGE_KEY);
+  private readonly themeClasses = inject(THEME_CLASSES);
+  private readonly themeTransitionClass = inject(THEME_TRANSITION_CLASS);
+  private readonly themeTransitionDurationMs = inject(THEME_TRANSITION_DURATION_MS);
   private readonly view = isPlatformBrowser(this.platformId) ? this.document.defaultView : null;
   private readonly mediaQuery = this.view?.matchMedia?.('(prefers-color-scheme: dark)') ?? null;
   private hasExplicitChoice = false;
@@ -148,7 +142,7 @@ export class ThemeService {
 
   /** Replaces the managed root theme class so schemes remain exclusive. */
   private applyTheme(theme: ResumeTheme): void {
-    this.document.documentElement.classList.remove(...THEME_CLASSES);
+    this.document.documentElement.classList.remove(...this.themeClasses);
     this.document.documentElement.classList.add(`resume-theme-${theme}`);
   }
 
@@ -165,11 +159,11 @@ export class ThemeService {
       this.view.clearTimeout(this.transitionCleanupTimer);
     }
 
-    this.document.documentElement.classList.add(THEME_TRANSITION_CLASS);
+    this.document.documentElement.classList.add(this.themeTransitionClass);
     this.transitionCleanupTimer = this.view.setTimeout(() => {
       this.transitionCleanupTimer = null;
-      this.document.documentElement.classList.remove(THEME_TRANSITION_CLASS);
-    }, THEME_TRANSITION_DURATION_MS);
+      this.document.documentElement.classList.remove(this.themeTransitionClass);
+    }, this.themeTransitionDurationMs);
   }
 
   /** Clears pending cleanup and removes the transition marker immediately. */
@@ -179,7 +173,7 @@ export class ThemeService {
       this.transitionCleanupTimer = null;
     }
 
-    this.document.documentElement.classList.remove(THEME_TRANSITION_CLASS);
+    this.document.documentElement.classList.remove(this.themeTransitionClass);
   }
 
   /**
@@ -189,7 +183,7 @@ export class ThemeService {
    */
   private readStoredTheme(): ResumeTheme | null {
     try {
-      const storedTheme = this.view?.localStorage.getItem(RESUME_THEME_STORAGE_KEY);
+      const storedTheme = this.view?.localStorage.getItem(this.resumeThemeStorageKey);
       return storedTheme === 'light' || storedTheme === 'dark' ? storedTheme : null;
     } catch {
       return null;
@@ -202,7 +196,7 @@ export class ThemeService {
    */
   private persistTheme(theme: ResumeTheme): void {
     try {
-      this.view?.localStorage.setItem(RESUME_THEME_STORAGE_KEY, theme);
+      this.view?.localStorage.setItem(this.resumeThemeStorageKey, theme);
     } catch {
       // The selected theme still applies when storage is unavailable.
     }

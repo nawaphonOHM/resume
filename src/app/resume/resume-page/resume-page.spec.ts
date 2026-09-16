@@ -28,7 +28,7 @@ import { Subject } from 'rxjs';
 import { vi } from 'vitest';
 
 import { routes } from '../../app.routes';
-import { RESUME_THEME_STORAGE_KEY } from '../../helper/core/theme.service';
+import { RESUME_THEME_STORAGE_KEY } from '../../helper/injection-token/resume-theme-storage-key.variable.ts';
 import { resumeData } from '../../helper/injection-token/resume.data.ts';
 import { IMAGE_ASSET_ORIGIN as IMAGE_ASSET_ORIGIN_TOKEN } from '../../helper/injection-token/image-asset-origin.variable.ts';
 import { resolveTechnologyIcon as resolveTechnologyIconToken } from '../../helper/injection-token/resolve-technology-icon.function.ts';
@@ -871,6 +871,7 @@ describe('ResumePage', () => {
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
     const root = document.documentElement;
+    const storageKey = TestBed.inject(RESUME_THEME_STORAGE_KEY);
     const switchToDark = element.querySelector<HTMLButtonElement>(
       '[aria-label="Switch to dark theme"]',
     );
@@ -881,7 +882,7 @@ describe('ResumePage', () => {
 
     expect(root.classList.contains('resume-theme-dark')).toBe(true);
     expect(root.classList.contains('resume-theme-transitioning')).toBe(true);
-    expect(localStorage.getItem(RESUME_THEME_STORAGE_KEY)).toBe('dark');
+    expect(localStorage.getItem(storageKey)).toBe('dark');
 
     const switchToLight = element.querySelector<HTMLButtonElement>(
       '[aria-label="Switch to light theme"]',
@@ -893,7 +894,7 @@ describe('ResumePage', () => {
     expect(root.classList.contains('resume-theme-light')).toBe(true);
     expect(root.classList.contains('resume-theme-dark')).toBe(false);
     expect(root.classList.contains('resume-theme-transitioning')).toBe(true);
-    expect(localStorage.getItem(RESUME_THEME_STORAGE_KEY)).toBe('light');
+    expect(localStorage.getItem(storageKey)).toBe('light');
     expect(
       element.querySelector<HTMLButtonElement>('[aria-label="Switch to dark theme"]')?.textContent,
     ).toContain('dark_mode');

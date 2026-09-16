@@ -6,7 +6,8 @@ import { PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
-import { RESUME_THEME_STORAGE_KEY, ThemeService } from './theme.service.ts';
+import { RESUME_THEME_STORAGE_KEY } from '../injection-token/resume-theme-storage-key.variable.ts';
+import { ThemeService } from './theme.service.ts';
 
 describe('ThemeService', () => {
   const transitionClass = 'resume-theme-transitioning';
@@ -16,6 +17,7 @@ describe('ThemeService', () => {
 
   /** Captured callback used to emit synthetic system preference changes. */
   let systemThemeListener: ((event: MediaQueryListEvent) => void) | undefined;
+  let storageKey: string;
 
   beforeEach(() => {
     prefersDark = false;
@@ -50,6 +52,7 @@ describe('ThemeService', () => {
       transitionClass,
     );
     TestBed.configureTestingModule({});
+    storageKey = TestBed.inject(RESUME_THEME_STORAGE_KEY);
   });
 
   afterEach(() => {
@@ -82,7 +85,7 @@ describe('ThemeService', () => {
 
   it('restores and persists an explicit theme choice', () => {
     prefersDark = true;
-    localStorage.setItem(RESUME_THEME_STORAGE_KEY, 'light');
+    localStorage.setItem(storageKey, 'light');
     const service = TestBed.inject(ThemeService);
 
     expect(service.theme()).toBe('light');
@@ -92,7 +95,7 @@ describe('ThemeService', () => {
     systemThemeListener?.({ matches: false } as MediaQueryListEvent);
 
     expect(service.theme()).toBe('dark');
-    expect(localStorage.getItem(RESUME_THEME_STORAGE_KEY)).toBe('dark');
+    expect(localStorage.getItem(storageKey)).toBe('dark');
   });
 
   it.each([
@@ -101,7 +104,7 @@ describe('ThemeService', () => {
   ] as const)(
     'marks an explicit %s-to-%s change while updating the theme immediately',
     (initialTheme, nextTheme) => {
-      localStorage.setItem(RESUME_THEME_STORAGE_KEY, initialTheme);
+      localStorage.setItem(storageKey, initialTheme);
       const service = TestBed.inject(ThemeService);
 
       service.setTheme(nextTheme);
@@ -109,7 +112,7 @@ describe('ThemeService', () => {
       expect(service.theme()).toBe(nextTheme);
       expect(document.documentElement.classList.contains(`resume-theme-${nextTheme}`)).toBe(true);
       expect(document.documentElement.classList.contains(transitionClass)).toBe(true);
-      expect(localStorage.getItem(RESUME_THEME_STORAGE_KEY)).toBe(nextTheme);
+      expect(localStorage.getItem(storageKey)).toBe(nextTheme);
 
       vi.advanceTimersByTime(249);
       expect(document.documentElement.classList.contains(transitionClass)).toBe(true);
@@ -128,7 +131,7 @@ describe('ThemeService', () => {
 
     expect(service.theme()).toBe('light');
     expect(document.documentElement.classList.contains(transitionClass)).toBe(false);
-    expect(localStorage.getItem(RESUME_THEME_STORAGE_KEY)).toBe('light');
+    expect(localStorage.getItem(storageKey)).toBe('light');
     expect(vi.getTimerCount()).toBe(timerCount);
   });
 
@@ -144,7 +147,7 @@ describe('ThemeService', () => {
     expect(document.documentElement.classList.contains('resume-theme-light')).toBe(true);
     expect(document.documentElement.classList.contains('resume-theme-dark')).toBe(false);
     expect(document.documentElement.classList.contains(transitionClass)).toBe(true);
-    expect(localStorage.getItem(RESUME_THEME_STORAGE_KEY)).toBe('light');
+    expect(localStorage.getItem(storageKey)).toBe('light');
 
     vi.advanceTimersByTime(249);
     expect(document.documentElement.classList.contains(transitionClass)).toBe(true);
@@ -155,7 +158,7 @@ describe('ThemeService', () => {
   });
 
   it('applies a temporary light theme while printing', () => {
-    localStorage.setItem(RESUME_THEME_STORAGE_KEY, 'dark');
+    localStorage.setItem(storageKey, 'dark');
     const service = TestBed.inject(ThemeService);
 
     window.dispatchEvent(new Event('beforeprint'));
@@ -215,7 +218,7 @@ describe('ThemeService', () => {
     expect(service.theme()).toBe('dark');
     expect(document.documentElement.classList.contains('resume-theme-dark')).toBe(true);
     expect(document.documentElement.classList.contains(transitionClass)).toBe(false);
-    expect(localStorage.getItem(RESUME_THEME_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(storageKey)).toBeNull();
     expect(vi.getTimerCount()).toBe(0);
   });
 
