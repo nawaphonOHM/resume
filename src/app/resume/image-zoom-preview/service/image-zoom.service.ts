@@ -16,11 +16,24 @@ import { PANEL_CHROME_PX } from '../../../helper/injection-token/panel-chrome-px
 /**
  * Owns the application's single connected logo-preview overlay.
  *
- * @remarks Opening another origin replaces the current overlay. Reopening the same attached
- * origin only repositions it and preserves its original activation owner. Hover panes ignore
- * pointer input, while touch panes support inside interaction; outside interaction and Escape
- * dismiss either mode. Optional origin and activation guards prevent unrelated directives from
- * closing a preview they do not own.
+ * @remarks
+ * ### Architecture & Lifecycle State Machine
+ * Maintains a singleton CDK overlay instance for zoom previews across the application:
+ * - **Single-Owner Policy**: Opening a preview for a new image origin automatically replaces and disposes
+ *   the previous overlay.
+ * - **Idempotent Reopening**: Re-triggering `open()` for the currently attached origin updates its position
+ *   without re-instantiating the component or losing ownership context.
+ * - **Dual Interaction Modes**:
+ *   - `hover`: Pointer transparent (`pointer-events: none`) so hover previews never trap or block mouse movement.
+ *   - `touch`: Interactive panel supporting touch interactions and inside clicks.
+ * - **Dismissal Guards**: Listens for outside pointer events, Escape keypresses, and component detachments.
+ *
+ * ### CDK Viewport Clamping Pipeline
+ * Standard CDK `withPush(true)` relies on `document.documentElement.clientWidth`, which breaks when scrollbars
+ * exist or wide panels render at 100vw. This service wraps CDK's position cycle with a two-phase bounding pipeline:
+ * 1. `applyViewportSizeLimits`: Injects CSS custom properties and max-size constraints derived from `ViewportRuler`.
+ * 2. `clampOverlayToViewport`: Corrects residual bounding overflow and strips CDK `transform` / `inset` to prevent
+ *    coordinate desync.
  */
 @Service()
 export class ImageZoomService {
@@ -188,7 +201,16 @@ export class ImageZoomService {
     subscriptions?.unsubscribe();
   }
 
-  /** Wraps every CDK position pass with current size limits and a corrective viewport clamp. */
+  /**
+   * Wraps every CDK position pass with current size limits and a corrective viewport clamp.
+   *
+   * @param overlayRef - Active CDK overlay reference being tracked.
+   * @remarks
+   * Intercepts `overlayRef.updatePosition` to enforce a 3-step pipeline:
+   * 1. Compute dynamic viewport boundaries and publish CSS custom properties (`applyViewportSizeLimits`).
+   * 2. Execute CDK's flexible connected position calculation (`updatePosition`).
+   * 3. Apply post-layout clamping to resolve any horizontal/vertical overflow (`clampOverlayToViewport`).
+   */
   private installViewportBoundedPositioning(overlayRef: OverlayRef): void {
     const updatePosition = overlayRef.updatePosition.bind(overlayRef);
 
@@ -204,7 +226,23 @@ export class ImageZoomService {
     };
   }
 
-  /** Publishes pane and image limits derived from the current viewport and panel chrome. */
+  /**
+   * Publishes pane and image limits derived from the current viewport and panel chrome.
+   *
+   * @param overlayRef - Overlay reference whose host element styles are updated.
+   *
+   * @remarks
+   * ### Mathematical Formulas
+   * Dynamically calculates bounds from `ViewportRuler.getViewportSize()`:
+   * ```
+   * maxWidth = max(viewport.width - 2 * viewportMargin, 0)
+   * maxHeight = max(viewport.height - 2 * viewportMargin, 0)
+   * imageMaxWidth = min(viewport.width * imageMaxViewportRatio, max(maxWidth - panelChromePx, 0))
+   * imageMaxHeight = min(viewport.height * imageMaxViewportRatio, max(maxHeight - panelChromePx, 0))
+   * ```
+   * Injects these values as CSS custom properties on `overlayElement` to constrain internal image
+   * dimensions and card chrome without requiring template re-renders.
+   */
   private applyViewportSizeLimits(overlayRef: OverlayRef): void {
     const viewport = this.viewportRuler.getViewportSize();
     const maxWidth = Math.max(viewport.width - this.viewportMargin * 2, 0);
@@ -230,6 +268,28 @@ export class ImageZoomService {
   /**
    * Corrects any residual viewport overflow after CDK positioning, including wide panes that CDK
    * cannot push because scrollbar-aware client dimensions differ from viewport sizing.
+   *
+   * @param overlayRef - Overlay reference whose bounding rect is clamped against viewport edges.
+   *
+   * @remarks
+   * ### Viewport Clamping Algorithm
+   * Computes the allowable coordinate window $[ \text{minLeft}, \text{maxRight} ] \times [ \text{minTop}, \text{maxBottom} ]$:
+   * ```
+   * minLeft = viewportMargin
+   * maxRight = viewport.width - viewportMargin
+   * minTop = viewportMargin
+   * maxBottom = viewport.height - viewportMargin
+   *
+   * nextLeft = clamp(rect.left, minLeft, maxRight - rect.width)
+   * nextTop = clamp(rect.top, minTop, maxBottom - rect.height)
+   * ```
+   *
+   * ### Transform Reset & Subpixel Threshold
+   * - If coordinate adjustments are within subpixel threshold ($|\Delta X| < 0.5\text{px} \land |\Delta Y| < 0.5\text{px}$),
+   *   DOM style mutations are bypassed to avoid layout thrashing.
+   * - Re-bases positioning by clearing CDK's `style.inset` and `style.transform` (`transform: none`, `inset: auto`)
+   *   and assigning explicit `style.left` / `style.top` pixel values, ensuring that visual bounding rects
+   *   and computed CSS coordinates remain strictly synchronized.
    */
   private clampOverlayToViewport(overlayRef: OverlayRef): void {
     const pane = overlayRef.overlayElement;
@@ -273,7 +333,16 @@ export class ImageZoomService {
     pane.style.bottom = 'auto';
   }
 
-  /** Repositions after initial rendering and whenever decoded preview content changes pane size. */
+  /**
+   * Repositions after initial rendering and whenever decoded preview content changes pane size.
+   *
+   * @param overlayRef - Overlay reference being observed for size mutations.
+   * @remarks
+   * Executes a two-phase measurement:
+   * 1. Immediate `syncPosition()` after change detection to align with initial SVG metadata dimensions.
+   * 2. `ResizeObserver` observation on `overlayElement` to handle asynchronous raster decoding or web font
+   *    rendering that expands or reflows the preview container after attachment.
+   */
   private watchOverlayPaneSize(overlayRef: OverlayRef): void {
     this.disconnectPaneResizeObserver();
 

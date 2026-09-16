@@ -33,8 +33,26 @@ import type { ResumePdfConfirmDialogResult } from '../../helper/type/resume-pdf-
 /**
  * Composes the canonical résumé and coordinates navigation, theme, and PDF generation.
  *
- * @remarks Recognized routed fragments and observable viewport sections share responsibility for
- * active navigation state, while the Router owns URL, history, scrolling, and target focus.
+ * @remarks
+ * ### Viewport Section Spy Architecture
+ * Tracks user scroll position and responsive navigation using an activation scanline model.
+ * Combines URL anchor fragments (`ActivatedRoute.fragment`) with throttled scroll and resize streams
+ * (`ScrollDispatcher.scrolled` and `ViewportRuler.change`).
+ *
+ * ### Activation Scanline Algorithm
+ * The active section is determined by projecting a virtual scanline at a fixed ratio from the top
+ * of the visible viewport:
+ * ```
+ * scanline = viewport.top + (viewport.height * sectionActivationRatio)
+ * ```
+ * Sections are evaluated for collision with the scanline, falling back to minimum Euclidean distance
+ * to ensure continuous active-state feedback across boundaries and tall viewport sizes.
+ *
+ * ### Print Lifecycle & PDF Streaming
+ * - **Print Interception**: Intercepts `window:beforeprint` to force eager rendering of all deferred section
+ *   components (`renderAllSections.set(true)`).
+ * - **PDF Download Stream**: Executes asynchronous HTTP event streaming with live progress reporting,
+ *   handling missing remote assets via an accessible confirmation dialog.
  */
 @Component({
   selector: 'app-resume-page',
@@ -114,12 +132,31 @@ export default class ResumePage {
     this.themeService.toggle();
   }
 
-  /** Starts loading all deferred content as a best effort before a native print dialog opens. */
+  /**
+   * Starts loading all deferred content as a best effort before a native print dialog opens.
+   *
+   * @remarks
+   * Setting `renderAllSections` to `true` forces all lazy `@defer` section blocks and virtualized
+   * content containers to render immediately into the DOM so the browser's print layout engine
+   * captures the complete resume rather than unrendered placeholder boundaries.
+   */
   protected prepareForNativePrint(): void {
     this.renderAllSections.set(true);
   }
 
-  /** Streams the PDF once per request while preserving retry behavior after any outcome. */
+  /**
+   * Streams the PDF once per request while preserving retry behavior after any outcome.
+   *
+   * @remarks
+   * ### Execution Flow
+   * 1. **Single-Flight Lock**: Guards against concurrent invocations using `downloadPending()`.
+   * 2. **Pre-flight Availability Check**: If `downloadAvailable()` is `false`, prompts the user with an
+   *    accessible alert dialog (`ResumePdfConfirmDialog`) to confirm whether to proceed despite the missing asset.
+   * 3. **Progress Streaming**: Invokes `ResumePdfService.download` with a progress callback that updates
+   *    `downloadProgress` (0..100) for UI spinner binding.
+   * 4. **Cleanup & Error Handling**: Resets pending and progress state in a `finally` block, routing unexpected
+   *    exceptions to `ErrorHandler`.
+   */
   protected async downloadResume(): Promise<void> {
     if (this.downloadPending()) {
       return;
@@ -154,6 +191,34 @@ export default class ResumePage {
   /**
    * Re-queries registered sections so deferred replacements participate immediately, then selects
    * the visible section containing the activation line or whose top is nearest to it.
+   *
+   * @remarks
+   * ### Algorithmic Steps
+   * 1. **Scanline Calculation**:
+   *    Projects a virtual horizontal line across the viewport:
+   *    ```
+   *    activationLine = viewport.top + (viewport.height * sectionActivationRatio)
+   *    ```
+   * 2. **Bounding Box Collection & Frustum Culling**:
+   *    Iterates through registered `RESUME_SECTIONS`, queries their DOM elements, and computes
+   *    document-relative coordinates:
+   *    ```
+   *    top = viewport.top + bounds.top
+   *    bottom = viewport.top + bounds.bottom
+   *    ```
+   *    A section is deemed visible if its vertical span intersects the current viewport:
+   *    ```
+   *    bottom > viewport.top && top < viewport.bottom
+   *    ```
+   * 3. **Collision Detection & Nearest-Neighbor Fallback**:
+   *    - **Direct Intersection**: Selects the section spanning across the scanline:
+   *      ```
+   *      top <= activationLine && bottom >= activationLine
+   *      ```
+   *    - **Distance Sorting**: If no section directly intersects the scanline (e.g. during rapid scrolling
+   *      or in interstitial spacing), sorts visible sections by absolute distance $|top - activationLine|$
+   *      and selects the nearest one.
+   * 4. **Signal Update**: Sets `activeSection` signal to update navigation UI highlights.
    */
   private updateActiveSection(): void {
     const viewport = this.viewportRuler.getViewportRect();

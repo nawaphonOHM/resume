@@ -20,12 +20,38 @@ const THEME_TRANSITION_DURATION_MS = 250;
  * Resolves the active résumé theme and synchronizes it with document classes.
  *
  * @remarks
- * A valid stored choice takes precedence over the system color-scheme
- * preference. Without an explicit choice, system changes remain live. Printing
- * temporarily forces light document classes without changing the selected
- * signal or persisted value, and all listeners and pending transition cleanup
- * are released when the service is destroyed. Unavailable browser storage is
- * treated as optional rather than as an application error.
+ * ### Theme Precedence Hierarchy
+ * The active color scheme is resolved using the following order of precedence:
+ * 1. **Stored Explicit Preference**: A valid theme ('light' | 'dark') saved in `localStorage`.
+ * 2. **System Media Query**: When no stored choice exists, tracks `window.matchMedia('(prefers-color-scheme: dark)')`.
+ * 3. **Application Fallback**: Defaults to 'light' during SSR or when media queries are unavailable.
+ *
+ * ```
+ *                       +-----------------------------------+
+ *                       |  localStorage['theme'] available? |
+ *                       +-----------------+-----------------+
+ *                                         |
+ *                        +----------------+----------------+
+ *                        | YES                             | NO
+ *                        v                                 v
+ *            +-----------------------+         +-----------------------+
+ *            | Stored Explicit Theme |         | prefers-color-scheme  |
+ *            | ('light' | 'dark')    |         | dark -> 'dark'        |
+ *            | (System updates off)  |         | light -> 'light'      |
+ *            +-----------------------+         | (System updates live) |
+ *                                              +-----------------------+
+ * ```
+ *
+ * ### Print Override State Machine
+ * Printing requires high-contrast, ink-safe styling:
+ * - `beforeprint`: Temporarily sets document classes to `resume-theme-light` without modifying the reactive
+ *   `theme` signal or mutating `localStorage`.
+ * - `afterprint`: Restores document classes matching the user's selected `theme` signal.
+ *
+ * ### Animated Transition Debounce
+ * Switching themes applies a transient CSS marker class (`resume-theme-transitioning`) for 250ms
+ * (`THEME_TRANSITION_DURATION_MS`) to smooth color token interpolation. Rapid toggling resets the timer
+ * to prevent premature class removal.
  */
 @Service()
 export class ThemeService {

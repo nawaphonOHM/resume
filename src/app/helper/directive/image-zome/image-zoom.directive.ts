@@ -21,10 +21,31 @@ import { INITIAL_IMAGE_STATE } from '../../injection-token/initial-image-state.v
 /**
  * Adds an intrinsic-size preview interaction to a rendered logo image when it is downscaled.
  *
- * @remarks Mouse and pen entry opens a hover-owned preview, while an enabled touch click toggles
- * touch ownership. Failed, full-size, and upscaled images remain inert. Eligibility is recomputed
- * after loading and resizing, and any preview owned by this image is closed if eligibility is
- * lost or the directive is destroyed.
+ * @remarks
+ * ### Downscale Detection & Geometry
+ * Brand logo images in responsive layouts often render at a fraction of their natural SVG / PNG
+ * resolution. This directive evaluates the ratio between rendered content-box dimensions and intrinsic
+ * dimensions:
+ * ```
+ * scale_x = contentBox.width / intrinsic.width
+ * scale_y = contentBox.height / intrinsic.height
+ * containedScale = min(scale_x, scale_y)
+ * isDownscaled = containedScale < (1 - downscaleTolerance)
+ * ```
+ *
+ * ### Content-Box Calculation
+ * To accurately compare dimensions against intrinsic pixel bounds, the content box is computed by
+ * subtracting CSS borders and paddings from `getBoundingClientRect()`:
+ * ```
+ * W_content = W_bounds - (borderLeft + borderRight + paddingLeft + paddingRight)
+ * H_content = H_bounds - (borderTop + borderBottom + paddingTop + paddingBottom)
+ * ```
+ *
+ * ### Interaction Model & Ownership
+ * - **Pointer (Mouse / Pen)**: Hover entry opens a hover-owned overlay; pointer exit closes hover ownership.
+ * - **Touch**: Completed click toggles touch-owned overlay persistence.
+ * - **Dynamic Invalidation**: Load errors, container resizing (`ResizeObserver`), or layout shifts that bring
+ *   the image back to full scale automatically close any active preview.
  */
 @Directive({
   selector: 'img[appImageZoom]',
@@ -128,7 +149,13 @@ export class ImageZoomDirective {
   /**
    * Recomputes whether zoom adds detail and closes this origin's preview when it no longer does.
    *
+   * @param failed - Explicit load-failure flag override; defaults to current state.
    * @returns The current eligibility used by event handlers.
+   *
+   * @remarks
+   * Re-evaluates intrinsic dimensions against rendered content-box size. If layout changes or
+   * error conditions make the image ineligible, any open overlay owned by this directive is
+   * immediately closed to prevent orphaned or non-enlarging previews.
    */
   private updateEligibility(failed = this.imageState().failed): boolean {
     this.imageState.set(
@@ -149,7 +176,17 @@ export class ImageZoomDirective {
     return eligible;
   }
 
-  /** Purely derives whether the latest image snapshot can provide a useful enlargement. */
+  /**
+   * Purely derives whether the latest image snapshot can provide a useful enlargement.
+   *
+   * @param state - Current snapshot of image load state and measured content-box dimensions.
+   * @param logo - Brand logo input metadata containing fallback intrinsic dimensions.
+   * @returns `true` if the image successfully loaded and its rendered size is below intrinsic bounds.
+   *
+   * @remarks
+   * Evaluates intrinsic dimensions using the loaded image element's `naturalWidth`/`naturalHeight`
+   * when available, falling back to the author-provided `BrandLogo` metadata dimensions (`logo.width`, `logo.height`).
+   */
   private isEligible(state: ImageState, logo: BrandLogo): boolean {
     const metadataSize = { width: logo.width, height: logo.height };
     const intrinsicSize =
@@ -159,8 +196,28 @@ export class ImageZoomDirective {
   }
 
   /**
-   * Compares the contained scale against intrinsic dimensions; the tolerance prevents tiny layout
-   * rounding differences from creating an interaction that provides no useful enlargement.
+   * Evaluates whether rendered dimensions are strictly smaller than intrinsic dimensions.
+   *
+   * @param intrinsicSize - Natural pixel dimensions of the image asset.
+   * @param contentBoxSize - Rendered content-box dimensions after excluding borders and padding.
+   * @returns `true` if the image is downscaled beyond the allowable tolerance.
+   *
+   * @remarks
+   * ### Mathematical Formula
+   * Compares the contained aspect-ratio scale factor against the downscale threshold:
+   * ```
+   * scale_x = contentBoxSize.width / intrinsicSize.width
+   * scale_y = contentBoxSize.height / intrinsicSize.height
+   * containedScale = min(scale_x, scale_y)
+   *
+   * isDownscaled = Number.isFinite(containedScale) && containedScale < (1.0 - downscaledTolerance)
+   * ```
+   *
+   * ### Downscale Tolerance Rationale
+   * Subpixel layout calculation, high-DPI display rounding, and fluid CSS grid tracks can result in
+   * minor fractional scaling (e.g., a 64px image rendering at 63.8px). Without `downscaledTolerance`
+   * (e.g., 0.05 / 5%), a 99.7% scale would trigger an overlay preview that provides no meaningful
+   * visual enlargement.
    */
   private isDownscaled(intrinsicSize: ImageSize | null, contentBoxSize: ImageSize | null): boolean {
     if (!intrinsicSize || !contentBoxSize) {
@@ -184,7 +241,20 @@ export class ImageZoomDirective {
     return this.isValidSize(naturalSize) ? naturalSize : null;
   }
 
-  /** @returns The rendered content box after excluding borders and padding, when measurable. */
+  /**
+   * Measures the rendered content-box dimensions of the image element.
+   *
+   * @returns Rendered content-box width and height in CSS pixels, or `null` if unmeasurable.
+   *
+   * @remarks
+   * ### Box-Model Arithmetic
+   * `getBoundingClientRect()` returns the full border-box dimension. To extract the true content area
+   * where image pixels are rasterized, computed borders and paddings are subtracted:
+   * ```
+   * W_content = W_bounds - (borderLeftWidth + borderRightWidth + paddingLeft + paddingRight)
+   * H_content = H_bounds - (borderTopWidth + borderBottomWidth + paddingTop + paddingBottom)
+   * ```
+   */
   private contentBoxSize(): ImageSize | null {
     const bounds = this.image.getBoundingClientRect();
     let width = bounds.width;
