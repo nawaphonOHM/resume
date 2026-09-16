@@ -1061,7 +1061,10 @@ describe('ResumePage', () => {
     fixture.detectChanges();
 
     expect(openSpy).toHaveBeenCalledOnce();
-    expect(openSpy).toHaveBeenCalledWith(ResumePdfConfirmDialog, { role: 'alertdialog' });
+    expect(openSpy).toHaveBeenCalledWith(ResumePdfConfirmDialog, {
+      role: 'alertdialog',
+      disableClose: true,
+    });
 
     const dialogContainer = document.querySelector<HTMLElement>('[role="alertdialog"]');
     expect(dialogContainer).not.toBeNull();
@@ -1098,7 +1101,10 @@ describe('ResumePage', () => {
     fixture.detectChanges();
 
     expect(openSpy).toHaveBeenCalledOnce();
-    expect(openSpy).toHaveBeenCalledWith(ResumePdfConfirmDialog, { role: 'alertdialog' });
+    expect(openSpy).toHaveBeenCalledWith(ResumePdfConfirmDialog, {
+      role: 'alertdialog',
+      disableClose: true,
+    });
 
     const dialogContainer = document.querySelector<HTMLElement>('[role="alertdialog"]');
     const continueButton = Array.from(
@@ -1130,7 +1136,10 @@ describe('ResumePage', () => {
     fixture.detectChanges();
 
     expect(openSpy).toHaveBeenCalledOnce();
-    expect(openSpy).toHaveBeenCalledWith(ResumePdfConfirmDialog, { role: 'alertdialog' });
+    expect(openSpy).toHaveBeenCalledWith(ResumePdfConfirmDialog, {
+      role: 'alertdialog',
+      disableClose: true,
+    });
 
     const dialogContainer = document.querySelector<HTMLElement>('[role="alertdialog"]');
     const continueButton = Array.from(

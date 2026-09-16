@@ -169,6 +169,7 @@ export default class ResumePage {
         ResumePdfConfirmDialogResult
       >(ResumePdfConfirmDialog, {
         role: 'alertdialog',
+        disableClose: true,
       });
       const confirmed = await firstValueFrom(dialogRef.afterClosed());
       if (!confirmed) {
