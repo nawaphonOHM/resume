@@ -249,7 +249,7 @@ flowchart TD
 
 ### 6. Image Zoom & Angular CDK Overlay System
 
-Located at `src/app/directive/image-zome/image-zoom.directive.ts` and `src/app/resume/image-zoom-preview/`:
+Located at `src/app/helper/directive/image-zome/image-zoom.directive.ts` and `src/app/resume/image-zoom-preview/`:
 
 - **Downscale Detection via `ResizeObserver`**:
   `ImageZoomDirective` inspects the host image's natural dimensions against its rendered content box (excluding border and padding).
@@ -444,16 +444,16 @@ resume/
 │   └── test-runner.mjs           # Vitest execution runner with timeout & diagnostics
 ├── src/
 │   ├── app/
-│   │   ├── directive/            # Custom Angular directives
-│   │   │   └── image-zome/       # Image zoom hover & touch directive
-│   │   │       ├── image-zoom.directive.ts
-│   │   │       └── image-zoom.directive.spec.ts
-│   │   ├── helper/               # Fine-grained DI tokens, services, types, and pure functions
+│   │   ├── helper/               # Fine-grained DI tokens, services, directives, types, and pure functions
 │   │   │   ├── core/             # Global singleton services
 │   │   │   │   ├── favicon.service.ts         # Dynamic browser tab favicon management
 │   │   │   │   ├── favicon.service.spec.ts
 │   │   │   │   ├── theme.service.ts           # Light/Dark/System theme management & persistence
 │   │   │   │   └── theme.service.spec.ts
+│   │   │   ├── directive/        # Custom Angular directives
+│   │   │   │   └── image-zome/   # Image zoom hover & touch directive
+│   │   │   │       ├── image-zoom.directive.ts
+│   │   │   │       └── image-zoom.directive.spec.ts
 │   │   │   ├── injection-token/  # 60+ tree-shakable InjectionTokens & math functions
 │   │   │   │   ├── clahe-*.variable.ts    # CLAHE parameters (clip limit, tile target)
 │   │   │   │   ├── hero-code-*.variable.ts# Kinematic orbit parameters (radii, phase, omega)
@@ -605,7 +605,7 @@ npm test
 node scripts/test-runner.mjs
 ```
 
-The test runner utilizes Vitest via `@angular/build:unit-test` and `jsdom`. The test suite verifies components, services, custom directives, fine-grained injection tokens, mathematical functions, contrast enhancement routines, and streaming PDF download progress across 15 test suites and 180+ tests.
+The test runner utilizes Vitest via `@angular/build:unit-test` and `jsdom`. The test suite verifies components, services, custom directives, fine-grained injection tokens, mathematical functions, contrast enhancement routines, and streaming PDF download progress across 16 test suites and 200+ tests.
 
 ### Code Formatting
 

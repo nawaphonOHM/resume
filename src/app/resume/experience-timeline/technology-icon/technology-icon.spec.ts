@@ -8,7 +8,7 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { By } from '@angular/platform-browser';
 import { vi } from 'vitest';
 
-import { ImageZoomDirective } from '../../../directive/image-zome/image-zoom.directive.ts';
+import { ImageZoomDirective } from '../../../helper/directive/image-zome/image-zoom.directive.ts';
 import { TechnologyIconContrastService } from './service/technology-icon-contrast/technology-icon-contrast.service.ts';
 import { TechnologyIconComponent } from './technology-icon.ts';
 import type { TechnologyIconMetadata } from '../../../helper/interface/brand-logo/technology-icon-meta-data/technology-icon-meta-data.interface.ts';

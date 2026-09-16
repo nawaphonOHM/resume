@@ -1,7 +1,7 @@
 import { Component, computed, inject, input, linkedSignal, resource } from '@angular/core';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
-import { ImageZoomDirective } from '../../../directive/image-zome/image-zoom.directive.ts';
+import { ImageZoomDirective } from '../../../helper/directive/image-zome/image-zoom.directive.ts';
 import { TechnologyIconContrastService } from './service/technology-icon-contrast/technology-icon-contrast.service.ts';
 import type { TechnologyIconPresentation } from '../../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
 import { NgOptimizedImage } from '@angular/common';

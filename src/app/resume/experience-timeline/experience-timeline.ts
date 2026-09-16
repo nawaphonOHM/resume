@@ -5,7 +5,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 
-import { ImageZoomDirective } from '../../directive/image-zome/image-zoom.directive.ts';
+import { ImageZoomDirective } from '../../helper/directive/image-zome/image-zoom.directive.ts';
 import { TechnologyIconComponent } from './technology-icon/technology-icon.ts';
 import type { Experience } from '../../helper/interface/experience/experience.interface.ts';
 import { resolveTechnologyIcon } from '../../helper/injection-token/resolve-technology-icon.function.ts';

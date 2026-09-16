@@ -36,7 +36,7 @@ import { TechnologyIconContrastService } from '../experience-timeline/technology
 import { TechnologyIconComponent } from '../experience-timeline/technology-icon/technology-icon.ts';
 import type { TechnologyIconMetadata } from '../../helper/interface/brand-logo/technology-icon-meta-data/technology-icon-meta-data.interface.ts';
 import type { ResumeProfile } from '../../helper/interface/resume-profile/resume-profile.interface.ts';
-import { ImageZoomDirective } from '../../directive/image-zome/image-zoom.directive.ts';
+import { ImageZoomDirective } from '../../helper/directive/image-zome/image-zoom.directive.ts';
 import { ResumeNavigation } from '../resume-navigation/resume-navigation';
 import type { ResumeSectionId } from '../../helper/type/resume-section-id.type.ts';
 import ResumePage from './resume-page';
