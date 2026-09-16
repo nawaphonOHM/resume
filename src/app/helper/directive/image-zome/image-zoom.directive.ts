@@ -14,32 +14,9 @@ import { ImageZoomService } from '../../../resume/image-zoom-preview/service/ima
 import type { ImageZoomActivation } from '../../type/image-zoom-activation.type.ts';
 import type { ImageZoomRequest } from '../../interface/image-zoom-request/image-zoom-request.interface.ts';
 import type { BrandLogo } from '../../interface/brand-logo/brand-logo.interface.ts';
-
-/** Pixel dimensions used to compare an image's intrinsic and rendered content boxes. */
-interface ImageSize {
-  readonly width: number;
-  readonly height: number;
-}
-
-/** Atomic snapshot of browser-measured image state used by reactive eligibility derivation. */
-interface ImageState {
-  readonly failed: boolean;
-  readonly naturalSize: ImageSize | null;
-  readonly contentBoxSize: ImageSize | null;
-}
-
-/** Signal-derived preview data that must invalidate an attached same-origin overlay when changed. */
-type ImageZoomPayload = Omit<ImageZoomRequest, 'origin' | 'activation'>;
-
-/** Scale difference required to treat an image as downscaled rather than measurement noise. */
-const DOWNSCALE_TOLERANCE = 0.01;
-
-/** Unmeasured state used until the host image reaches its first browser render. */
-const INITIAL_IMAGE_STATE: ImageState = {
-  failed: false,
-  naturalSize: null,
-  contentBoxSize: null,
-};
+import type { ImageZoomPayload } from '../../type/image-zoom-payload.type.ts';
+import { DOWNSCALE_TOLERANCE } from '../../injection-token/downscale-tolerance.variable.ts';
+import { INITIAL_IMAGE_STATE } from '../../injection-token/initial-image-state.variable.ts';
 
 /**
  * Adds an intrinsic-size preview interaction to a rendered logo image when it is downscaled.
@@ -74,7 +51,8 @@ export class ImageZoomDirective {
 
   private readonly image = inject<ElementRef<HTMLImageElement>>(ElementRef).nativeElement;
   private readonly imageZoomService = inject(ImageZoomService);
-  private readonly imageState = signal<ImageState>(INITIAL_IMAGE_STATE);
+  private readonly downscaledTolerance = inject(DOWNSCALE_TOLERANCE);
+  private readonly imageState = signal<ImageState>(inject(INITIAL_IMAGE_STATE));
   private readonly eligible = computed(() =>
     this.isEligible(this.imageState(), this.appImageZoom()),
   );
@@ -194,7 +172,7 @@ export class ImageZoomDirective {
       contentBoxSize.height / intrinsicSize.height,
     );
 
-    return Number.isFinite(containedScale) && containedScale < 1 - DOWNSCALE_TOLERANCE;
+    return Number.isFinite(containedScale) && containedScale < 1 - this.downscaledTolerance;
   }
 
   /** @returns Valid natural dimensions reported by the browser after loading, when available. */
