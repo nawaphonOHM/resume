@@ -28,7 +28,7 @@ import { Subject } from 'rxjs';
 import { vi } from 'vitest';
 
 import { routes } from '../../app.routes';
-import { RESUME_THEME_STORAGE_KEY } from '../../core/theme.service';
+import { RESUME_THEME_STORAGE_KEY } from '../../helper/core/theme.service';
 import { resumeData } from '../../helper/injection-token/resume.data.ts';
 import { IMAGE_ASSET_ORIGIN as IMAGE_ASSET_ORIGIN_TOKEN } from '../../helper/injection-token/image-asset-origin.variable.ts';
 import { resolveTechnologyIcon as resolveTechnologyIconToken } from '../../helper/injection-token/resolve-technology-icon.function.ts';

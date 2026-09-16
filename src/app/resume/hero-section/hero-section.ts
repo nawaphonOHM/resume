@@ -19,7 +19,7 @@ import { statusColorForUtcPlusSeven } from '../../helper/injection-token/status-
 import { heroClockTransitionPicker } from '../../helper/injection-token/hero-clock-transition-picker.variable.ts';
 import { calculateStatusLuminance } from '../../helper/injection-token/status-luminance.function.ts';
 import { calculateHeroCodePosition } from '../../helper/injection-token/hero-code-position.function.ts';
-import { FaviconService } from '../../core/favicon.service.ts';
+import { FaviconService } from '../../helper/core/favicon.service.ts';
 import { statusFaviconForStatusColor } from '../../helper/injection-token/status-favicon-for-status-color.function.ts';
 
 /** Introduces the candidate and exposes the primary email contact action. */

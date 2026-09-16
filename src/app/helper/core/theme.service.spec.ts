@@ -6,7 +6,7 @@ import { PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
-import { RESUME_THEME_STORAGE_KEY, ThemeService } from './theme.service';
+import { RESUME_THEME_STORAGE_KEY, ThemeService } from './theme.service.ts';
 
 describe('ThemeService', () => {
   const transitionClass = 'resume-theme-transitioning';

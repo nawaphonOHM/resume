@@ -14,7 +14,7 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { firstValueFrom, merge } from 'rxjs';
 
-import { ThemeService } from '../../core/theme.service';
+import { ThemeService } from '../../helper/core/theme.service';
 import { EducationSection } from '../education-section/education-section';
 import { ExperienceTimeline } from '../experience-timeline/experience-timeline';
 import { HeroSection } from '../hero-section/hero-section';

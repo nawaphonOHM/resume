@@ -392,7 +392,7 @@ Tailwind CSS v4 utilities consume semantic custom properties through `@theme inl
 
 ### 4. Dynamic Theme Switching & Interpolation Lifecycle
 
-Managed by `ThemeService` (`src/app/core/theme.service.ts`):
+Managed by `ThemeService` (`src/app/helper/core/theme.service.ts`):
 
 1. **State & Persistence**: Theme state is exposed as an Angular Signal (`theme = signal<ResumeTheme>('light')`, `isDark = computed(...)`), persisted to `localStorage` under `resume-profile-theme` with defensive try/catch handling.
 2. **System Preference Synchronization**: Listens to `window.matchMedia('(prefers-color-scheme: dark)')` to follow OS preferences until the user explicitly toggles a choice.
@@ -444,16 +444,16 @@ resume/
 │   └── test-runner.mjs           # Vitest execution runner with timeout & diagnostics
 ├── src/
 │   ├── app/
-│   │   ├── core/                 # Global singleton services
-│   │   │   ├── favicon.service.ts         # Dynamic browser tab favicon management
-│   │   │   ├── favicon.service.spec.ts
-│   │   │   ├── theme.service.ts           # Light/Dark/System theme management & persistence
-│   │   │   └── theme.service.spec.ts
 │   │   ├── directive/            # Custom Angular directives
 │   │   │   └── image-zome/       # Image zoom hover & touch directive
 │   │   │       ├── image-zoom.directive.ts
 │   │   │       └── image-zoom.directive.spec.ts
-│   │   ├── helper/               # Fine-grained DI tokens, types, and pure functions
+│   │   ├── helper/               # Fine-grained DI tokens, services, types, and pure functions
+│   │   │   ├── core/             # Global singleton services
+│   │   │   │   ├── favicon.service.ts         # Dynamic browser tab favicon management
+│   │   │   │   ├── favicon.service.spec.ts
+│   │   │   │   ├── theme.service.ts           # Light/Dark/System theme management & persistence
+│   │   │   │   └── theme.service.spec.ts
 │   │   │   ├── injection-token/  # 60+ tree-shakable InjectionTokens & math functions
 │   │   │   │   ├── clahe-*.variable.ts    # CLAHE parameters (clip limit, tile target)
 │   │   │   │   ├── hero-code-*.variable.ts# Kinematic orbit parameters (radii, phase, omega)
