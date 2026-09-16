@@ -23,10 +23,10 @@
           [class.hero-clock-tick-b]="!isTickAlternate()"
         >
           @for (
-            token of currentInstant() | date: 'yyyy-MM-dd HH:mm:ss' : '+0700' | split | token;
-            track token.id
+            token of currentInstant() | date: 'yyyy-MM-dd HH:mm:ss' : '+0700' | split;
+            track token
           ) {
-            <span>{{ token.character }}</span>
+            <span>{{ token }}</span>
           }
         </time>
       </span>
