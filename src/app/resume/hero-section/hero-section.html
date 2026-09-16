@@ -21,15 +21,9 @@
           [class.hero-clock--soft-glow]="clockTransition === 'soft-glow'"
           [class.hero-clock-tick-a]="isTickAlternate()"
           [class.hero-clock-tick-b]="!isTickAlternate()"
-        >
-          @for (
-            token of currentInstant() | date: 'yyyy-MM-dd HH:mm:ss' : '+0700' | split | token;
-            track token.id
-          ) {
-            <span>{{ token.character }}</span>
-          }
-        </time>
-      </span>
+          >{{ currentInstant() | date: 'yyyy-MM-dd HH:mm:ss' : '+0700' }}</time
+        ></span
+      >
     </p>
 
     <h1 id="hero-title">{{ profile().name }}</h1>
