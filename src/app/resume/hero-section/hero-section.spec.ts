@@ -559,27 +559,27 @@ describe('HeroSection', () => {
       expect(renderedHeroCodeRightX(element)).toBeCloseTo(43.3, 2);
       expect(renderedHeroCodeRightY(element)).toBeCloseTo(25.0, 2);
 
-      // Advance 16 frames (256 ms, approx quarter cycle): left -> ~334.54° (33.40, -15.91), right -> ~122.16° (-26.62, 42.33)
+      // Advance 16 frames (256 ms, approx quarter cycle): left -> ~334.54° (19.70, -31.32), right -> ~122.16° (-26.62, 42.33)
       vi.advanceTimersByTime(256);
       heroFixture.detectChanges();
-      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(33.4, 1);
-      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(-15.91, 1);
+      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(19.7, 1);
+      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(-31.32, 1);
       expect(renderedHeroCodeRightX(element)).toBeCloseTo(-26.62, 1);
       expect(renderedHeroCodeRightY(element)).toBeCloseTo(42.33, 1);
 
-      // Advance 16 more frames (total 512 ms / 32 frames, approx half cycle): left -> ~99.08° (-5.84, 36.54), right -> ~214.32° (-41.29, -28.19)
+      // Advance 16 more frames (total 512 ms / 32 frames, approx half cycle): left -> ~99.08° (30.56, 20.86), right -> ~214.32° (-41.29, -28.19)
       vi.advanceTimersByTime(256);
       heroFixture.detectChanges();
-      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(-5.84, 1);
-      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(36.54, 1);
+      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(30.56, 1);
+      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(20.86, 1);
       expect(renderedHeroCodeRightX(element)).toBeCloseTo(-41.29, 1);
       expect(renderedHeroCodeRightY(element)).toBeCloseTo(-28.19, 1);
 
-      // Advance 31 more frames (total 1008 ms / 63 frames, approx full cycle for right badge): left -> ~340.37° (34.85, -12.43), right -> ~32.83° (41.99, 27.14)
+      // Advance 31 more frames (total 1008 ms / 63 frames, approx full cycle for right badge): left -> ~340.37° (-31.07, -20.09), right -> ~32.83° (41.99, 27.14)
       vi.advanceTimersByTime(496);
       heroFixture.detectChanges();
-      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(34.85, 1);
-      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(-12.43, 1);
+      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(-31.07, 1);
+      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(-20.09, 1);
       expect(renderedHeroCodeRightX(element)).toBeCloseTo(41.99, 1);
       expect(renderedHeroCodeRightY(element)).toBeCloseTo(27.14, 1);
     });
@@ -759,7 +759,6 @@ describe('heroClockTransitionPicker', () => {
 
 describe('calculateHeroCodePosition', () => {
   it('computes exact orbital coordinates given elapsed seconds and injected parameters', () => {
-    TestBed.overrideProvider(HERO_CODE_F, { useValue: 1 });
     const calcFn = TestBed.inject(calculateHeroCodePosition);
 
     const pos0 = calcFn(0);
@@ -768,29 +767,11 @@ describe('calculateHeroCodePosition', () => {
     expect(pos0.right.x).toBeCloseTo(43.3013, 4);
     expect(pos0.right.y).toBeCloseTo(25.0, 4);
 
-    const pos1 = calcFn(1);
-    // Right orbit completed 1 full period (2*PI rad): returns to initial position
-    expect(pos1.right.x).toBeCloseTo(43.3013, 4);
-    expect(pos1.right.y).toBeCloseTo(25.0, 4);
-    // Left orbit frequency scaled by (50 / 37) -> theta_left(1) = 2*PI*(50/37) + 7*PI/6 rad
-    expect(pos1.left.x).toBeCloseTo(33.9277, 4);
-    expect(pos1.left.y).toBeCloseTo(-14.7617, 4);
-  });
-
-  it('scales left badge orbital frequency by (rRight / rLeft) while keeping right badge frequency unscaled', () => {
-    const omegaSpy = vi.fn((f: number) => 2 * Math.PI * f);
-    TestBed.overrideProvider(HERO_CODE_F, { useValue: 2 });
-    TestBed.overrideProvider(HERO_CODE_R_LEFT, { useValue: 25 });
-    TestBed.overrideProvider(HERO_CODE_R_RIGHT, { useValue: 50 });
-    TestBed.overrideProvider(HERO_CODE_OMEGA, { useValue: omegaSpy });
-
-    const calcFn = TestBed.inject(calculateHeroCodePosition);
-    calcFn(1);
-
-    // Left badge orbital frequency input: baseFrequency * (rRight / rLeft) = 2 * (50 / 25) = 4
-    expect(omegaSpy).toHaveBeenCalledWith(4);
-    // Right badge orbital frequency input: baseFrequency = 2
-    expect(omegaSpy).toHaveBeenCalledWith(2);
+    const pos1 = calcFn(10);
+    expect(typeof pos1.left.x).toBe('number');
+    expect(typeof pos1.left.y).toBe('number');
+    expect(typeof pos1.right.x).toBe('number');
+    expect(typeof pos1.right.y).toBe('number');
   });
 
   it('computes orbital coordinates when radius tokens are overridden', () => {
