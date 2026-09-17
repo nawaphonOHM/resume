@@ -187,18 +187,20 @@ The application features a real-time availability engine tracking working hours 
 `HeroSection` drives real-time mathematical motion calculations at 60fps via `requestAnimationFrame` and CSS custom properties:
 
 - **Parametric Circular Orbital Kinematics**:
-  The hero code badges orbit continuously around the central avatar along parametric circular trajectories:
-  $$x_{\text{left}}(t) = r_{\text{left}} \cdot A \cdot \cos(\omega t + \phi_{\text{left}}), \quad y_{\text{left}}(t) = r_{\text{left}} \cdot A \cdot \sin(\omega t + \phi_{\text{left}})$$
-  $$x_{\text{right}}(t) = r_{\text{right}} \cdot A \cdot \cos(\omega t + \phi_{\text{right}}), \quad y_{\text{right}}(t) = r_{\text{right}} \cdot A \cdot \sin(\omega t + \phi_{\text{right}})$$
+  The hero code badges orbit continuously around the central avatar along parametric circular trajectories, with the left badge orbital frequency scaled by the radius ratio ($r_{\text{right}} / r_{\text{left}}$):
+  $$\theta_{\text{left}}(t) = \omega\left(f \cdot \frac{r_{\text{right}}}{r_{\text{left}}}\right) \cdot t + \phi_{\text{left}}$$
+  $$x_{\text{left}}(t) = r_{\text{left}} \cdot A \cdot \cos(\theta_{\text{left}}(t)), \quad y_{\text{left}}(t) = r_{\text{left}} \cdot A \cdot \sin(\theta_{\text{left}}(t))$$
+  $$\theta_{\text{right}}(t) = \omega(f) \cdot t + \phi_{\text{right}}$$
+  $$x_{\text{right}}(t) = r_{\text{right}} \cdot A \cdot \cos(\theta_{\text{right}}(t)), \quad y_{\text{right}}(t) = r_{\text{right}} \cdot A \cdot \sin(\theta_{\text{right}}(t))$$
 
 - **Exact Physical Parameters**:
   - **Amplitude ($A$)**: $1$ (`HERO_CODE_A`)
   - **Orbital Radii ($r$)**: $r_{\text{left}} = 37\%$ (`HERO_CODE_R_LEFT`), $r_{\text{right}} = 50\%$ (`HERO_CODE_R_RIGHT`)
   - **Phase Offsets ($\phi$)**: $\phi_{\text{left}} = \frac{7\pi}{6}\text{ rad} = 210^\circ$ (`HERO_CODE_PHI_LEFT`), $\phi_{\text{right}} = \frac{\pi}{6}\text{ rad} = 30^\circ$ (`HERO_CODE_PHI_RIGHT`)
-  - **Calendar-Derived Dynamic Frequency ($f$)**: The orbital frequency parameter derives dynamically from the UTC+7 day of the month:
+  - **Calendar-Derived Dynamic Frequency ($f$)**: The base cyclic frequency parameter (`HERO_CODE_F`) derives dynamically from the UTC+7 day of the month:
     $$f = \frac{\text{dayOfMonth}}{\text{secondsPerHour}} = \frac{\text{dayOfMonth}}{3600}\text{ Hz}$$
     For example, on the 1st of the month $f = \frac{1}{3600}\text{ Hz}$ ($1\text{ rev/hour}$), while on the 31st $f = \frac{31}{3600}\text{ Hz}$ ($31\text{ rev/hour}$).
-  - **Angular Velocity ($\omega$)**: $\omega = 2\pi f$ (`HERO_CODE_OMEGA`).
+  - **Angular Velocity Function ($\omega(f)$)**: $\omega(f) = 2\pi f$ (`HERO_CODE_OMEGA`), calculating $\omega\left(f \cdot \frac{r_{\text{right}}}{r_{\text{left}}}\right)$ for the left badge and $\omega(f)$ for the right badge.
 
 - **Harmonic Status Dot Luminance Oscillation**:
   The availability dot pulses with simple harmonic motion:
