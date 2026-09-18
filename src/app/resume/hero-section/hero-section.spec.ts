@@ -13,7 +13,6 @@ import { HeroSection } from './hero-section';
 import { STATUS_LUMINANCE_A } from '../../helper/injection-token/status-luminance-parameters.amplitude.variable.ts';
 import { STATUS_LUMINANCE_F } from '../../helper/injection-token/status-luminance-parameters.frequency.variable.ts';
 import { STATUS_LUMINANCE_OMEGA } from '../../helper/injection-token/status-luminance-parameters.omega.variable.ts';
-import { HERO_CODE_A } from '../../helper/injection-token/hero-code-parameters.amplitude.variable.ts';
 import { HERO_CODE_F } from '../../helper/injection-token/hero-code-parameters.frequency.variable.ts';
 import { HERO_CODE_OMEGA } from '../../helper/injection-token/hero-code-parameters.omega.variable.ts';
 import { HERO_CODE_R_LEFT } from '../../helper/injection-token/hero-code-parameters.radius-left.variable.ts';
@@ -601,24 +600,12 @@ describe('HeroSection', () => {
       },
     );
 
-    it('alters orbital coordinates when HERO_CODE_A is overridden', () => {
-      TestBed.overrideProvider(HERO_CODE_A, { useValue: 0.5 });
-      const heroFixture = renderHero();
-      const element = heroFixture.nativeElement as HTMLElement;
-
-      // With A = 0.5, effective left radius is 37 * 0.5 = 18.5, right radius is 50 * 0.5 = 25
-      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(-16.02, 2);
-      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(-9.25, 2);
-      expect(renderedHeroCodeRightX(element)).toBeCloseTo(21.65, 2);
-      expect(renderedHeroCodeRightY(element)).toBeCloseTo(12.5, 2);
-    });
-
     it('alters orbital radius when HERO_CODE_R_LEFT is overridden', () => {
       TestBed.overrideProvider(HERO_CODE_R_LEFT, { useValue: 80 });
       const heroFixture = renderHero();
       const element = heroFixture.nativeElement as HTMLElement;
 
-      // With R_LEFT = 80, A = 1, effective left radius is 80 (right remains default 50)
+      // With R_LEFT = 80, effective left radius is 80 (right remains default 50)
       expect(renderedHeroCodeLeftX(element)).toBeCloseTo(-69.28, 2);
       expect(renderedHeroCodeLeftY(element)).toBeCloseTo(-40.0, 2);
       expect(renderedHeroCodeRightX(element)).toBeCloseTo(43.3, 2);

@@ -27,7 +27,7 @@ A high-performance, single-page interactive curriculum vitae and professional en
 - **Angular 22 Signals Architecture**: Standalone component model with default `OnPush` change detection, fine-grained Signal state (`signal`, `computed`, `effect`, `linkedSignal`, `resource`), Signal inputs/outputs (`input.required`, `output`), and native control flow (`@if`, `@for`, `@switch`, `@defer`).
 - **Inverted Dependency Injection**: Strict decoupling of data tokens, utility functions, physical constants, and UI components via 60+ granular `InjectionToken` definitions in `src/app/helper/injection-token/`.
 - **Live UTC+7 Bangkok Clock & Dynamic Status Favicon**: Real-time availability engine that tracks working hours in Asia/Bangkok time, drives status dot harmonic luminance oscillation ($f = 0.5\text{ Hz}$), and dynamically updates the browser favicon from CDN endpoints (`/favicons/{available|limited|unavailable}/favicon.svg`).
-- **Physics-Driven Orbital Badges**: Hero section code badge kinematics computed in 60fps frame loops via parametric trigonometry ($x = r \cdot A \cos(\omega t + \phi)$, $y = r \cdot A \sin(\omega t + \phi)$) with deterministic frequency derived from the calendar day of the month ($f = \text{dayOfMonth} / 3600\text{ Hz}$).
+- **Physics-Driven Orbital Badges**: Hero section code badge kinematics computed in 60fps frame loops via parametric trigonometry ($x = r \cos(\omega t + \phi)$, $y = r \sin(\omega t + \phi)$) with deterministic frequency derived from the calendar day of the month ($f = \text{dayOfMonth} / 3600\text{ Hz}$).
 - **Client-Side OpenCV.js CLAHE Image Enhancement**: Real-time contrast optimization for dark technology icons using WebAssembly CLAHE in CIE $L^*a^*b^*$ color space with cooperative idle scheduling (`requestIdleCallback`) and explicit C++ memory management.
 - **Smart Image Zoom Previews**: Image preview overlay powered by Angular CDK Overlay with `ResizeObserver`-driven downscale detection and automatic viewport collision containment.
 - **Resilient Streaming PDF Download & Pre-Flight Verification**: User-triggered résumé PDF download featuring pre-flight remote asset availability verification (`HEAD` request), reactive availability status signaling (`isAvailable`), accessible confirmation alert dialog (`ResumePdfConfirmDialog`) for proceeding with unverified or unavailable assets, Angular `HttpClient` event streaming with real-time percentage progress tracking, and automatic object URL cleanup.
@@ -170,7 +170,7 @@ The application fully embraces modern Angular 22 standalone architecture, fine-g
 
 Rather than relying on large monolithic service classes with hardcoded configuration constants, the application adheres to strict **Inverted Dependency Injection (Inverted DI)**. Over 60 fine-grained `InjectionToken` definitions reside in `src/app/helper/injection-token/`, decoupling parameters, math formulas, timing constants, pure transformation functions, and CDN URLs:
 
-- **Kinematics & Orbital Badges**: `HERO_CODE_R_LEFT`, `HERO_CODE_R_RIGHT`, `HERO_CODE_PHI_LEFT`, `HERO_CODE_PHI_RIGHT`, `HERO_CODE_A`, `HERO_CODE_F`, `HERO_CODE_OMEGA`, `calculateHeroCodePosition`.
+- **Kinematics & Orbital Badges**: `HERO_CODE_R_LEFT`, `HERO_CODE_R_RIGHT`, `HERO_CODE_PHI_LEFT`, `HERO_CODE_PHI_RIGHT`, `HERO_CODE_F`, `HERO_CODE_OMEGA`, `calculateHeroCodePosition`.
 - **Availability Scheduling & Photometry**: `UTC_PLUS_SEVEN_OFFSET_MS`, `CLOCK_UPDATE_INTERVAL_MS`, `STATUS_LUMINANCE_A`, `STATUS_LUMINANCE_F`, `STATUS_LUMINANCE_OMEGA`, `STATUS_LUMINANCE_PHI`, `calculateStatusLuminance`, `statusColor`, `statusColorForUtcPlusSeven`, `statusFaviconForStatusColor`.
 - **Computer Vision & CLAHE**: `OPEN_CV_CDN_URL`, `TECHNOLOGY_ICON_OPEN_CV_LOADER`, `CLAHE_CLIP_LIMIT`, `CLAHE_TILE_PIXEL_TARGET`, `MIN_CLAHE_TILES`, `MAX_CLAHE_TILES`, `IDLE_TIMEOUT_MS`, `OPEN_CV_RETRY_COUNT`, `OPEN_CV_RETRY_DELAY_MS`, `OPEN_CV_RETRY_DELAY_MULTIPLIER`, `OPEN_CV_RETRY_JITTER_MS`, `dispose`, `normalizeOpenCvExport`, `linearizeChannel`, `relativeLuminance`.
 - **Overlay & Geometry**: `VIEWPORT_MARGIN`, `IMAGE_MAX_VIEWPORT_RATIO`, `ORIGIN_GAP`, `PANEL_CHROME_PX`, `IMAGE_ZOOM_POSITIONS`, `IMAGE_ZOOM_PREVIEW_DATA`, `DOWNSCALE_TOLERANCE`, `INITIAL_IMAGE_STATE`.
@@ -237,12 +237,11 @@ Driven by `requestAnimationFrame` and executed after initial render (`afterNextR
 - **Parametric Circular Orbital Kinematics**:
   The hero code badges orbit continuously around the central avatar along parametric circular paths. The left badge orbital frequency is scaled by the radius ratio ($r_{\text{right}} / r_{\text{left}}$):
   $$\theta_{\text{left}}(t) = \omega\left(f \cdot \frac{r_{\text{right}}}{r_{\text{left}}}\right) \cdot t + \phi_{\text{left}}$$
-  $$x_{\text{left}}(t) = r_{\text{left}} \cdot A \cdot \cos(\theta_{\text{left}}(t)), \quad y_{\text{left}}(t) = r_{\text{left}} \cdot A \cdot \sin(\theta_{\text{left}}(t))$$
+  $$x_{\text{left}}(t) = r_{\text{left}} \cdot \cos(\theta_{\text{left}}(t)), \quad y_{\text{left}}(t) = r_{\text{left}} \cdot \sin(\theta_{\text{left}}(t))$$
   $$\theta_{\text{right}}(t) = \omega(f) \cdot t + \phi_{\text{right}}$$
-  $$x_{\text{right}}(t) = r_{\text{right}} \cdot A \cdot \cos(\theta_{\text{right}}(t)), \quad y_{\text{right}}(t) = r_{\text{right}} \cdot A \cdot \sin(\theta_{\text{right}}(t))$$
+  $$x_{\text{right}}(t) = r_{\text{right}} \cdot \cos(\theta_{\text{right}}(t)), \quad y_{\text{right}}(t) = r_{\text{right}} \cdot \sin(\theta_{\text{right}}(t))$$
 
 - **Physical & Mathematical Parameters**:
-  - **Amplitude ($A$)**: $1.0$ (`HERO_CODE_A`)
   - **Orbital Radii ($r$)**: $r_{\text{left}} = 37\%$ (`HERO_CODE_R_LEFT`), $r_{\text{right}} = 50\%$ (`HERO_CODE_R_RIGHT`)
   - **Phase Offsets ($\phi$)**: $\phi_{\text{left}} = \frac{7\pi}{6}\text{ rad} = 210^\circ$ (`HERO_CODE_PHI_LEFT`), $\phi_{\text{right}} = \frac{\pi}{6}\text{ rad} = 30^\circ$ (`HERO_CODE_PHI_RIGHT`)
   - **Dynamic Calendar Frequency ($f$)**: Derived from the current day of the month in UTC+7 (`HERO_CODE_F`):
@@ -828,12 +827,11 @@ Algorithms governing physical animations, photometry, image processing, and geom
  *
  * Mathematical Model:
  *   θ(t) = ω · t + φ
- *   x(t) = r · A · cos(θ(t))
- *   y(t) = r · A · sin(θ(t))
+ *   x(t) = r · cos(θ(t))
+ *   y(t) = r · sin(θ(t))
  *
  * @param t - Elapsed timestamp in seconds.
  * @param radius - Orbit radius multiplier (r).
- * @param amplitude - Amplitude scaling factor (A).
  * @param omega - Angular velocity in radians per second (ω = 2πf).
  * @param phase - Initial phase offset in radians (φ).
  * @returns 2D Cartesian coordinate object { x, y } in percentage units.
