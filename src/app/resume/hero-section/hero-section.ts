@@ -33,9 +33,9 @@ import { statusFaviconForStatusColor } from '../../helper/injection-token/status
  *    keyframe transitions on every second boundary.
  * 2. **Continuous Physics Animation Loop (60/120 Hz)**: Driven by `requestAnimationFrame` and
  *    anchored against high-resolution timer baseline `performance.now()`. Initial orbital starter coordinates
- *    are established at component instantiation using current Unix time `Date.now()`, and subsequent continuous
- *    updates evaluate elapsed seconds $t_{\text{elapsed}} = (t_{\text{current}} - t_{\text{start}}) / 1000$ to compute:
- *    - Harmonic luminance pulsation: $L(t) = \text{clamp}(0.5 + A \cos(\omega t + \phi), 0, 1)$
+ *    are established at component instantiation using current Unix time in seconds ($t_{\text{unixStart}} = \text{Date.now()} / 1000$),
+ *    and subsequent continuous updates evaluate $t = t_{\text{unixStart}} + t_{\text{elapsed}}$ (where $t_{\text{elapsed}} = (t_{\text{current}} - t_{\text{start}}) / 1000$) to compute:
+ *    - Harmonic luminance pulsation: $L(t_{\text{elapsed}}) = \text{clamp}(0.5 + A \cos(\omega t_{\text{elapsed}} + \phi), 0, 1)$
  *    - Circular orbital badge paths:
  *      - Left: $\theta_{\text{left}}(t) = \omega \cdot \frac{r_{\text{right}}}{r_{\text{left}}} \cdot t + \phi_{\text{left}}$, $x_{\text{left}}(t) = r_{\text{left}} \cos(\theta_{\text{left}}(t))$, $y_{\text{left}}(t) = r_{\text{left}} \sin(\theta_{\text{left}}(t))$
  *      - Right: $\theta_{\text{right}}(t) = \omega \cdot t + \phi_{\text{right}}$, $x_{\text{right}}(t) = r_{\text{right}} \cos(\theta_{\text{right}}(t))$, $y_{\text{right}}(t) = r_{\text{right}} \sin(\theta_{\text{right}}(t))$
@@ -87,14 +87,15 @@ export class HeroSection {
 
   /**
    * Initializes reactive status effects, sets initial starter orbital code badge positions
-   * based on the current Unix epoch timestamp (`Date.now()`), and registers DOM-dependent timer
-   * and animation loops after the initial client-side render, releasing all resources upon component destruction.
+   * based on the current Unix epoch timestamp in seconds (`unixStartSeconds = Date.now() / 1000`), and registers
+   * DOM-dependent timer and animation loops after the initial client-side render (advancing continuous animation
+   * as `unixAnimationSeconds = unixStartSeconds + elapsedSeconds`), releasing all resources upon component destruction.
    */
   constructor() {
-    const now = Date.now();
+    const unixStartSeconds = Date.now() / 1000;
 
-    this.leftCodePosition = signal(this.calculateHeroCodePositionFn(now).left);
-    this.rightCodePosition = signal(this.calculateHeroCodePositionFn(now).right);
+    this.leftCodePosition = signal(this.calculateHeroCodePositionFn(unixStartSeconds).left);
+    this.rightCodePosition = signal(this.calculateHeroCodePositionFn(unixStartSeconds).right);
 
     // Reactively update the browser favicon whenever the computed availability status color changes
     effect(() => {
@@ -117,12 +118,13 @@ export class HeroSection {
       const animateHeroVisuals = (currentTimestamp: DOMHighResTimeStamp) => {
         // Compute continuous elapsed time in seconds: t = (t_current - t_start) / 1000
         const elapsedSeconds = (currentTimestamp - startTimestamp) / 1000;
+        const unixAnimationSeconds = unixStartSeconds + elapsedSeconds;
 
         // Update harmonic luminance oscillation signal
         this.statusLuminance.set(this.calculateStatusLuminanceFn(elapsedSeconds));
 
         // Update 2D orbital trajectory coordinates for both floating code badges
-        const { left, right } = this.calculateHeroCodePositionFn(elapsedSeconds);
+        const { left, right } = this.calculateHeroCodePositionFn(unixAnimationSeconds);
         this.leftCodePosition.set(left);
         this.rightCodePosition.set(right);
 

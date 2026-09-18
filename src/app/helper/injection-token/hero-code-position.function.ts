@@ -8,11 +8,12 @@ import { HERO_CODE_R_RIGHT } from './hero-code-parameters.radius-right.variable.
 
 /**
  * Calculates continuous two-dimensional circular orbital positions for the left and right
- * hero section code badges as a function of elapsed animation time or initial Unix timestamp.
+ * hero section code badges as a function of continuous animation time in seconds ($t = t_{\text{unixStart}} + t_{\text{elapsed}}$
+ * or initial Unix epoch timestamp in seconds $t_{\text{unixStart}} = \text{Date.now()} / 1000$).
  *
  * ### Physics & Kinematics Model
  * Each code badge undergoes uniform circular motion (orbit) around its respective base origin
- * anchor in the hero section canvas. The parametric equations for position at time $t$ are:
+ * anchor in the hero section canvas. The parametric equations for position at time $t$ (in seconds) are:
  *
  * ```
  * Left Badge Orbit:
@@ -27,8 +28,9 @@ import { HERO_CODE_R_RIGHT } from './hero-code-parameters.radius-right.variable.
  * ```
  *
  * ### Mathematical Parameters
- * - **$t$ (`elapsedSeconds`)**: Continuous elapsed time in seconds since animation loop startup
- *   ($t = (t_{\text{current}} - t_{\text{start}}) / 1000$) or initial starter timestamp (e.g. $t = \text{Date.now()}$).
+ * - **$t$ (`elapsedSeconds`)**: Continuous time in seconds ($s$), evaluated either as the initial Unix epoch timestamp
+ *   in seconds ($t_{\text{unixStart}} = \text{Date.now()} / 1000$) or dynamically during continuous frame animation
+ *   ($t = t_{\text{unixStart}} + t_{\text{elapsed}}$ where $t_{\text{elapsed}} = (t_{\text{current}} - t_{\text{start}}) / 1000$).
  * - **$\omega$ (`HERO_CODE_OMEGA`)**: Angular frequency in radians per second ($\omega = 2\pi f$).
  * - **$\phi_{\text{left}}$ (`HERO_CODE_PHI_LEFT`)**: Initial phase angle offset for the left badge
  *   in radians (default: $7\pi / 6 \approx 210^\circ$).
