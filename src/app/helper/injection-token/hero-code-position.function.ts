@@ -56,7 +56,7 @@ export const calculateHeroCodePosition = new InjectionToken<
     ) => {
       return (elapsedSeconds: number): HeroCodeOrbitPositions => {
         // Compute instantaneous polar angles θ(t) = ωt + φ in radians
-        const leftAngle = omega * elapsedSeconds + phiLeft;
+        const leftAngle = omega * (rRight / rLeft) * elapsedSeconds + phiLeft;
         const rightAngle = omega * elapsedSeconds + phiRight;
 
         // Project polar coordinates [r · A, θ] to 2D Cartesian offsets [x, y]

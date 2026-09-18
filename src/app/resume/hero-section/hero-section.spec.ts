@@ -559,27 +559,27 @@ describe('HeroSection', () => {
       expect(renderedHeroCodeRightX(element)).toBeCloseTo(43.3, 2);
       expect(renderedHeroCodeRightY(element)).toBeCloseTo(25.0, 2);
 
-      // Advance 16 frames (256 ms, approx quarter cycle): left -> ~334.54° (19.70, -31.32), right -> ~122.16° (-26.62, 42.33)
+      // Advance 16 frames (256 ms, approx quarter cycle): left -> ~334.54° (33.41, -15.91), right -> ~122.16° (-26.62, 42.33)
       vi.advanceTimersByTime(256);
       heroFixture.detectChanges();
-      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(19.7, 1);
-      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(-31.32, 1);
+      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(33.41, 1);
+      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(-15.91, 1);
       expect(renderedHeroCodeRightX(element)).toBeCloseTo(-26.62, 1);
       expect(renderedHeroCodeRightY(element)).toBeCloseTo(42.33, 1);
 
-      // Advance 16 more frames (total 512 ms / 32 frames, approx half cycle): left -> ~99.08° (30.56, 20.86), right -> ~214.32° (-41.29, -28.19)
+      // Advance 16 more frames (total 512 ms / 32 frames, approx half cycle): left -> ~99.08° (-5.84, 36.54), right -> ~214.32° (-41.29, -28.19)
       vi.advanceTimersByTime(256);
       heroFixture.detectChanges();
-      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(30.56, 1);
-      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(20.86, 1);
+      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(-5.84, 1);
+      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(36.54, 1);
       expect(renderedHeroCodeRightX(element)).toBeCloseTo(-41.29, 1);
       expect(renderedHeroCodeRightY(element)).toBeCloseTo(-28.19, 1);
 
-      // Advance 31 more frames (total 1008 ms / 63 frames, approx full cycle for right badge): left -> ~340.37° (-31.07, -20.09), right -> ~32.83° (41.99, 27.14)
+      // Advance 31 more frames (total 1008 ms / 63 frames, approx full cycle for right badge): left -> ~340.37° (34.85, -12.43), right -> ~32.83° (41.99, 27.14)
       vi.advanceTimersByTime(496);
       heroFixture.detectChanges();
-      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(-31.07, 1);
-      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(-20.09, 1);
+      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(34.85, 1);
+      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(-12.43, 1);
       expect(renderedHeroCodeRightX(element)).toBeCloseTo(41.99, 1);
       expect(renderedHeroCodeRightY(element)).toBeCloseTo(27.14, 1);
     });
@@ -666,8 +666,8 @@ describe('HeroSection', () => {
       // Advance 63 frames (1008 ms, phase advanced by 1.008 * PI = 181.44°): positions invert across origin
       vi.advanceTimersByTime(1008);
       heroFixture.detectChanges();
-      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(31.57, 1);
-      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(19.3, 1);
+      expect(renderedHeroCodeLeftX(element)).toBeCloseTo(-3.35, 1);
+      expect(renderedHeroCodeLeftY(element)).toBeCloseTo(36.85, 1);
       expect(renderedHeroCodeRightX(element)).toBeCloseTo(-42.66, 1);
       expect(renderedHeroCodeRightY(element)).toBeCloseTo(-26.08, 1);
     });
