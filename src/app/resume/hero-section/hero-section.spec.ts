@@ -597,8 +597,7 @@ describe('HeroSection', () => {
         const expectedOmega = (2 * Math.PI * expectedDay) / 3600;
 
         expect(TestBed.inject(HERO_CODE_F)).toBeCloseTo(expectedFrequency, 8);
-        const omegaFn = TestBed.inject(HERO_CODE_OMEGA);
-        expect(omegaFn(expectedFrequency)).toBeCloseTo(expectedOmega, 8);
+        expect(TestBed.inject(HERO_CODE_OMEGA)).toBeCloseTo(expectedOmega, 8);
       },
     );
 
@@ -653,8 +652,8 @@ describe('HeroSection', () => {
       expect(renderedHeroCodeRightY(element)).toBeCloseTo(0.0, 2);
     });
 
-    it('alters orbital period when HERO_CODE_OMEGA function is overridden directly', () => {
-      TestBed.overrideProvider(HERO_CODE_OMEGA, { useValue: (_f: number) => Math.PI });
+    it('alters orbital period when HERO_CODE_OMEGA is overridden directly', () => {
+      TestBed.overrideProvider(HERO_CODE_OMEGA, { useValue: Math.PI });
       const heroFixture = renderHero();
       const element = heroFixture.nativeElement as HTMLElement;
 

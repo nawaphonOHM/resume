@@ -1,7 +1,8 @@
-import { InjectionToken } from '@angular/core';
+import { inject, InjectionToken } from '@angular/core';
+import { HERO_CODE_F } from './hero-code-parameters.frequency.variable.ts';
 
-/** Angular frequency calculation function factory (ω(f) = 2 * PI * f) for hero code badges circular orbit motion. */
-export const HERO_CODE_OMEGA = new InjectionToken<(f: number) => number>('HERO_CODE_OMEGA', {
+/** Angular frequency parameter (OMEGA = 2 * PI * f) for hero code badges circular orbit motion. */
+export const HERO_CODE_OMEGA = new InjectionToken<number>('HERO_CODE_OMEGA', {
   providedIn: 'root',
-  factory: () => (f: number) => 2 * Math.PI * f,
+  factory: () => 2 * Math.PI * inject(HERO_CODE_F),
 });
