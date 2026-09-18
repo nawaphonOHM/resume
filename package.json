@@ -1,6 +1,6 @@
 {
   "name": "resume",
-  "version": "4.2.4",
+  "version": "4.3.0",
   "type": "module",
   "scripts": {
     "ng": "ng",

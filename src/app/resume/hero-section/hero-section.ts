@@ -32,8 +32,9 @@ import { statusFaviconForStatusColor } from '../../helper/injection-token/status
  *    (default: 1000ms). Updates `currentInstant` and flips `isTickAlternate` to trigger CSS slide-and-fade
  *    keyframe transitions on every second boundary.
  * 2. **Continuous Physics Animation Loop (60/120 Hz)**: Driven by `requestAnimationFrame` and
- *    anchored against high-resolution timer baseline `performance.now()`. Computes continuous elapsed seconds
- *    $t_{\text{elapsed}} = (t_{\text{current}} - t_{\text{start}}) / 1000$ to evaluate:
+ *    anchored against high-resolution timer baseline `performance.now()`. Initial orbital starter coordinates
+ *    are established at component instantiation using current Unix time `Date.now()`, and subsequent continuous
+ *    updates evaluate elapsed seconds $t_{\text{elapsed}} = (t_{\text{current}} - t_{\text{start}}) / 1000$ to compute:
  *    - Harmonic luminance pulsation: $L(t) = \text{clamp}(0.5 + A \cos(\omega t + \phi), 0, 1)$
  *    - Circular orbital badge paths:
  *      - Left: $\theta_{\text{left}}(t) = \omega \cdot \frac{r_{\text{right}}}{r_{\text{left}}} \cdot t + \phi_{\text{left}}$, $x_{\text{left}}(t) = r_{\text{left}} \cos(\theta_{\text{left}}(t))$, $y_{\text{left}}(t) = r_{\text{left}} \sin(\theta_{\text{left}}(t))$
@@ -79,16 +80,22 @@ export class HeroSection {
   protected readonly statusLuminance = signal(this.calculateStatusLuminanceFn(0));
 
   /** Orbital coordinates for the left hero code badge. */
-  protected readonly leftCodePosition = signal(this.calculateHeroCodePositionFn(0).left);
+  protected readonly leftCodePosition;
 
   /** Orbital coordinates for the right hero code badge. */
-  protected readonly rightCodePosition = signal(this.calculateHeroCodePositionFn(0).right);
+  protected readonly rightCodePosition;
 
   /**
-   * Initializes reactive status effects and registers DOM-dependent timer and animation loops
-   * after the initial client-side render, releasing all resources upon component destruction.
+   * Initializes reactive status effects, sets initial starter orbital code badge positions
+   * based on the current Unix epoch timestamp (`Date.now()`), and registers DOM-dependent timer
+   * and animation loops after the initial client-side render, releasing all resources upon component destruction.
    */
   constructor() {
+    const now = Date.now();
+
+    this.leftCodePosition = signal(this.calculateHeroCodePositionFn(now).left);
+    this.rightCodePosition = signal(this.calculateHeroCodePositionFn(now).right);
+
     // Reactively update the browser favicon whenever the computed availability status color changes
     effect(() => {
       this.faviconService.setFavicon(this.statusFaviconForStatusColor(this.statusColor()));
