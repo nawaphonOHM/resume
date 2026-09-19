@@ -17,12 +17,12 @@ import { HERO_CODE_R_RIGHT } from './hero-code-parameters.radius-right.variable.
  *
  * ```
  * Left Badge Orbit:
- *   θ_left(t) = ω · (r_right / r_left) · t + φ_left
+ *   θ_left(t) = ω · (r_right / r_left) · t
  *   x_left(t) = r_left · cos(θ_left(t))
  *   y_left(t) = r_left · sin(θ_left(t))
  *
  * Right Badge Orbit:
- *   θ_right(t) = ω · t + φ_right
+ *   θ_right(t) = ω · t
  *   x_right(t) = r_right · cos(θ_right(t))
  *   y_right(t) = r_right · sin(θ_right(t))
  * ```
@@ -33,9 +33,9 @@ import { HERO_CODE_R_RIGHT } from './hero-code-parameters.radius-right.variable.
  *   ($t = t_{\text{unixStart}} + t_{\text{elapsed}}$ where $t_{\text{elapsed}} = (t_{\text{current}} - t_{\text{start}}) / 1000$).
  * - **$\omega$ (`HERO_CODE_OMEGA`)**: Angular frequency in radians per second ($\omega = 2\pi f$).
  * - **$\phi_{\text{left}}$ (`HERO_CODE_PHI_LEFT`)**: Initial phase angle offset for the left badge
- *   in radians (default: $7\pi / 6 \approx 210^\circ$).
+ *   in radians (default: $0\text{ rad}$).
  * - **$\phi_{\text{right}}$ (`HERO_CODE_PHI_RIGHT`)**: Initial phase angle offset for the right badge
- *   in radians (default: $\pi / 6 \approx 30^\circ$).
+ *   in radians (default: $0\text{ rad}$).
  * - **$r_{\text{left}}$ (`HERO_CODE_R_LEFT`)**: Polar orbit radius in pixels for the left badge (default: `37px`).
  * - **$r_{\text{right}}$ (`HERO_CODE_R_RIGHT`)**: Polar orbit radius in pixels for the right badge (default: `50px`).
  *

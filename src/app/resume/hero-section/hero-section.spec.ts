@@ -766,10 +766,10 @@ describe('calculateHeroCodePosition', () => {
     const calcFn = TestBed.inject(calculateHeroCodePosition);
 
     const pos0 = calcFn(0);
-    expect(pos0.left.x).toBeCloseTo(-32.0429, 4);
-    expect(pos0.left.y).toBeCloseTo(-18.5, 4);
-    expect(pos0.right.x).toBeCloseTo(43.3013, 4);
-    expect(pos0.right.y).toBeCloseTo(25.0, 4);
+    expect(pos0.left.x).toBeCloseTo(37.0, 4);
+    expect(pos0.left.y).toBeCloseTo(0.0, 4);
+    expect(pos0.right.x).toBeCloseTo(50.0, 4);
+    expect(pos0.right.y).toBeCloseTo(0.0, 4);
 
     const pos1 = calcFn(10);
     expect(typeof pos1.left.x).toBe('number');
@@ -784,9 +784,9 @@ describe('calculateHeroCodePosition', () => {
     const calcFn = TestBed.inject(calculateHeroCodePosition);
 
     const pos0 = calcFn(0);
-    expect(pos0.left.x).toBeCloseTo(-69.282, 3);
-    expect(pos0.left.y).toBeCloseTo(-40.0, 3);
-    expect(pos0.right.x).toBeCloseTo(86.6025, 4);
-    expect(pos0.right.y).toBeCloseTo(50.0, 4);
+    expect(pos0.left.x).toBeCloseTo(80.0, 3);
+    expect(pos0.left.y).toBeCloseTo(0.0, 3);
+    expect(pos0.right.x).toBeCloseTo(100.0, 4);
+    expect(pos0.right.y).toBeCloseTo(0.0, 4);
   });
 });

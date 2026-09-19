@@ -37,8 +37,8 @@ import { statusFaviconForStatusColor } from '../../helper/injection-token/status
  *    and subsequent continuous updates evaluate $t = t_{\text{unixStart}} + t_{\text{elapsed}}$ (where $t_{\text{elapsed}} = (t_{\text{current}} - t_{\text{start}}) / 1000$) to compute:
  *    - Harmonic luminance pulsation: $L(t_{\text{elapsed}}) = \text{clamp}(0.5 + A \cos(\omega t_{\text{elapsed}} + \phi), 0, 1)$
  *    - Circular orbital badge paths:
- *      - Left: $\theta_{\text{left}}(t) = \omega \cdot \frac{r_{\text{right}}}{r_{\text{left}}} \cdot t + \phi_{\text{left}}$, $x_{\text{left}}(t) = r_{\text{left}} \cos(\theta_{\text{left}}(t))$, $y_{\text{left}}(t) = r_{\text{left}} \sin(\theta_{\text{left}}(t))$
- *      - Right: $\theta_{\text{right}}(t) = \omega \cdot t + \phi_{\text{right}}$, $x_{\text{right}}(t) = r_{\text{right}} \cos(\theta_{\text{right}}(t))$, $y_{\text{right}}(t) = r_{\text{right}} \sin(\theta_{\text{right}}(t))$
+ *      - Left: $\theta_{\text{left}}(t) = \omega \cdot \frac{r_{\text{right}}}{r_{\text{left}}} \cdot t$, $x_{\text{left}}(t) = r_{\text{left}} \cos(\theta_{\text{left}}(t))$, $y_{\text{left}}(t) = r_{\text{left}} \sin(\theta_{\text{left}}(t))$
+ *      - Right: $\theta_{\text{right}}(t) = \omega \cdot t$, $x_{\text{right}}(t) = r_{\text{right}} \cos(\theta_{\text{right}}(t))$, $y_{\text{right}}(t) = r_{\text{right}} \sin(\theta_{\text{right}}(t))$
  *
  * ### Reactive State Coordination
  * - Derives availability status (`statusColor`) via `statusColorForUtcPlusSeven(currentInstant)`.
