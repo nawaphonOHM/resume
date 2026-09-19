@@ -1,6 +1,5 @@
 [![DigitalOcean Referral Badge](https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%201.svg)](https://www.digitalocean.com/?refcode=e2085a54adea&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge)
 <br><br><br>
-[![Live Demo](https://img.shields.io/badge/Live_Demo-khem--cv.pages.dev-00C7B7.svg?style=flat-square&logo=cloudflare-pages&logoColor=white)](https://khem-cv.pages.dev)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![Dependabot Updates](https://github.com/nawaphonOHM/resume/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/nawaphonOHM/resume/actions/workflows/dependabot/dependabot-updates)
 [![Angular](https://img.shields.io/badge/Angular-22.1-DD0031.svg?style=flat-square&logo=angular&logoColor=white)](https://angular.dev/)
@@ -8,19 +7,6 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.3-06B6D4.svg?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Vitest](https://img.shields.io/badge/Vitest-4.1-6E9F18.svg?style=flat-square&logo=vitest&logoColor=white)](https://vitest.dev/)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D22.22.3-339933.svg?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
-
-# Nawaphon Isarathanachaikul — Résumé Portfolio
-
-> **Production Deployment & Live Demo**: [https://khem-cv.pages.dev](https://khem-cv.pages.dev) · **Personal Portfolio**: [https://leader-board.ohm-mho.space](https://leader-board.ohm-mho.space)
-
-A high-performance, single-page interactive curriculum vitae and professional engineering portfolio for **Nawaphon Isarathanachaikul** (Backend Software Engineer / Senior Full-Stack Engineer). Built with **Angular 22** standalone architecture, **Angular Material 22**, **Tailwind CSS v4**, and **Vitest 4**, this application demonstrates modern web engineering practices, fine-grained Signal reactivity, Inverted Dependency Injection, client-side WebAssembly computer vision (OpenCV.js CLAHE), physics-driven orbital animations, dynamic UTC+7 availability scheduling with live CDN favicon switching, and streaming PDF downloads with real-time progress feedback.
-
-### Candidate Profile Summary
-
-- **Core Specialization**: Backend and Full-Stack Software Engineering with experience across banking, fintech, food-tech, and tax platforms.
-- **Backend & Distributed Systems**: REST API design, database schemas, CRUD microservices, Kafka event streaming, Redis and Caffeine caching, and relational database systems (PostgreSQL, MySQL).
-- **Modern Web Interfaces**: Reactive Angular (Signals, standalone architecture, CDK primitives) and React user interfaces with strict WCAG AA accessibility compliance and data-driven features (regulatory reporting, tabular data, Excel exports).
-- **Engineering Excellence & Operations**: AI-assisted development (Claude Code, Codex), automated test suites and smoke-testing scripts, Kubernetes pod diagnostics, Elasticsearch log tracing, SIT/UAT deployments, Confluence documentation, and DevOps infrastructure collaboration.
 
 ## Key Features
 
