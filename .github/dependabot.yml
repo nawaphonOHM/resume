@@ -9,3 +9,19 @@ updates:
     directory: '/' # Location of package manifests
     schedule:
       interval: 'weekly'
+    groups:
+      angular-core:
+        patterns:
+          - "@angular/*"
+        update-types:
+          - "patch"
+          - "minor"
+          - "major"
+      angular-material:
+        patterns:
+          - "@angular/material*"
+          - "@angular/cdk*"
+        update-types:
+          - "patch"
+          - "minor"
+          - "major"
