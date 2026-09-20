@@ -25,3 +25,13 @@ updates:
           - "patch"
           - "minor"
           - "major"
+      angular-build-major:
+        patterns:
+          - "@angular/build"
+          - "vitest"
+        update-types:
+          - "patch"
+          - "minor"
+          - "major"
+    versioning-strategy: auto
+
