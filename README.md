@@ -1,3 +1,4 @@
+[![Deploy to Firebase Hosting on merge](https://github.com/nawaphonOHM/resume/actions/workflows/firebase-hosting-merge.yml/badge.svg)](https://github.com/nawaphonOHM/resume/actions/workflows/firebase-hosting-merge.yml)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![Dependabot Updates](https://github.com/nawaphonOHM/resume/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/nawaphonOHM/resume/actions/workflows/dependabot/dependabot-updates)
 [![Angular](https://img.shields.io/badge/Angular-22.1-DD0031.svg?style=flat-square&logo=angular&logoColor=white)](https://angular.dev/)
