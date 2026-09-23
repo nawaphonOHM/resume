@@ -12,26 +12,25 @@ updates:
     groups:
       angular-core:
         patterns:
-          - "@angular/*"
+          - '@angular/*'
         update-types:
-          - "patch"
-          - "minor"
-          - "major"
+          - 'patch'
+          - 'minor'
+          - 'major'
       angular-material:
         patterns:
-          - "@angular/material*"
-          - "@angular/cdk*"
+          - '@angular/material*'
+          - '@angular/cdk*'
         update-types:
-          - "patch"
-          - "minor"
-          - "major"
+          - 'patch'
+          - 'minor'
+          - 'major'
       angular-build-major:
         patterns:
-          - "@angular/build"
-          - "vitest"
+          - '@angular/build'
+          - 'vitest'
         update-types:
-          - "patch"
-          - "minor"
-          - "major"
+          - 'patch'
+          - 'minor'
+          - 'major'
     versioning-strategy: auto
-
