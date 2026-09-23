@@ -100,7 +100,7 @@ const AVAILABILITY_BOUNDARIES: readonly AvailabilityBoundaryCase[] = [
 ];
 
 function normalizedText(element: Element | null): string {
-  return element?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+  return (element?.textContent ?? '').replace(/\s+/g, ' ').trim();
 }
 
 function renderedStatusColor(element: HTMLElement): string {
@@ -164,7 +164,9 @@ function cleanupHeadIconLinks(): void {
   const existingLinks = document.head.querySelectorAll<HTMLLinkElement>(
     'link[rel="icon"], link[rel~="icon"]',
   );
-  existingLinks.forEach((link) => link.remove());
+  existingLinks.forEach((link) => {
+    link.remove();
+  });
 }
 
 describe('HeroSection', () => {
@@ -524,7 +526,7 @@ describe('HeroSection', () => {
     it('declares reduced-motion style rule overriding luminance to a static midpoint', () => {
       renderHero();
       const styleElements = Array.from(document.querySelectorAll('style'));
-      const combinedCss = styleElements.map((el) => el.textContent ?? '').join('\n');
+      const combinedCss = styleElements.map((el) => el.textContent).join('\n');
 
       expect(combinedCss).toContain('prefers-reduced-motion');
       expect(combinedCss).toContain('--status-dot-luminance');
@@ -680,7 +682,7 @@ describe('HeroSection', () => {
     it('declares reduced-motion style rule overriding hero code coordinates to static default values', () => {
       renderHero();
       const styleElements = Array.from(document.querySelectorAll('style'));
-      const combinedCss = styleElements.map((el) => el.textContent ?? '').join('\n');
+      const combinedCss = styleElements.map((el) => el.textContent).join('\n');
 
       expect(combinedCss).toContain('prefers-reduced-motion');
       expect(combinedCss).toContain('--hero-code-left-x');
@@ -700,19 +702,21 @@ describe('HeroSection', () => {
       expect(leftBadge).not.toBeNull();
       expect(rightBadge).not.toBeNull();
 
-      expect(leftBadge?.textContent).toBe('</>');
-      expect(leftBadge?.textContent?.length).toBe(3);
-      expect(leftBadge?.textContent).not.toContain('\n');
+      if (leftBadge && rightBadge) {
+        expect(leftBadge.textContent).toBe('</>');
+        expect(leftBadge.textContent.length).toBe(3);
+        expect(leftBadge.textContent).not.toContain('\n');
 
-      expect(rightBadge?.textContent).toBe('{ }');
-      expect(rightBadge?.textContent?.length).toBe(3);
-      expect(rightBadge?.textContent).not.toContain('\n');
+        expect(rightBadge.textContent).toBe('{ }');
+        expect(rightBadge.textContent.length).toBe(3);
+        expect(rightBadge.textContent).not.toContain('\n');
+      }
     });
 
     it('declares non-wrapping and 3ch minimum width style rules for hero code badges', () => {
       renderHero();
       const styleElements = Array.from(document.querySelectorAll('style'));
-      const combinedCss = styleElements.map((el) => el.textContent ?? '').join('\n');
+      const combinedCss = styleElements.map((el) => el.textContent).join('\n');
 
       expect(combinedCss).toContain('white-space: nowrap');
       expect(combinedCss).toContain('min-width: 3ch');
@@ -728,8 +732,8 @@ describe('HeroSection', () => {
     const cancelAnimationFrame = vi.spyOn(window, 'cancelAnimationFrame');
     const heroFixture = renderHero();
     const clockTimerIndex = setInterval.mock.calls.findIndex(([, delay]) => delay === 1_000);
-    const clockTimerId = setInterval.mock.results[clockTimerIndex]?.value;
-    const animationFrameId = requestAnimationFrame.mock.results[0]?.value;
+    const clockTimerId: unknown = setInterval.mock.results[clockTimerIndex]?.value;
+    const animationFrameId: unknown = requestAnimationFrame.mock.results[0]?.value;
 
     expect(clockTimerIndex).toBeGreaterThanOrEqual(0);
     expect(clockTimerId).toBeDefined();

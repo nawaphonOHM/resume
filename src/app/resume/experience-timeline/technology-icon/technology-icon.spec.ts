@@ -81,7 +81,7 @@ describe('TechnologyIconComponent', () => {
   it('renders the original immediately and atomically applies the optimized frame and zoom data', async () => {
     fixture = createComponent();
     const host = fixture.nativeElement as HTMLElement;
-    const image = host.querySelector<HTMLImageElement>('img')!;
+    const image = requireImage(host);
     const zoom = fixture.debugElement
       .query(By.directive(ImageZoomDirective))
       .injector.get(ImageZoomDirective);
@@ -106,7 +106,7 @@ describe('TechnologyIconComponent', () => {
     expect(zoom.imageZoomLabel()).toBe('Oracle');
     expect(zoom.imageZoomBackground()).toBe('#ffffff');
 
-    pendingOptimizations[0]!.resolve(OPTIMIZED_PRESENTATION);
+    getPendingOptimization(0).resolve(OPTIMIZED_PRESENTATION);
     await Promise.resolve();
     await fixture.whenStable();
 
@@ -126,7 +126,7 @@ describe('TechnologyIconComponent', () => {
   it('displays an indeterminate progress spinner while loading and hides it once the image loads', () => {
     fixture = createComponent();
     const host = fixture.nativeElement as HTMLElement;
-    const image = host.querySelector<HTMLImageElement>('img')!;
+    const image = requireImage(host);
 
     const spinnerDebug = fixture.debugElement.query(By.directive(MatProgressSpinner));
     expect(spinnerDebug).not.toBeNull();
@@ -134,7 +134,8 @@ describe('TechnologyIconComponent', () => {
     expect(spinner.mode).toBe('indeterminate');
     expect(spinner.diameter).toBe(14);
     expect(spinner.strokeWidth).toBe(2);
-    expect(spinnerDebug.nativeElement.getAttribute('aria-hidden')).toBe('true');
+    const spinnerElement = spinnerDebug.nativeElement as HTMLElement;
+    expect(spinnerElement.getAttribute('aria-hidden')).toBe('true');
     expect(image.classList.contains('invisible')).toBe(true);
 
     image.dispatchEvent(new Event('load'));
@@ -147,7 +148,7 @@ describe('TechnologyIconComponent', () => {
   it('dismisses the progress spinner and reveals the image if image loading fails', () => {
     fixture = createComponent();
     const host = fixture.nativeElement as HTMLElement;
-    const image = host.querySelector<HTMLImageElement>('img')!;
+    const image = requireImage(host);
 
     expect(fixture.debugElement.query(By.directive(MatProgressSpinner))).not.toBeNull();
     expect(image.classList.contains('invisible')).toBe(true);
@@ -162,7 +163,7 @@ describe('TechnologyIconComponent', () => {
   it('reactivates the progress spinner when the icon input changes until the replacement image loads', () => {
     fixture = createComponent();
     const host = fixture.nativeElement as HTMLElement;
-    const image = host.querySelector<HTMLImageElement>('img')!;
+    const image = requireImage(host);
 
     // Resolve initial image load
     image.dispatchEvent(new Event('load'));
@@ -189,9 +190,9 @@ describe('TechnologyIconComponent', () => {
   it('retains the usable original presentation when optimization unexpectedly rejects', async () => {
     fixture = createComponent();
     const host = fixture.nativeElement as HTMLElement;
-    const image = host.querySelector<HTMLImageElement>('img')!;
+    const image = requireImage(host);
 
-    pendingOptimizations[0]!.reject(new Error('optimization failed'));
+    getPendingOptimization(0).reject(new Error('optimization failed'));
     await Promise.resolve();
     await fixture.whenStable();
 
@@ -203,7 +204,7 @@ describe('TechnologyIconComponent', () => {
   it('optimizes a replacement icon and ignores the superseded optimization result', async () => {
     fixture = createComponent();
     const host = fixture.nativeElement as HTMLElement;
-    const image = host.querySelector<HTMLImageElement>('img')!;
+    const image = requireImage(host);
     const zoom = fixture.debugElement
       .query(By.directive(ImageZoomDirective))
       .injector.get(ImageZoomDirective);
@@ -222,7 +223,7 @@ describe('TechnologyIconComponent', () => {
     expect(zoom.appImageZoom()).toBe(REPLACEMENT_ICON);
     expect(zoom.imageZoomBackground()).toBe('#ffffff');
 
-    pendingOptimizations[1]!.resolve(REPLACEMENT_PRESENTATION);
+    getPendingOptimization(1).resolve(REPLACEMENT_PRESENTATION);
     await Promise.resolve();
     await Promise.resolve();
     TestBed.tick();
@@ -230,7 +231,7 @@ describe('TechnologyIconComponent', () => {
     expect(image.getAttribute('src')).toBe(REPLACEMENT_PRESENTATION.logo.src);
     expect(zoom.appImageZoom()).toBe(REPLACEMENT_PRESENTATION.logo);
 
-    pendingOptimizations[0]!.resolve(OPTIMIZED_PRESENTATION);
+    getPendingOptimization(0).resolve(OPTIMIZED_PRESENTATION);
     await Promise.resolve();
     await Promise.resolve();
     TestBed.tick();
@@ -238,6 +239,21 @@ describe('TechnologyIconComponent', () => {
     expect(image.getAttribute('src')).toBe(REPLACEMENT_PRESENTATION.logo.src);
     expect(zoom.appImageZoom()).toBe(REPLACEMENT_PRESENTATION.logo);
   });
+
+  function requireImage(host: HTMLElement): HTMLImageElement {
+    const image = host.querySelector<HTMLImageElement>('img');
+    expect(image).not.toBeNull();
+    if (!image) {
+      throw new Error('Image element not found');
+    }
+    return image;
+  }
+
+  function getPendingOptimization(index: number): PendingOptimization {
+    const pending = pendingOptimizations[index];
+    expect(pending).toBeDefined();
+    return pending;
+  }
 
   function createComponent(): ComponentFixture<TechnologyIconComponent> {
     const componentFixture = TestBed.createComponent(TechnologyIconComponent);

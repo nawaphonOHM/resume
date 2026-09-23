@@ -100,12 +100,14 @@ describe('application routes', () => {
     expect(routes).toEqual([
       {
         path: '',
-        loadComponent: expect.any(Function),
+        loadComponent: expect.any(Function) as unknown,
         pathMatch: 'full',
       },
     ]);
 
-    const loadedComponent = await (routes[0].loadComponent as () => Promise<unknown>)();
+    const loadComponent = routes[0].loadComponent;
+    expect(loadComponent).toBeDefined();
+    const loadedComponent = await (loadComponent as () => Promise<unknown>)();
     expect(loadedComponent).toMatchObject({ default: ResumePage });
   });
 
@@ -120,7 +122,11 @@ describe('application routes', () => {
 
   it('scrolls an initial fragment after applying the computed sticky-header offset', async () => {
     const harness = await bootstrapHarnessAt('/#experience');
-    const element = harness.routeNativeElement!;
+    expect(harness.routeNativeElement).not.toBeNull();
+    if (!harness.routeNativeElement) {
+      throw new Error('Root native element not found');
+    }
+    const element = harness.routeNativeElement;
     const fragmentTarget = element.querySelector<HTMLElement>('#experience');
     const placeholderTargets = ['about', 'experience', 'education', 'skills', 'profile'].map((id) =>
       element.querySelector<HTMLElement>(`#${id}`),

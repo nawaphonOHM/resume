@@ -49,10 +49,10 @@ export class ResumeNavigation {
   readonly downloadProgress = input<number | null>(null);
 
   /** Requests that the parent switch to the opposite theme. */
-  readonly themeToggled = output<void>();
+  readonly themeToggled = output();
 
   /** Requests on-demand PDF generation without coupling navigation to the browser runtime. */
-  readonly downloadRequested = output<void>();
+  readonly downloadRequested = output();
 
   /** Progress spinner mode based on whether determinate progress is known. */
   protected readonly downloadSpinnerMode = computed<ProgressSpinnerMode>(() =>
@@ -82,7 +82,7 @@ export class ResumeNavigation {
 
     const progress = this.downloadProgress();
     return typeof progress === 'number'
-      ? `Downloading résumé PDF (${progress}%)`
+      ? `Downloading résumé PDF (${String(progress)}%)`
       : 'Downloading résumé PDF';
   }
 
@@ -93,6 +93,8 @@ export class ResumeNavigation {
     }
 
     const progress = this.downloadProgress();
-    return typeof progress === 'number' ? `Downloading PDF (${progress}%)` : 'Downloading PDF…';
+    return typeof progress === 'number'
+      ? `Downloading PDF (${String(progress)}%)`
+      : 'Downloading PDF…';
   }
 }

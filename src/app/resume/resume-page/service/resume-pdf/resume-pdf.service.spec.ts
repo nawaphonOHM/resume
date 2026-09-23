@@ -45,8 +45,8 @@ describe('ResumePdfService', () => {
   beforeEach(() => {
     originalCreateObjectUrl = Object.getOwnPropertyDescriptor(window.URL, 'createObjectURL');
     originalRevokeObjectUrl = Object.getOwnPropertyDescriptor(window.URL, 'revokeObjectURL');
-    createObjectUrl = vi.fn((_blob: Blob) => 'blob:https://test.local/resume-pdf-mock');
-    revokeObjectUrl = vi.fn((_url: string) => undefined);
+    createObjectUrl = vi.fn(() => 'blob:https://test.local/resume-pdf-mock');
+    revokeObjectUrl = vi.fn(() => undefined);
     Object.defineProperties(window.URL, {
       createObjectURL: { configurable: true, value: createObjectUrl },
       revokeObjectURL: { configurable: true, value: revokeObjectUrl },
@@ -254,7 +254,7 @@ describe('ResumePdfService', () => {
 
   it('emits percentage progress when total size is available and clamps edge values', async () => {
     const { service, httpMock } = setupService();
-    const progressHistory: Array<number | null> = [];
+    const progressHistory: (number | null)[] = [];
     const onProgress = vi.fn((progress: number | null) => {
       progressHistory.push(progress);
     });
@@ -304,7 +304,7 @@ describe('ResumePdfService', () => {
 
   it('emits null progress when total size is unknown or zero', async () => {
     const { service, httpMock } = setupService();
-    const progressHistory: Array<number | null> = [];
+    const progressHistory: (number | null)[] = [];
     const onProgress = vi.fn((progress: number | null) => {
       progressHistory.push(progress);
     });
@@ -358,7 +358,8 @@ describe('ResumePdfService', () => {
     expect(createObjectUrl).toHaveBeenCalledWith(mockBlob);
     expect(clickedAnchors).toHaveLength(1);
 
-    const anchor = clickedAnchors[0]!;
+    const [anchor] = clickedAnchors;
+    expect(anchor).toBeDefined();
     expect(anchor.href).toBe('blob:https://test.local/resume-pdf-mock');
     expect(anchor.download).toBe('nawaphon-isarathanachaikul-resume-profile.pdf');
     expect(anchor.hidden).toBe(true);
@@ -446,7 +447,9 @@ describe('ResumePdfService', () => {
     await downloadPromise;
 
     expect(clickedAnchors).toHaveLength(1);
-    expect(clickedAnchors[0]!.download).toBe(customFilename);
+    const [anchor] = clickedAnchors;
+    expect(anchor).toBeDefined();
+    expect(anchor.download).toBe(customFilename);
 
     httpMock.verify();
   });

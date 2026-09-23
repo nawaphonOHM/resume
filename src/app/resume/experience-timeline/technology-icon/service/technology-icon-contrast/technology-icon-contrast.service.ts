@@ -97,7 +97,7 @@ export class TechnologyIconContrastService {
    */
   optimize(icon: TechnologyIconMetadata): Promise<TechnologyIconPresentation> {
     // Null byte separator prevents ambiguity across variable-length URL strings and dimensions
-    const cacheKey = `${icon.src}\u0000${icon.width}x${icon.height}`;
+    const cacheKey = `${icon.src}\u0000${String(icon.width)}x${String(icon.height)}`;
     const cached = this.presentations.get(cacheKey);
     if (cached) {
       return cached;
@@ -128,9 +128,16 @@ export class TechnologyIconContrastService {
   private waitForIdle(): Promise<void> {
     return new Promise<void>((resolve) => {
       if (this.view?.requestIdleCallback) {
-        this.view.requestIdleCallback(() => resolve(), { timeout: this.idealTimeout });
+        this.view.requestIdleCallback(
+          () => {
+            resolve();
+          },
+          { timeout: this.idealTimeout },
+        );
       } else {
-        this.view?.setTimeout(resolve, 0);
+        this.view?.setTimeout(() => {
+          resolve();
+        }, 0);
       }
     });
   }
@@ -157,7 +164,8 @@ export class TechnologyIconContrastService {
       }
 
       // Append retry query parameter to bypass poisoned CDN or proxy caches on network failure
-      const sourceUrl = retry === 0 ? this.openCvCdnUrl : `${this.openCvCdnUrl}?retry=${retry}`;
+      const sourceUrl =
+        retry === 0 ? this.openCvCdnUrl : `${this.openCvCdnUrl}?retry=${String(retry)}`;
       try {
         const moduleValue = await this.openCvLoader(sourceUrl);
         return await this.normalizeOpenCvExport(moduleValue);
@@ -166,9 +174,12 @@ export class TechnologyIconContrastService {
       }
     }
 
-    const exhaustedError = finalError ?? new Error('OpenCV initialization failed');
+    const exhaustedError =
+      finalError instanceof Error
+        ? finalError
+        : new Error(typeof finalError === 'string' ? finalError : 'OpenCV initialization failed');
     this.view?.console.warn(
-      `OpenCV initialization failed after ${this.openCvRetryCount + 1} attempts; using original technology icons.`,
+      `OpenCV initialization failed after ${String(this.openCvRetryCount + 1)} attempts; using original technology icons.`,
       exhaustedError,
     );
     throw exhaustedError;
@@ -262,8 +273,12 @@ export class TechnologyIconContrastService {
     image.decoding = 'async';
     image.crossOrigin = 'anonymous';
     await new Promise<void>((resolve, reject) => {
-      image.onload = () => resolve();
-      image.onerror = () => reject(new Error('Technology icon could not be loaded'));
+      image.onload = () => {
+        resolve();
+      };
+      image.onerror = () => {
+        reject(new Error('Technology icon could not be loaded'));
+      };
       image.src = icon.src;
     });
 

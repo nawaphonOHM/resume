@@ -51,6 +51,13 @@ class ImageZoomHost {
 describe('ImageZoomDirective', () => {
   let fixture: ComponentFixture<ImageZoomHost> | undefined;
 
+  function getFixture(): ComponentFixture<ImageZoomHost> {
+    if (!fixture) {
+      throw new Error('Fixture not initialized');
+    }
+    return fixture;
+  }
+
   /** Signature-preserving service double used to inspect preview ownership requests. */
   let imageZoomService: {
     readonly open: ReturnType<typeof vi.fn<ImageZoomService['open']>>;
@@ -189,29 +196,30 @@ describe('ImageZoomDirective', () => {
 
   it('uses natural dimensions first and falls back to valid logo metadata', async () => {
     const image = await createImage();
+    const host = getFixture();
     const geometry = setImageGeometry(image, {
       naturalWidth: 400,
       naturalHeight: 200,
       width: 100,
       height: 50,
     });
-    fixture!.componentInstance.logo.set({ ...LOGO, width: 100, height: 50 });
-    await fixture!.whenStable();
+    host.componentInstance.logo.set({ ...LOGO, width: 100, height: 50 });
+    await host.whenStable();
 
     dispatchPointerEvent(image, 'pointerenter', 'mouse');
     expect(imageZoomService.open).toHaveBeenCalledOnce();
 
     imageZoomService.open.mockClear();
     geometry.setIntrinsicSize(0, 0);
-    fixture!.componentInstance.logo.set(LOGO);
-    await fixture!.whenStable();
+    host.componentInstance.logo.set(LOGO);
+    await host.whenStable();
 
     dispatchPointerEvent(image, 'pointerenter', 'mouse');
     expect(imageZoomService.open).toHaveBeenCalledOnce();
 
     imageZoomService.open.mockClear();
-    fixture!.componentInstance.logo.set({ ...LOGO, width: Number.NaN, height: 0 });
-    await fixture!.whenStable();
+    host.componentInstance.logo.set({ ...LOGO, width: Number.NaN, height: 0 });
+    await host.whenStable();
 
     dispatchPointerEvent(image, 'pointerenter', 'mouse');
     expect(imageZoomService.open).not.toHaveBeenCalled();
@@ -236,6 +244,7 @@ describe('ImageZoomDirective', () => {
 
   it('includes an optional exact preview background without changing the default request', async () => {
     const image = await createImage();
+    const host = getFixture();
     setImageGeometry(image, { naturalWidth: 400, naturalHeight: 200, width: 200, height: 100 });
 
     dispatchPointerEvent(image, 'pointerenter', 'mouse');
@@ -244,8 +253,8 @@ describe('ImageZoomDirective', () => {
       request(image, LOGO, 'Test brand', 'hover'),
     );
 
-    fixture!.componentInstance.background.set('#0d1b2d');
-    await fixture!.whenStable();
+    host.componentInstance.background.set('#0d1b2d');
+    await host.whenStable();
     dispatchPointerEvent(image, 'pointerenter', 'mouse');
 
     expect(imageZoomService.open).toHaveBeenLastCalledWith(
@@ -255,6 +264,7 @@ describe('ImageZoomDirective', () => {
 
   it('invalidates stale previews when payload inputs change and reopens with current data', async () => {
     const image = await createImage();
+    const host = getFixture();
     setImageGeometry(image, { naturalWidth: 400, naturalHeight: 200, width: 200, height: 100 });
 
     dispatchPointerEvent(image, 'pointerenter', 'mouse');
@@ -263,8 +273,8 @@ describe('ImageZoomDirective', () => {
     );
     imageZoomService.close.mockClear();
 
-    fixture!.componentInstance.logo.set(REPLACEMENT_LOGO);
-    await fixture!.whenStable();
+    host.componentInstance.logo.set(REPLACEMENT_LOGO);
+    await host.whenStable();
 
     expect(imageZoomService.close).toHaveBeenCalledOnce();
     expect(imageZoomService.close).toHaveBeenLastCalledWith(image);
@@ -274,8 +284,8 @@ describe('ImageZoomDirective', () => {
     );
     imageZoomService.close.mockClear();
 
-    fixture!.componentInstance.label.set('Replacement brand');
-    await fixture!.whenStable();
+    host.componentInstance.label.set('Replacement brand');
+    await host.whenStable();
 
     expect(imageZoomService.close).toHaveBeenCalledOnce();
     expect(imageZoomService.close).toHaveBeenLastCalledWith(image);
@@ -285,8 +295,8 @@ describe('ImageZoomDirective', () => {
     );
     imageZoomService.close.mockClear();
 
-    fixture!.componentInstance.background.set('#0d1b2d');
-    await fixture!.whenStable();
+    host.componentInstance.background.set('#0d1b2d');
+    await host.whenStable();
 
     expect(imageZoomService.close).toHaveBeenCalledOnce();
     expect(imageZoomService.close).toHaveBeenLastCalledWith(image);
@@ -298,9 +308,10 @@ describe('ImageZoomDirective', () => {
 
   it('leaves touch clicks untouched when touch activation is disabled', async () => {
     const image = await createImage();
+    const host = getFixture();
     setImageGeometry(image, { naturalWidth: 400, naturalHeight: 200, width: 200, height: 100 });
-    fixture!.componentInstance.touchEnabled.set(false);
-    await fixture!.whenStable();
+    host.componentInstance.touchEnabled.set(false);
+    await host.whenStable();
     const event = pointerEvent('click', 'touch', true);
 
     image.dispatchEvent(event);
@@ -396,12 +407,13 @@ describe('ImageZoomDirective', () => {
     expect(observe).not.toHaveBeenCalled();
 
     await fixture.whenStable();
-    const image = fixture.nativeElement.querySelector('img') as HTMLImageElement;
+    const host = fixture.nativeElement as HTMLElement;
+    const image = host.querySelector('img');
 
     expect(observe).toHaveBeenCalledOnce();
     expect(observe).toHaveBeenCalledWith(image);
 
-    fixture!.destroy();
+    fixture.destroy();
 
     expect(disconnect).toHaveBeenCalledOnce();
     expect(imageZoomService.close).toHaveBeenCalledOnce();
@@ -412,7 +424,12 @@ describe('ImageZoomDirective', () => {
   async function createImage(): Promise<HTMLImageElement> {
     fixture = TestBed.createComponent(ImageZoomHost);
     await fixture.whenStable();
-    return fixture.nativeElement.querySelector('img') as HTMLImageElement;
+    const host = fixture.nativeElement as HTMLElement;
+    const image = host.querySelector('img');
+    if (!(image instanceof HTMLImageElement)) {
+      throw new Error('Image element not found');
+    }
+    return image;
   }
 });
 
@@ -452,20 +469,17 @@ function setImageGeometry(
     naturalWidth: { configurable: true, get: () => naturalWidth },
     naturalHeight: { configurable: true, get: () => naturalHeight },
   });
-  vi.spyOn(image, 'getBoundingClientRect').mockImplementation(
-    () =>
-      ({
-        bottom: height,
-        height,
-        left: 0,
-        right: width,
-        top: 0,
-        width,
-        x: 0,
-        y: 0,
-        toJSON: () => ({}),
-      }) as DOMRect,
-  );
+  vi.spyOn(image, 'getBoundingClientRect').mockImplementation(() => ({
+    bottom: height,
+    height,
+    left: 0,
+    right: width,
+    top: 0,
+    width,
+    x: 0,
+    y: 0,
+    toJSON: () => ({}),
+  }));
 
   return {
     resize(nextWidth: number, nextHeight: number): void {

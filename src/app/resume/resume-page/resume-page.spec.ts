@@ -50,11 +50,13 @@ const TECHNOLOGY_ICON_FALLBACK_LABELS = ['REST APIs', 'Caffeine'] as const;
 const OPTIMIZED_ICON_SOURCE = 'data:image/png;base64,b3B0aW1pemVk';
 const OPTIMIZED_ICON_BACKGROUND = '#0d1b2d';
 
-function deferred<T>(): {
+function deferred<T = void>(): {
   readonly promise: Promise<T>;
-  readonly resolve: (value: T | PromiseLike<T>) => void;
+  readonly resolve: (value: T) => void;
 } {
-  let resolve!: (value: T | PromiseLike<T>) => void;
+  let resolve: (value: T) => void = () => {
+    // Overwritten by Promise executor
+  };
   const promise = new Promise<T>((resolver) => {
     resolve = resolver;
   });
@@ -110,11 +112,14 @@ function setSectionRect(
 ): HTMLElement {
   const element = root.querySelector<HTMLElement>(`#${sectionId}`);
   expect(element).not.toBeNull();
+  if (!element) {
+    throw new Error(`Section element #${sectionId} not found`);
+  }
   Object.defineProperty(element, 'getBoundingClientRect', {
     configurable: true,
     value: vi.fn(() => ({ top, bottom }) as DOMRect),
   });
-  return element!;
+  return element;
 }
 
 /** Opens the responsive menu so page-level active state can be asserted in its rendered links. */
@@ -128,7 +133,10 @@ async function openMobileMenu(fixture: ComponentFixture<ResumePage>): Promise<HT
 
   const menu = document.querySelector<HTMLElement>('[role="menu"]');
   expect(menu).not.toBeNull();
-  return menu!;
+  if (!menu) {
+    throw new Error('Menu element not found');
+  }
+  return menu;
 }
 
 describe('ResumePage', () => {
@@ -284,11 +292,12 @@ describe('ResumePage', () => {
     expect(spinners).toHaveLength(5);
     for (const spinnerDebug of spinners) {
       const spinner = spinnerDebug.componentInstance as MatProgressSpinner;
+      const spinnerEl = spinnerDebug.nativeElement as HTMLElement;
       expect(spinner.mode).toBe('indeterminate');
       expect(spinner.diameter).toBe(20);
       expect(spinner.strokeWidth).toBe(3);
-      expect(spinnerDebug.nativeElement.getAttribute('aria-hidden')).toBe('true');
-      expect(spinnerDebug.nativeElement.classList.contains('resume-defer-spinner')).toBe(true);
+      expect(spinnerEl.getAttribute('aria-hidden')).toBe('true');
+      expect(spinnerEl.classList.contains('resume-defer-spinner')).toBe(true);
     }
     expect(groupedPlaceholder?.querySelectorAll(':scope > section')).toHaveLength(3);
   });
@@ -344,7 +353,7 @@ describe('ResumePage', () => {
       'profile',
     ]);
     expect(anchors.every((anchor) => anchor.getAttribute('tabindex') === '-1')).toBe(true);
-    expect(anchors.every((anchor) => anchor.textContent?.includes('unavailable'))).toBe(true);
+    expect(anchors.every((anchor) => anchor.textContent.includes('unavailable'))).toBe(true);
     expect(
       element
         .querySelector('.resume-defer-error--education-profile')
@@ -357,12 +366,12 @@ describe('ResumePage', () => {
     expect(fixture.debugElement.queryAll(By.directive(MatProgressSpinner))).toHaveLength(0);
   });
 
-  it('applies entrance transitions and enforces reduced-motion and print overrides on deferred elements', async () => {
+  it('applies entrance transitions and enforces reduced-motion and print overrides on deferred elements', () => {
     const fixture = TestBed.createComponent(ResumePage);
     fixture.detectChanges();
 
     const resumePageStyles = Array.from(document.head.querySelectorAll<HTMLStyleElement>('style'))
-      .map((style) => style.textContent ?? '')
+      .map((style) => style.textContent)
       .find(
         (styles) => styles.includes('resume-defer-enter') && styles.includes('resume-defer-error'),
       );
@@ -408,10 +417,10 @@ describe('ResumePage', () => {
     const projectLink = educationSection?.querySelector<HTMLAnchorElement>(
       `a[href="${RESUME.education.seniorProject.url}"]`,
     );
-    const educationText = educationSection?.textContent?.replace(/\s+/g, ' ').trim();
+    const educationText = educationSection?.textContent.replace(/\s+/g, ' ').trim();
     const gpaxValue = Array.from(educationSection?.querySelectorAll('dt') ?? [])
-      .find((term) => term.textContent?.trim() === 'GPAX')
-      ?.nextElementSibling?.textContent?.trim();
+      .find((term) => term.textContent.trim() === 'GPAX')
+      ?.nextElementSibling?.textContent.trim();
 
     expect(sectionIds).toEqual(['about', 'experience', 'education', 'skills', 'profile']);
     expect(heroExperienceAction).not.toBeNull();
@@ -420,7 +429,8 @@ describe('ResumePage', () => {
     expect(routerManagedLinks).toHaveLength(8);
     expect(fixture.debugElement.queryAll(By.directive(RouterLink))).toHaveLength(8);
     for (const link of routerManagedLinks) {
-      const targetId = link.getAttribute('href')?.slice(2);
+      const href = link.getAttribute('href') ?? '';
+      const targetId = href.slice(2);
       expect(targetId).toBeTruthy();
       expect(element.querySelector(`[id="${targetId}"]`)).not.toBeNull();
     }
@@ -429,7 +439,7 @@ describe('ResumePage', () => {
     expect(element.querySelector('h1')?.textContent).toContain('Nawaphon Isarathanachaikul');
     expect(element.querySelectorAll('.experience-card')).toHaveLength(5);
     expect(educationSection?.getAttribute('aria-labelledby')).toBe('education-title');
-    expect(educationSection?.querySelector('#education-title')?.textContent?.trim()).toBe(
+    expect(educationSection?.querySelector('#education-title')?.textContent.trim()).toBe(
       'Education',
     );
     expect(educationText).toContain(RESUME.education.degree);
@@ -469,18 +479,22 @@ describe('ResumePage', () => {
     const githubLabel = githubIdentity?.querySelector<HTMLElement>('.link-label');
     const githubExternalIcon = githubLink?.querySelector<HTMLElement>('mat-icon');
 
-    expect(githubLabel?.textContent?.trim()).toBe(github.label);
-    expect(githubLogo?.getAttribute('src')).toBe(github.logo!.src);
-    expect(githubLogo?.getAttribute('width')).toBe(String(github.logo!.width));
-    expect(githubLogo?.getAttribute('height')).toBe(String(github.logo!.height));
-    expect(githubLogo?.getAttribute('alt')).toBe('');
-    expect(githubLogo?.getAttribute('loading')).toBe('lazy');
-    expect(githubLogoFrame?.classList.contains(`link-logo-frame--${github.logo!.surface}`)).toBe(
-      true,
-    );
-    expect(getComputedStyle(githubLogoFrame!).backgroundColor).toBe('rgb(255, 255, 255)');
-    document.documentElement.classList.add('resume-theme-dark');
-    expect(getComputedStyle(githubLogoFrame!).backgroundColor).toBe('rgb(255, 255, 255)');
+    expect(githubLabel?.textContent.trim()).toBe(github.label);
+    const githubLogoConfig = github.logo;
+    expect(githubLogoConfig).toBeDefined();
+    if (githubLogoConfig && githubLogoFrame) {
+      expect(githubLogo?.getAttribute('src')).toBe(githubLogoConfig.src);
+      expect(githubLogo?.getAttribute('width')).toBe(String(githubLogoConfig.width));
+      expect(githubLogo?.getAttribute('height')).toBe(String(githubLogoConfig.height));
+      expect(githubLogo?.getAttribute('alt')).toBe('');
+      expect(githubLogo?.getAttribute('loading')).toBe('lazy');
+      expect(
+        githubLogoFrame.classList.contains(`link-logo-frame--${githubLogoConfig.surface}`),
+      ).toBe(true);
+      expect(getComputedStyle(githubLogoFrame).backgroundColor).toBe('rgb(255, 255, 255)');
+      document.documentElement.classList.add('resume-theme-dark');
+      expect(getComputedStyle(githubLogoFrame).backgroundColor).toBe('rgb(255, 255, 255)');
+    }
     expect(githubIdentity?.firstElementChild).toBe(githubLogoFrame);
     expect(githubLogoFrame?.nextElementSibling).toBe(githubLabel);
     expect(
@@ -490,7 +504,7 @@ describe('ResumePage', () => {
         : 0,
     ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
 
-    expect(personalWebsiteLink?.querySelector('.link-label')?.textContent?.trim()).toBe(
+    expect(personalWebsiteLink?.querySelector('.link-label')?.textContent.trim()).toBe(
       personalWebsite.label,
     );
     expect(personalWebsiteLink?.querySelector('.link-logo-frame')).toBeNull();
@@ -505,7 +519,7 @@ describe('ResumePage', () => {
       expect(link?.getAttribute('href')).toBe(url);
       expect(link?.getAttribute('target')).toBe('_blank');
       expect(link?.getAttribute('rel')).toBe('noopener noreferrer');
-      expect(externalIcon?.textContent?.trim()).toBe('open_in_new');
+      expect(externalIcon?.textContent.trim()).toBe('open_in_new');
       expect(externalIcon?.hasAttribute('iconPositionEnd')).toBe(true);
       expect(externalIcon?.getAttribute('aria-hidden')).toBe('true');
     });
@@ -517,12 +531,12 @@ describe('ResumePage', () => {
     await fixture.whenStable();
     const renderedImages = fixture.debugElement.queryAll(By.css('img'));
     const zoomImages = fixture.debugElement.queryAll(By.directive(ImageZoomDirective));
-    const expectedBindings: Array<{
+    const expectedBindings: {
       readonly logo: BrandLogo;
       readonly label: string;
       readonly touch: boolean;
       readonly background?: string;
-    }> = [];
+    }[] = [];
 
     for (const job of RESUME.experience) {
       expectedBindings.push({ logo: job.companyLogo, label: job.company, touch: true });
@@ -574,13 +588,16 @@ describe('ResumePage', () => {
       };
     });
 
-    expect(zoomImages.map(({ nativeElement }) => nativeElement)).toEqual(
-      renderedImages.map(({ nativeElement }) => nativeElement),
+    expect(zoomImages.map(({ nativeElement }) => nativeElement as HTMLElement)).toEqual(
+      renderedImages.map(({ nativeElement }) => nativeElement as HTMLElement),
     );
     expect(actualBindings).toEqual(expectedBindings);
-    expect(actualBindings.filter(({ touch }) => !touch)).toEqual([
-      { logo: RESUME.links[0].logo!, label: 'GitHub', touch: false },
-    ]);
+    const githubLinkConfig = RESUME.links[0];
+    if (githubLinkConfig.logo) {
+      expect(actualBindings.filter(({ touch }) => !touch)).toEqual([
+        { logo: githubLinkConfig.logo, label: 'GitHub', touch: false },
+      ]);
+    }
   });
 
   it('renders the official university logo beside the accessible institution identity', async () => {
@@ -592,7 +609,7 @@ describe('ResumePage', () => {
     const logo = logoFrame?.querySelector<HTMLImageElement>('.institution-logo');
     const printIcon = identity?.querySelector<HTMLElement>('.education-icon--print');
 
-    expect(identity?.querySelector('.institution')?.textContent?.trim()).toBe(
+    expect(identity?.querySelector('.institution')?.textContent.trim()).toBe(
       RESUME.education.institution,
     );
     expect(logo?.getAttribute('src')).toBe(RESUME.education.institutionLogo.src);
@@ -607,7 +624,10 @@ describe('ResumePage', () => {
     ).toBe(true);
     expect(identity?.querySelectorAll('a')).toHaveLength(0);
     expect(printIcon?.getAttribute('aria-hidden')).toBe('true');
-    expect(getComputedStyle(printIcon!).display).toBe('none');
+    expect(printIcon).not.toBeNull();
+    if (printIcon) {
+      expect(getComputedStyle(printIcon).display).toBe('none');
+    }
   });
 
   it('renders one accessible employment type marker for every experience', async () => {
@@ -628,7 +648,7 @@ describe('ResumePage', () => {
 
     expect(cards).toHaveLength(5);
     expect(markersByCard.every((markers) => markers.length === 1)).toBe(true);
-    expect(markersByCard.map(([marker]) => marker.textContent?.trim())).toEqual(expectedLabels);
+    expect(markersByCard.map(([marker]) => marker.textContent.trim())).toEqual(expectedLabels);
     expect(markersByCard.map(([marker]) => marker.getAttribute('aria-label'))).toEqual(
       expectedLabels.map((label) => `Employment type: ${label}`),
     );
@@ -649,7 +669,7 @@ describe('ResumePage', () => {
     const renderedLabels: string[] = [];
     const renderedFallbackLabels: string[] = [];
     const printStyles = Array.from(document.head.querySelectorAll<HTMLStyleElement>('style'))
-      .map((style) => style.textContent ?? '')
+      .map((style) => style.textContent)
       .find(
         (styles) =>
           styles.includes('@media print') && styles.includes('.technology-icon-container'),
@@ -672,12 +692,14 @@ describe('ResumePage', () => {
         const brandIcons = content?.querySelectorAll<HTMLImageElement>('.technology-brand-icon');
         const fallbackIcons = content?.querySelectorAll<HTMLElement>('.technology-fallback-icon');
 
-        expect(label?.textContent?.trim()).toBe(technology);
+        expect(label?.textContent.trim()).toBe(technology);
         expect(content?.firstElementChild).toBe(iconContainer);
         expect(iconContainer?.getAttribute('aria-hidden')).toBe('true');
         expect((brandIcons?.length ?? 0) + (fallbackIcons?.length ?? 0)).toBe(1);
 
-        renderedLabels.push(label!.textContent!.trim());
+        if (label) {
+          renderedLabels.push(label.textContent.trim());
+        }
 
         if (expectedIcon) {
           const expectedPresentation = optimizedPresentation(expectedIcon);
@@ -711,7 +733,7 @@ describe('ResumePage', () => {
 
           expect(brandIcons).toHaveLength(0);
           expect(fallbackIcons).toHaveLength(1);
-          expect(fallbackIcon?.textContent?.trim()).toBe('code');
+          expect(fallbackIcon?.textContent.trim()).toBe('code');
           expect(fallbackIcon?.getAttribute('aria-hidden')).toBe('true');
           renderedFallbackLabels.push(technology);
         }
@@ -726,7 +748,7 @@ describe('ResumePage', () => {
     expect(optimize).toHaveBeenCalledTimes(expectedBrandedIcons.length);
     expect(optimize.mock.calls.map(([icon]) => icon)).toEqual(expectedBrandedIcons);
     expect(printStyles).toMatch(
-      /\.technology-icon-container[^\{]*\{[^}]*display:\s*none\s*!important/,
+      /\.technology-icon-container[^{]*\{[^}]*display:\s*none\s*!important/,
     );
   });
 
@@ -767,8 +789,8 @@ describe('ResumePage', () => {
         const logo = identity.querySelector<HTMLImageElement>('.company-logo');
         const logoFrame = identity.querySelector<HTMLElement>('.company-logo-frame');
 
-        expect(identity.querySelector('.company-label')?.textContent?.trim()).toBe(expected.label);
-        expect(identity.querySelector('.company-name')?.textContent?.trim()).toBe(expected.name);
+        expect(identity.querySelector('.company-label')?.textContent.trim()).toBe(expected.label);
+        expect(identity.querySelector('.company-name')?.textContent.trim()).toBe(expected.name);
         expect(logo?.getAttribute('src')).toBe(expected.logo.src);
         expect(logo?.getAttribute('width')).toBe(String(expected.logo.width));
         expect(logo?.getAttribute('height')).toBe(String(expected.logo.height));
@@ -782,12 +804,15 @@ describe('ResumePage', () => {
       const arrows = card.querySelectorAll<HTMLElement>('.company-relationship-arrow');
       expect(arrows).toHaveLength(client ? 1 : 0);
       if (client) {
-        expect(arrows.item(0).textContent?.trim()).toBe('→');
+        expect(arrows.item(0).textContent.trim()).toBe('→');
         expect(arrows.item(0).getAttribute('aria-hidden')).toBe('true');
       }
 
-      expect(printCompany?.textContent?.trim()).toBe(job.company);
-      expect(getComputedStyle(printCompany!).display).toBe('none');
+      expect(printCompany?.textContent.trim()).toBe(job.company);
+      expect(printCompany).not.toBeNull();
+      if (printCompany) {
+        expect(getComputedStyle(printCompany).display).toBe('none');
+      }
     });
 
     const logos = Array.from(element.querySelectorAll<HTMLImageElement>('.company-logo'));
@@ -804,7 +829,7 @@ describe('ResumePage', () => {
     ).toBe(true);
     expect(
       clientIdentities.map((identity) =>
-        identity.querySelector('.company-name')?.textContent?.trim(),
+        identity.querySelector('.company-name')?.textContent.trim(),
       ),
     ).toEqual(['InnovestX', 'Ayudhya Capital Services (AYCAP)', 'TISCO Bank']);
     expect(
@@ -825,14 +850,14 @@ describe('ResumePage', () => {
     const fixture = TestBed.createComponent(ResumePage);
     await renderDeferredSections(fixture);
     const element = fixture.nativeElement as HTMLElement;
-    const text = (selector: string) =>
-      element.querySelector(selector)?.textContent?.replace(/\s+/g, ' ').trim();
+    const text = (selector: string): string =>
+      element.querySelector(selector)?.textContent.replace(/\s+/g, ' ').trim() ?? '';
     const summaries = Array.from(
       element.querySelectorAll('.summary-card mat-card-content > p'),
-    ).map((item) => item.textContent?.trim());
+    ).map((item) => item.textContent.trim());
     const heroClock = text('.hero-clock');
     const heroKickers = Array.from(element.querySelectorAll('.hero-kicker-copy')).map((kicker) =>
-      kicker.textContent?.replace(/\s+/g, ' ').trim(),
+      kicker.textContent.replace(/\s+/g, ' ').trim(),
     );
 
     expect(heroClock).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
@@ -849,7 +874,7 @@ describe('ResumePage', () => {
     expect(text('footer p')).toBe(`${RESUME.name} · ${RESUME.title}`);
   });
 
-  it('requests all boundaries synchronously for native printing without opening a dialog', async () => {
+  it('requests all boundaries synchronously for native printing without opening a dialog', () => {
     const print = vi.fn();
     Object.defineProperty(window, 'print', { configurable: true, value: print });
     const fixture = TestBed.createComponent(ResumePage);
@@ -876,7 +901,7 @@ describe('ResumePage', () => {
       '[aria-label="Switch to dark theme"]',
     );
 
-    expect(switchToDark?.textContent?.trim()).toBe('dark_mode');
+    expect(switchToDark?.textContent.trim()).toBe('dark_mode');
     switchToDark?.click();
     fixture.detectChanges();
 
@@ -887,7 +912,7 @@ describe('ResumePage', () => {
     const switchToLight = element.querySelector<HTMLButtonElement>(
       '[aria-label="Switch to light theme"]',
     );
-    expect(switchToLight?.textContent?.trim()).toBe('light_mode');
+    expect(switchToLight?.textContent.trim()).toBe('light_mode');
     switchToLight?.click();
     fixture.detectChanges();
 
@@ -907,7 +932,7 @@ describe('ResumePage', () => {
 
   it('shares pending state with navigation and prevents duplicate download requests', async () => {
     let progressCallback: ((progress: number | null) => void) | undefined;
-    const pendingDownload = deferred<void>();
+    const pendingDownload = deferred();
     download.mockImplementationOnce((onProgress) => {
       progressCallback = onProgress;
       return pendingDownload.promise;
@@ -936,11 +961,15 @@ describe('ResumePage', () => {
 
     navigation.downloadRequested.emit();
     expect(navigation.downloadPending()).toBe(true);
-    await vi.waitFor(() => expect(download).toHaveBeenCalledOnce());
+    await vi.waitFor(() => {
+      expect(download).toHaveBeenCalledOnce();
+    });
     expect(download).toHaveBeenCalledOnce();
 
     pendingDownload.resolve(undefined);
-    await vi.waitFor(() => expect(navigation.downloadPending()).toBe(false));
+    await vi.waitFor(() => {
+      expect(navigation.downloadPending()).toBe(false);
+    });
     fixture.detectChanges();
 
     expect(navigation.downloadPending()).toBe(false);
@@ -973,7 +1002,9 @@ describe('ResumePage', () => {
     fixture.detectChanges();
 
     expect(downloadButton?.disabled).toBe(true);
-    await vi.waitFor(() => expect(handleError).toHaveBeenCalledOnce());
+    await vi.waitFor(() => {
+      expect(handleError).toHaveBeenCalledOnce();
+    });
     expect(download).toHaveBeenCalledOnce();
     expect(handleError).toHaveBeenCalledOnce();
     expect(handleError).toHaveBeenCalledWith(failure);
@@ -988,8 +1019,12 @@ describe('ResumePage', () => {
 
     expect(navigation.downloadPending()).toBe(true);
     expect(downloadButton?.disabled).toBe(true);
-    await vi.waitFor(() => expect(download).toHaveBeenCalledTimes(2));
-    await vi.waitFor(() => expect(navigation.downloadPending()).toBe(false));
+    await vi.waitFor(() => {
+      expect(download).toHaveBeenCalledTimes(2);
+    });
+    await vi.waitFor(() => {
+      expect(navigation.downloadPending()).toBe(false);
+    });
     fixture.detectChanges();
     expect(download).toHaveBeenCalledTimes(2);
     expect(handleError).toHaveBeenCalledOnce();
@@ -1010,7 +1045,9 @@ describe('ResumePage', () => {
     // 1. Available state (isAvailable = true)
     downloadButton?.click();
     fixture.detectChanges();
-    await vi.waitFor(() => expect(download).toHaveBeenCalledOnce());
+    await vi.waitFor(() => {
+      expect(download).toHaveBeenCalledOnce();
+    });
     expect(openSpy).not.toHaveBeenCalled();
 
     // 2. Checking state (isAvailable = null)
@@ -1018,7 +1055,9 @@ describe('ResumePage', () => {
     fixture.detectChanges();
     downloadButton?.click();
     fixture.detectChanges();
-    await vi.waitFor(() => expect(download).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() => {
+      expect(download).toHaveBeenCalledTimes(2);
+    });
     expect(openSpy).not.toHaveBeenCalled();
   });
 
@@ -1032,15 +1071,15 @@ describe('ResumePage', () => {
     );
 
     expect(desktopButton).not.toBeNull();
-    expect(desktopButton?.querySelector('mat-icon')?.textContent?.trim()).toBe('file_download_off');
+    expect(desktopButton?.querySelector('mat-icon')?.textContent.trim()).toBe('file_download_off');
 
     const menu = await openMobileMenu(fixture);
     const mobileButton = menu.querySelector<HTMLButtonElement>(
       'button[aria-label="Download résumé as PDF (file may be unavailable)"]',
     );
     expect(mobileButton).not.toBeNull();
-    expect(mobileButton?.querySelector('mat-icon')?.textContent?.trim()).toBe('file_download_off');
-    expect(mobileButton?.querySelector('span')?.textContent?.trim()).toBe(
+    expect(mobileButton?.querySelector('mat-icon')?.textContent.trim()).toBe('file_download_off');
+    expect(mobileButton?.querySelector('span')?.textContent.trim()).toBe(
       'Download PDF (unavailable)',
     );
   });
@@ -1075,7 +1114,7 @@ describe('ResumePage', () => {
 
     const cancelButton = Array.from(
       dialogContainer?.querySelectorAll<HTMLButtonElement>('button') ?? [],
-    ).find((btn) => btn.textContent?.trim() === 'Cancel');
+    ).find((btn) => btn.textContent.trim() === 'Cancel');
     expect(cancelButton).not.toBeNull();
     cancelButton?.click();
     fixture.detectChanges();
@@ -1110,13 +1149,15 @@ describe('ResumePage', () => {
     const dialogContainer = document.querySelector<HTMLElement>('[role="alertdialog"]');
     const continueButton = Array.from(
       dialogContainer?.querySelectorAll<HTMLButtonElement>('button') ?? [],
-    ).find((btn) => btn.textContent?.trim() === 'Continue');
+    ).find((btn) => btn.textContent.trim() === 'Continue');
     expect(continueButton).not.toBeNull();
     continueButton?.click();
     fixture.detectChanges();
     await fixture.whenStable();
 
-    await vi.waitFor(() => expect(download).toHaveBeenCalledOnce());
+    await vi.waitFor(() => {
+      expect(download).toHaveBeenCalledOnce();
+    });
     expect(download).toHaveBeenCalledOnce();
     expect(navigation.downloadPending()).toBe(false);
   });
@@ -1145,13 +1186,15 @@ describe('ResumePage', () => {
     const dialogContainer = document.querySelector<HTMLElement>('[role="alertdialog"]');
     const continueButton = Array.from(
       dialogContainer?.querySelectorAll<HTMLButtonElement>('button') ?? [],
-    ).find((btn) => btn.textContent?.trim() === 'Continue');
+    ).find((btn) => btn.textContent.trim() === 'Continue');
     expect(continueButton).not.toBeNull();
     continueButton?.click();
     fixture.detectChanges();
     await fixture.whenStable();
 
-    await vi.waitFor(() => expect(download).toHaveBeenCalledOnce());
+    await vi.waitFor(() => {
+      expect(download).toHaveBeenCalledOnce();
+    });
     expect(download).toHaveBeenCalledOnce();
   });
 
@@ -1159,7 +1202,11 @@ describe('ResumePage', () => {
     const harness = await RouterTestingHarness.create('/#experience');
     harness.detectChanges();
     await harness.fixture.whenStable();
-    const element = harness.routeNativeElement!;
+    const element = harness.routeNativeElement;
+    expect(element).not.toBeNull();
+    if (!element) {
+      throw new Error('Route native element not found');
+    }
     const aboutLink = element.querySelector<HTMLAnchorElement>('nav a[href="/#about"]');
     const experienceLink = element.querySelector<HTMLAnchorElement>('nav a[href="/#experience"]');
 
@@ -1254,7 +1301,11 @@ describe('ResumePage', () => {
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
     const placeholder = setSectionRect(element, 'experience', 100, 600);
-    const placeholderRect = vi.mocked(placeholder.getBoundingClientRect);
+    const placeholderRect = vi.fn(() => ({ top: 100, bottom: 600 }) as DOMRect);
+    Object.defineProperty(placeholder, 'getBoundingClientRect', {
+      configurable: true,
+      value: placeholderRect,
+    });
 
     scrollEvents.next();
     await fixture.whenStable();
@@ -1307,7 +1358,11 @@ describe('ResumePage', () => {
     const harness = await RouterTestingHarness.create('/');
     initializeRouterScrolling(harness);
     harness.detectChanges();
-    const element = harness.routeNativeElement!;
+    const element = harness.routeNativeElement;
+    expect(element).not.toBeNull();
+    if (!element) {
+      throw new Error('Route native element not found');
+    }
     const skipLink = element.querySelector<HTMLAnchorElement>('a.skip-link');
     const main = element.querySelector<HTMLElement>('main#main-content');
 

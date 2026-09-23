@@ -53,7 +53,10 @@ export class ThemeService {
   private readonly themeTransitionClass = inject(THEME_TRANSITION_CLASS);
   private readonly themeTransitionDurationMs = inject(THEME_TRANSITION_DURATION_MS);
   private readonly view = isPlatformBrowser(this.platformId) ? this.document.defaultView : null;
-  private readonly mediaQuery = this.view?.matchMedia?.('(prefers-color-scheme: dark)') ?? null;
+  private readonly mediaQuery =
+    typeof this.view?.matchMedia === 'function'
+      ? this.view.matchMedia('(prefers-color-scheme: dark)')
+      : null;
   private hasExplicitChoice = false;
   private isPrinting = false;
   private transitionCleanupTimer: number | null = null;

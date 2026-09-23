@@ -180,7 +180,9 @@ export default class ResumePage {
     this.downloadPending.set(true);
     this.downloadProgress.set(null);
     try {
-      await this.resumePdfService.download((progress) => this.downloadProgress.set(progress));
+      await this.resumePdfService.download((progress) => {
+        this.downloadProgress.set(progress);
+      });
     } catch (error: unknown) {
       this.errorHandler.handleError(error);
     } finally {
@@ -224,11 +226,11 @@ export default class ResumePage {
   private updateActiveSection(): void {
     const viewport = this.viewportRuler.getViewportRect();
     const activationLine = viewport.top + viewport.height * this.sectionActivationRatio;
-    const visibleSections: Array<{
+    const visibleSections: {
       readonly id: ResumeSectionId;
       readonly top: number;
       readonly bottom: number;
-    }> = [];
+    }[] = [];
 
     for (const section of this.sections) {
       const element = this.document.getElementById(section.id);
@@ -246,6 +248,10 @@ export default class ResumePage {
       }
     }
 
+    if (visibleSections.length === 0) {
+      return;
+    }
+
     const activeSection =
       visibleSections.find(
         ({ top, bottom }) => top <= activationLine && bottom >= activationLine,
@@ -255,9 +261,7 @@ export default class ResumePage {
           Math.abs(first.top - activationLine) - Math.abs(second.top - activationLine),
       )[0];
 
-    if (activeSection) {
-      this.activeSection.set(activeSection.id);
-    }
+    this.activeSection.set(activeSection.id);
   }
 
   /** @returns Whether a fragment value belongs to the shared section registry. */

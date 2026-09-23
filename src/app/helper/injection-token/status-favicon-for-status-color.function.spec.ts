@@ -4,7 +4,6 @@ import { TestBed } from '@angular/core/testing';
 import { statusFaviconForStatusColor } from './status-favicon-for-status-color.function.ts';
 import { IMAGE_ASSET_ORIGIN } from './image-asset-origin.variable.ts';
 import { statusColor } from './status-colors.variable.ts';
-import type { StatusColor } from '../type/status-color.type.ts';
 
 describe('statusFaviconForStatusColor', () => {
   afterEach(() => {
@@ -30,10 +29,10 @@ describe('statusFaviconForStatusColor', () => {
     TestBed.configureTestingModule({});
     const resolveFavicon = TestBed.inject(statusFaviconForStatusColor);
 
-    expect(resolveFavicon('#000000' as StatusColor)).toBe(
+    expect(resolveFavicon('#000000')).toBe(
       'https://resume-images.ohm-mho.space/favicons/unavailable/favicon.svg',
     );
-    expect(resolveFavicon('' as StatusColor)).toBe(
+    expect(resolveFavicon('')).toBe(
       'https://resume-images.ohm-mho.space/favicons/unavailable/favicon.svg',
     );
   });
@@ -55,13 +54,13 @@ describe('statusFaviconForStatusColor', () => {
 
     const resolveFavicon = TestBed.inject(statusFaviconForStatusColor);
 
-    expect(resolveFavicon('#111111' as StatusColor)).toBe(
+    expect(resolveFavicon('#111111')).toBe(
       'https://custom-cdn.example.com/favicons/available/favicon.svg',
     );
-    expect(resolveFavicon('#222222' as StatusColor)).toBe(
+    expect(resolveFavicon('#222222')).toBe(
       'https://custom-cdn.example.com/favicons/limited/favicon.svg',
     );
-    expect(resolveFavicon('#333333' as StatusColor)).toBe(
+    expect(resolveFavicon('#333333')).toBe(
       'https://custom-cdn.example.com/favicons/unavailable/favicon.svg',
     );
   });

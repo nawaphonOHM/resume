@@ -11,7 +11,9 @@ describe('FaviconService', () => {
     const existingLinks = document.head.querySelectorAll<HTMLLinkElement>(
       'link[rel="icon"], link[rel~="icon"]',
     );
-    existingLinks.forEach((link) => link.remove());
+    existingLinks.forEach((link) => {
+      link.remove();
+    });
   };
 
   beforeEach(() => {

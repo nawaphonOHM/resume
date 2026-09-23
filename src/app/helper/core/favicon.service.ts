@@ -22,7 +22,7 @@ export class FaviconService {
    * @param href - The URL of the favicon SVG or icon asset.
    */
   setFavicon(href: string): void {
-    if (!this.isBrowser || !this.document?.head) {
+    if (!this.isBrowser) {
       return;
     }
 
@@ -47,7 +47,7 @@ export class FaviconService {
    * @returns The active favicon `href`, or `null` if not found or outside a browser platform.
    */
   getFavicon(): string | null {
-    if (!this.isBrowser || !this.document?.head) {
+    if (!this.isBrowser) {
       return null;
     }
 

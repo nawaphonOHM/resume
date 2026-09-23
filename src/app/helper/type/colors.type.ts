@@ -1,4 +1,4 @@
-export type COLOR_TYPE = {
+export interface COLOR_TYPE {
   navy: string;
   accent: string;
   text: string;
@@ -6,4 +6,4 @@ export type COLOR_TYPE = {
   border: string;
   surface: string;
   white: string;
-};
+}

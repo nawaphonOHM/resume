@@ -20,4 +20,6 @@ import {
     class: 'resume-pdf-confirm-dialog block',
   },
 })
-export class ResumePdfConfirmDialog {}
+export class ResumePdfConfirmDialog {
+  protected readonly dialogTitle = 'Confirm Download';
+}

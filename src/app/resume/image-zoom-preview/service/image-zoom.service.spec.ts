@@ -217,8 +217,8 @@ describe('ImageZoomService', () => {
     service.open(request(secondOrigin, darkLogo, 'Second brand', 'touch'));
 
     const previews = overlayContainer().querySelectorAll('app-image-zoom-preview-preview');
-    const panel = previews[0]?.querySelector<HTMLElement>('.image-zoom-preview');
-    const image = previews[0]?.querySelector<HTMLImageElement>('img');
+    const panel = previews[0].querySelector<HTMLElement>('.image-zoom-preview');
+    const image = previews[0].querySelector<HTMLImageElement>('img');
 
     expect(dispose).toHaveBeenCalledOnce();
     expect(previews).toHaveLength(1);
@@ -252,7 +252,11 @@ describe('ImageZoomService', () => {
 
     service.open(request(origin, lightLogo, 'Outside brand', 'touch'));
 
-    const panel = overlayContainer().querySelector<HTMLElement>('.image-zoom-preview')!;
+    const panel = overlayContainer().querySelector<HTMLElement>('.image-zoom-preview');
+    expect(panel).not.toBeNull();
+    if (!panel) {
+      throw new Error('Panel not found');
+    }
     dispatchPointerClick(panel);
     expect(service.isOpenFor(origin)).toBe(true);
 

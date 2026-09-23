@@ -9,7 +9,9 @@ import type { ResumePdfConfirmDialogResult } from '../../../../helper/type/resum
 @Component({
   template: '',
 })
-class TestHostComponent {}
+class TestHostComponent {
+  readonly name = 'test-host';
+}
 
 describe('ResumePdfConfirmDialog', () => {
   beforeEach(async () => {
@@ -32,11 +34,11 @@ describe('ResumePdfConfirmDialog', () => {
 
     const titleElement = hostElement.querySelector<HTMLElement>('[mat-dialog-title]');
     expect(titleElement).not.toBeNull();
-    expect(titleElement?.textContent?.trim()).toBe('Confirm Download');
+    expect(titleElement?.textContent.trim()).toBe('Confirm Download');
 
     const contentElement = hostElement.querySelector<HTMLElement>('mat-dialog-content');
     expect(contentElement).not.toBeNull();
-    expect(contentElement?.textContent?.trim()).toBe(
+    expect(contentElement?.textContent.trim()).toBe(
       'The file may be unavailable. Do you confirm to continue?',
     );
 
@@ -44,8 +46,8 @@ describe('ResumePdfConfirmDialog', () => {
     expect(buttons).toHaveLength(2);
 
     const [cancelButton, continueButton] = buttons;
-    expect(cancelButton.textContent?.trim()).toBe('Cancel');
-    expect(continueButton.textContent?.trim()).toBe('Continue');
+    expect(cancelButton.textContent.trim()).toBe('Cancel');
+    expect(continueButton.textContent.trim()).toBe('Continue');
     expect(continueButton.hasAttribute('cdkfocusinitial')).toBe(true);
   });
 
@@ -65,7 +67,7 @@ describe('ResumePdfConfirmDialog', () => {
       'mat-dialog-actions button:first-child',
     );
     expect(cancelButton).not.toBeNull();
-    expect(cancelButton?.textContent?.trim()).toBe('Cancel');
+    expect(cancelButton?.textContent.trim()).toBe('Cancel');
 
     cancelButton?.click();
 
@@ -89,7 +91,7 @@ describe('ResumePdfConfirmDialog', () => {
       'mat-dialog-actions button:last-child',
     );
     expect(continueButton).not.toBeNull();
-    expect(continueButton?.textContent?.trim()).toBe('Continue');
+    expect(continueButton?.textContent.trim()).toBe('Continue');
 
     continueButton?.click();
 

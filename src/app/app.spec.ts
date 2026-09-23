@@ -61,9 +61,8 @@ describe('App', () => {
       expect(component.isRouteLoading()).toBe(true);
       await fixture.whenStable();
 
-      const container = fixture.nativeElement.querySelector(
-        '.route-loading-container',
-      ) as HTMLElement | null;
+      const compiled = fixture.nativeElement as HTMLElement;
+      const container = compiled.querySelector<HTMLElement>('.route-loading-container');
       expect(container).not.toBeNull();
       expect(container?.getAttribute('role')).toBe('status');
       expect(container?.getAttribute('aria-live')).toBe('polite');
@@ -86,14 +85,15 @@ describe('App', () => {
   describe('router event transitions', () => {
     it('dismisses the loading overlay when NavigationEnd fires', async () => {
       await fixture.whenStable();
-      expect(fixture.nativeElement.querySelector('.route-loading-container')).not.toBeNull();
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.querySelector('.route-loading-container')).not.toBeNull();
 
       routerEvents$.next(new NavigationEnd(1, '/', '/'));
       await fixture.whenStable();
 
       expect(component.isRouteLoading()).toBe(false);
-      expect(fixture.nativeElement.querySelector('.route-loading-container')).toBeNull();
-      expect(fixture.nativeElement.querySelector('router-outlet')).not.toBeNull();
+      expect(compiled.querySelector('.route-loading-container')).toBeNull();
+      expect(compiled.querySelector('router-outlet')).not.toBeNull();
     });
 
     it('dismisses the loading overlay when NavigationCancel fires', async () => {
@@ -102,8 +102,9 @@ describe('App', () => {
       routerEvents$.next(new NavigationCancel(1, '/', 'Redirect'));
       await fixture.whenStable();
 
+      const compiled = fixture.nativeElement as HTMLElement;
       expect(component.isRouteLoading()).toBe(false);
-      expect(fixture.nativeElement.querySelector('.route-loading-container')).toBeNull();
+      expect(compiled.querySelector('.route-loading-container')).toBeNull();
     });
 
     it('dismisses the loading overlay when NavigationError fires', async () => {
@@ -112,8 +113,9 @@ describe('App', () => {
       routerEvents$.next(new NavigationError(1, '/', new Error('Network error')));
       await fixture.whenStable();
 
+      const compiled = fixture.nativeElement as HTMLElement;
       expect(component.isRouteLoading()).toBe(false);
-      expect(fixture.nativeElement.querySelector('.route-loading-container')).toBeNull();
+      expect(compiled.querySelector('.route-loading-container')).toBeNull();
     });
 
     it('restores the loading overlay when a new NavigationStart fires', async () => {
@@ -124,8 +126,9 @@ describe('App', () => {
       routerEvents$.next(new NavigationStart(2, '/#experience'));
       await fixture.whenStable();
 
+      const compiled = fixture.nativeElement as HTMLElement;
       expect(component.isRouteLoading()).toBe(true);
-      expect(fixture.nativeElement.querySelector('.route-loading-container')).not.toBeNull();
+      expect(compiled.querySelector('.route-loading-container')).not.toBeNull();
     });
 
     it('activates loading state when RouteConfigLoadStart fires', async () => {
@@ -136,8 +139,9 @@ describe('App', () => {
       routerEvents$.next(new RouteConfigLoadStart({ path: 'lazy' }));
       await fixture.whenStable();
 
+      const compiled = fixture.nativeElement as HTMLElement;
       expect(component.isRouteLoading()).toBe(true);
-      expect(fixture.nativeElement.querySelector('.route-loading-container')).not.toBeNull();
+      expect(compiled.querySelector('.route-loading-container')).not.toBeNull();
     });
 
     it('does not dismiss loading overlay on RouteConfigLoadEnd until terminal navigation completes', async () => {
@@ -149,15 +153,16 @@ describe('App', () => {
       routerEvents$.next(new RouteConfigLoadEnd({ path: '' }));
       await fixture.whenStable();
 
+      const compiled = fixture.nativeElement as HTMLElement;
       // Route chunk finished, but overall navigation is still pending
       expect(component.isRouteLoading()).toBe(true);
-      expect(fixture.nativeElement.querySelector('.route-loading-container')).not.toBeNull();
+      expect(compiled.querySelector('.route-loading-container')).not.toBeNull();
 
       routerEvents$.next(new NavigationEnd(1, '/', '/'));
       await fixture.whenStable();
 
       expect(component.isRouteLoading()).toBe(false);
-      expect(fixture.nativeElement.querySelector('.route-loading-container')).toBeNull();
+      expect(compiled.querySelector('.route-loading-container')).toBeNull();
     });
 
     it('automatically transitions from loading to idle when navigation completes via router.navigateByUrl', async () => {
@@ -166,8 +171,9 @@ describe('App', () => {
       await router.navigateByUrl('/');
       await fixture.whenStable();
 
+      const compiled = fixture.nativeElement as HTMLElement;
       expect(component.isRouteLoading()).toBe(false);
-      expect(fixture.nativeElement.querySelector('.route-loading-container')).toBeNull();
+      expect(compiled.querySelector('.route-loading-container')).toBeNull();
     });
   });
 

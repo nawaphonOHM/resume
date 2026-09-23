@@ -15,7 +15,9 @@ import { vi } from 'vitest';
 import { ResumeNavigation } from './resume-navigation';
 
 @Component({ template: '' })
-class NavigationRouteTarget {}
+class NavigationRouteTarget {
+  readonly routeName = 'target';
+}
 
 async function openMobileMenu(fixture: ComponentFixture<ResumeNavigation>): Promise<HTMLElement> {
   const trigger = fixture.debugElement
@@ -27,7 +29,10 @@ async function openMobileMenu(fixture: ComponentFixture<ResumeNavigation>): Prom
 
   const menu = document.querySelector<HTMLElement>('[role="menu"]');
   expect(menu).not.toBeNull();
-  return menu!;
+  if (!menu) {
+    throw new Error('Menu element not found');
+  }
+  return menu;
 }
 
 describe('ResumeNavigation', () => {
@@ -60,7 +65,7 @@ describe('ResumeNavigation', () => {
       '/#skills',
       '/#profile',
     ]);
-    expect(navigationLinks.map((link) => link.textContent?.trim())).toEqual([
+    expect(navigationLinks.map((link) => link.textContent.trim())).toEqual([
       'About',
       'Experience',
       'Education',
@@ -110,7 +115,9 @@ describe('ResumeNavigation', () => {
     const updatedLinks = Array.from(element.querySelectorAll<HTMLAnchorElement>('nav a'));
 
     expect(updatedLinks.map((link) => link.getAttribute('href'))).toEqual(stableHrefs);
-    updatedLinks.forEach((link, index) => expect(link).toBe(navigationLinks[index]));
+    updatedLinks.forEach((link, index) => {
+      expect(link).toBe(navigationLinks[index]);
+    });
     expect(aboutLink?.classList.contains('navigation-link-active')).toBe(false);
     expect(aboutLink?.getAttribute('aria-current')).toBeNull();
     expect(experienceLink?.classList.contains('navigation-link-active')).toBe(true);
@@ -133,7 +140,7 @@ describe('ResumeNavigation', () => {
 
     expect(element.querySelector('[aria-label="Switch to light theme"]')).not.toBeNull();
     expect(download?.type).toBe('button');
-    expect(download?.querySelector('mat-icon')?.textContent?.trim()).toBe('download');
+    expect(download?.querySelector('mat-icon')?.textContent.trim()).toBe('download');
     expect(element.querySelector('[aria-label="Open section menu"]')).not.toBeNull();
     expect(element.querySelector('[aria-label="Print résumé"]')).toBeNull();
     expect(element.querySelector('a[download]')).toBeNull();
@@ -159,8 +166,8 @@ describe('ResumeNavigation', () => {
     );
 
     expect(downloadRequested).toHaveBeenCalledOnce();
-    expect(mobileDownload?.querySelector('mat-icon')?.textContent?.trim()).toBe('download');
-    expect(mobileDownload?.querySelector('span')?.textContent?.trim()).toBe('Download PDF');
+    expect(mobileDownload?.querySelector('mat-icon')?.textContent.trim()).toBe('download');
+    expect(mobileDownload?.querySelector('span')?.textContent.trim()).toBe('Download PDF');
     mobileDownload?.click();
     expect(downloadRequested).toHaveBeenCalledTimes(2);
   });
@@ -195,8 +202,9 @@ describe('ResumeNavigation', () => {
     expect(desktopSpinner.strokeWidth).toBe(2.5);
     expect(desktopSpinner.mode).toBe('indeterminate');
     expect(desktopSpinner.value).toBe(0);
-    expect(desktopSpinnerDebug.nativeElement.getAttribute('aria-hidden')).toBe('true');
-    expect(desktopSpinnerDebug.nativeElement.classList.contains('navigation-spinner')).toBe(true);
+    const desktopSpinnerElement = desktopSpinnerDebug.nativeElement as HTMLElement;
+    expect(desktopSpinnerElement.getAttribute('aria-hidden')).toBe('true');
+    expect(desktopSpinnerElement.classList.contains('navigation-spinner')).toBe(true);
 
     expect(mobileDownload?.disabled).toBe(true);
     expect(mobileDownload?.getAttribute('aria-busy')).toBe('true');
@@ -208,8 +216,9 @@ describe('ResumeNavigation', () => {
     const mobileSpinner = mobileSpinnerDebug.componentInstance as MatProgressSpinner;
     expect(mobileSpinner.mode).toBe('indeterminate');
     expect(mobileSpinner.value).toBe(0);
-    expect(mobileSpinnerDebug.nativeElement.getAttribute('aria-hidden')).toBe('true');
-    expect(mobileDownload?.querySelector('span')?.textContent?.trim()).toBe('Downloading PDF…');
+    const mobileSpinnerElement = mobileSpinnerDebug.nativeElement as HTMLElement;
+    expect(mobileSpinnerElement.getAttribute('aria-hidden')).toBe('true');
+    expect(mobileDownload?.querySelector('span')?.textContent.trim()).toBe('Downloading PDF…');
 
     desktopDownload?.click();
     mobileDownload?.click();
@@ -251,9 +260,7 @@ describe('ResumeNavigation', () => {
     expect(mobileDownload?.getAttribute('aria-label')).toBe('Downloading résumé PDF (50%)');
     expect(mobileSpinner.mode).toBe('determinate');
     expect(mobileSpinner.value).toBe(50);
-    expect(mobileDownload?.querySelector('span')?.textContent?.trim()).toBe(
-      'Downloading PDF (50%)',
-    );
+    expect(mobileDownload?.querySelector('span')?.textContent.trim()).toBe('Downloading PDF (50%)');
 
     // Progress updates to 100%
     fixture.componentRef.setInput('downloadProgress', 100);
@@ -262,7 +269,7 @@ describe('ResumeNavigation', () => {
     expect(desktopDownload?.getAttribute('aria-label')).toBe('Downloading résumé PDF (100%)');
     expect(desktopSpinner.value).toBe(100);
     expect(mobileDownload?.getAttribute('aria-label')).toBe('Downloading résumé PDF (100%)');
-    expect(mobileDownload?.querySelector('span')?.textContent?.trim()).toBe(
+    expect(mobileDownload?.querySelector('span')?.textContent.trim()).toBe(
       'Downloading PDF (100%)',
     );
   });
@@ -291,15 +298,15 @@ describe('ResumeNavigation', () => {
     expect(desktopDownload?.disabled).toBe(false);
     expect(desktopDownload?.getAttribute('aria-label')).toBe('Download résumé as PDF');
     expect(desktopDownload?.getAttribute('aria-busy')).toBe('false');
-    expect(desktopDownload?.querySelector('mat-icon')?.textContent?.trim()).toBe('download');
+    expect(desktopDownload?.querySelector('mat-icon')?.textContent.trim()).toBe('download');
     expect(desktopDownload?.querySelector('mat-progress-spinner')).toBeNull();
 
     expect(mobileDownload?.disabled).toBe(false);
     expect(mobileDownload?.getAttribute('aria-label')).toBe('Download résumé as PDF');
     expect(mobileDownload?.getAttribute('aria-busy')).toBe('false');
-    expect(mobileDownload?.querySelector('mat-icon')?.textContent?.trim()).toBe('download');
+    expect(mobileDownload?.querySelector('mat-icon')?.textContent.trim()).toBe('download');
     expect(mobileDownload?.querySelector('mat-progress-spinner')).toBeNull();
-    expect(mobileDownload?.querySelector('span')?.textContent?.trim()).toBe('Download PDF');
+    expect(mobileDownload?.querySelector('span')?.textContent.trim()).toBe('Download PDF');
   });
 
   it('navigates by section fragment and emits theme interactions', async () => {
@@ -343,7 +350,7 @@ describe('ResumeNavigation', () => {
     expect(desktopDownload).not.toBeNull();
     expect(desktopDownload?.disabled).toBe(false);
     expect(desktopDownload?.getAttribute('aria-busy')).toBe('false');
-    expect(desktopDownload?.querySelector('mat-icon')?.textContent?.trim()).toBe(
+    expect(desktopDownload?.querySelector('mat-icon')?.textContent.trim()).toBe(
       'file_download_off',
     );
     expect(desktopTooltip.message).toBe('Download résumé as PDF (file may be unavailable)');
@@ -356,10 +363,8 @@ describe('ResumeNavigation', () => {
     expect(mobileDownload).not.toBeNull();
     expect(mobileDownload?.disabled).toBe(false);
     expect(mobileDownload?.getAttribute('aria-busy')).toBe('false');
-    expect(mobileDownload?.querySelector('mat-icon')?.textContent?.trim()).toBe(
-      'file_download_off',
-    );
-    expect(mobileDownload?.querySelector('span')?.textContent?.trim()).toBe(
+    expect(mobileDownload?.querySelector('mat-icon')?.textContent.trim()).toBe('file_download_off');
+    expect(mobileDownload?.querySelector('span')?.textContent.trim()).toBe(
       'Download PDF (unavailable)',
     );
   });
@@ -416,12 +421,10 @@ describe('ResumeNavigation', () => {
     expect(mobileDownload?.disabled).toBe(true);
     expect(mobileDownload?.querySelector('mat-icon')).toBeNull();
     expect(mobileDownload?.querySelector('mat-progress-spinner')).not.toBeNull();
-    expect(mobileDownload?.querySelector('span')?.textContent?.trim()).toBe(
-      'Downloading PDF (25%)',
-    );
+    expect(mobileDownload?.querySelector('span')?.textContent.trim()).toBe('Downloading PDF (25%)');
   });
 
-  it('updates responsive presentation when download availability changes dynamically', async () => {
+  it('updates responsive presentation when download availability changes dynamically', () => {
     const fixture = TestBed.createComponent(ResumeNavigation);
     fixture.componentRef.setInput('activeSection', 'about');
     fixture.componentRef.setInput('theme', 'light');
@@ -432,7 +435,7 @@ describe('ResumeNavigation', () => {
     let desktopDownload = element.querySelector<HTMLButtonElement>('button.desktop-control');
 
     expect(desktopDownload?.getAttribute('aria-label')).toBe('Download résumé as PDF');
-    expect(desktopDownload?.querySelector('mat-icon')?.textContent?.trim()).toBe('download');
+    expect(desktopDownload?.querySelector('mat-icon')?.textContent.trim()).toBe('download');
 
     // Switch to unavailable
     fixture.componentRef.setInput('downloadAvailable', false);
@@ -442,7 +445,7 @@ describe('ResumeNavigation', () => {
     expect(desktopDownload?.getAttribute('aria-label')).toBe(
       'Download résumé as PDF (file may be unavailable)',
     );
-    expect(desktopDownload?.querySelector('mat-icon')?.textContent?.trim()).toBe(
+    expect(desktopDownload?.querySelector('mat-icon')?.textContent.trim()).toBe(
       'file_download_off',
     );
 
@@ -452,6 +455,6 @@ describe('ResumeNavigation', () => {
 
     desktopDownload = element.querySelector<HTMLButtonElement>('button.desktop-control');
     expect(desktopDownload?.getAttribute('aria-label')).toBe('Download résumé as PDF');
-    expect(desktopDownload?.querySelector('mat-icon')?.textContent?.trim()).toBe('download');
+    expect(desktopDownload?.querySelector('mat-icon')?.textContent.trim()).toBe('download');
   });
 });

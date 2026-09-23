@@ -47,12 +47,12 @@ function createFakeOpenCv(options: FakeOpenCvOptions = {}) {
   const allocations: TrackedAllocation[] = [];
   const matInputs: Uint8Array[] = [];
   const mergeInputs: Uint8Array[][] = [];
-  const claheCalls: Array<{
+  const claheCalls: {
     readonly clipLimit: number;
     readonly gridWidth: number;
     readonly gridHeight: number;
     readonly input: Uint8Array;
-  }> = [];
+  }[] = [];
   const enhanceLuminance = options.enhanceLuminance ?? ((value: number) => value);
 
   class Mat implements FakeMat {
@@ -167,7 +167,7 @@ function createFakeOpenCv(options: FakeOpenCvOptions = {}) {
         return;
       }
 
-      if (code === COLOR_Lab2RGB && destination !== undefined) {
+      if (code === COLOR_Lab2RGB) {
         const channels = source.channels ?? [];
         const rgb = new Uint8Array((channels[0]?.length ?? 0) * 3);
         for (let index = 0; index < (channels[0]?.length ?? 0); index++) {
@@ -207,7 +207,7 @@ describe('TechnologyIconContrastService', () => {
   let sourcePixels: Uint8ClampedArray;
   let serializedPixels: Uint8ClampedArray[];
   let imageLoadCount: number;
-  let imageRequests: Array<{ readonly crossOrigin: string | null; readonly src: string }>;
+  let imageRequests: { readonly crossOrigin: string | null; readonly src: string }[];
   let failImageLoading: boolean;
   let canvasAvailable: boolean;
   let failCanvasReading: boolean;
@@ -259,15 +259,12 @@ describe('TechnologyIconContrastService', () => {
         }
         return { data: sourcePixels, width, height, colorSpace: 'srgb' } as ImageData;
       }),
-      createImageData: vi.fn(
-        (width: number, height: number): ImageData =>
-          ({
-            data: new Uint8ClampedArray(width * height * 4),
-            width,
-            height,
-            colorSpace: 'srgb',
-          }) as ImageData,
-      ),
+      createImageData: vi.fn((width: number, height: number): ImageData => ({
+        data: new Uint8ClampedArray(width * height * 4),
+        width,
+        height,
+        colorSpace: 'srgb',
+      })),
       putImageData: vi.fn((imageData: ImageData) => {
         serializedPixels.push(Uint8ClampedArray.from(imageData.data));
       }),
@@ -311,7 +308,7 @@ describe('TechnologyIconContrastService', () => {
 
   it('requests anonymous CORS, evaluates both surfaces, and applies CLAHE only to luminance', async () => {
     const fake = createFakeOpenCv({ enhanceLuminance: () => 255 });
-    const loader = vi.fn(async () => ({ default: fake.cv }));
+    const loader = vi.fn(() => Promise.resolve({ default: fake.cv }));
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const service = createService(loader);
 
@@ -347,8 +344,12 @@ describe('TechnologyIconContrastService', () => {
       },
       backgroundColor: '#0d1b2d',
     });
-    expect([...serializedPixels.at(-1)!.slice(0, 4)]).toEqual([255, 128, 128, 255]);
-    expect([...serializedPixels.at(-1)!.slice(4, 8)]).toEqual([13, 27, 45, 255]);
+    const lastSerialized = serializedPixels.at(-1);
+    expect(lastSerialized).toBeDefined();
+    if (lastSerialized) {
+      expect([...lastSerialized.slice(0, 4)]).toEqual([255, 128, 128, 255]);
+      expect([...lastSerialized.slice(4, 8)]).toEqual([13, 27, 45, 255]);
+    }
     expect(fake.allocations.every((allocation) => allocation.delete.mock.calls.length === 1)).toBe(
       true,
     );
@@ -361,13 +362,13 @@ describe('TechnologyIconContrastService', () => {
     sourcePixels = createSourcePixels([0, 0, 0, 0]);
     const fake = createFakeOpenCv();
     const attemptTimes: number[] = [];
-    const loader = vi.fn(async (_sourceUrl: string) => {
+    const loader = vi.fn<TechnologyIconOpenCvLoader>(() => {
       attemptTimes.push(Date.now());
       const attempt = attemptTimes.length;
       if (attempt === 1 || attempt === 3) {
-        throw new Error(`Synthetic CDN failure ${attempt}`);
+        throw new Error(`Synthetic CDN failure ${String(attempt)}`);
       }
-      return attempt === 2 ? undefined : { default: fake.cv };
+      return Promise.resolve(attempt === 2 ? undefined : { default: fake.cv });
     });
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const service = createService(loader);
@@ -398,8 +399,8 @@ describe('TechnologyIconContrastService', () => {
 
   it('shares exhausted retries and warns once across concurrent and later icons', async () => {
     vi.useFakeTimers();
-    const loader = vi.fn(async (_sourceUrl: string) => {
-      throw new Error('Synthetic persistent CDN failure');
+    const loader = vi.fn<TechnologyIconOpenCvLoader>(() => {
+      return Promise.reject(new Error('Synthetic persistent CDN failure'));
     });
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const service = createService(loader);
@@ -443,7 +444,7 @@ describe('TechnologyIconContrastService', () => {
 
   it('does not load or warn outside the browser', async () => {
     const fake = createFakeOpenCv();
-    const loader = vi.fn(async () => ({ default: fake.cv }));
+    const loader = vi.fn(() => Promise.resolve({ default: fake.cv }));
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const service = createService(loader, 'server');
 
@@ -464,7 +465,7 @@ describe('TechnologyIconContrastService', () => {
     async (_label, exportValue) => {
       sourcePixels = createSourcePixels([0, 0, 0, 0]);
       const fake = createFakeOpenCv();
-      const loader = vi.fn(async () => exportValue(fake.cv));
+      const loader = vi.fn(() => Promise.resolve(exportValue(fake.cv)));
       const service = createService(loader);
 
       const first = service.optimize(ICON);
@@ -484,12 +485,14 @@ describe('TechnologyIconContrastService', () => {
       Mat: undefined as unknown,
       onRuntimeInitialized: undefined as (() => void) | undefined,
     };
-    const loader = vi.fn(async () => ({ default: delayedRuntime }));
+    const loader = vi.fn(() => Promise.resolve({ default: delayedRuntime }));
     const service = createService(loader);
 
     const pending = service.optimize(ICON);
     runIdleTasks();
-    await vi.waitFor(() => expect(typeof delayedRuntime.onRuntimeInitialized).toBe('function'));
+    await vi.waitFor(() => {
+      expect(typeof delayedRuntime.onRuntimeInitialized).toBe('function');
+    });
     expect(imageLoadCount).toBe(0);
 
     delayedRuntime.Mat = fake.cv.Mat;
@@ -502,7 +505,7 @@ describe('TechnologyIconContrastService', () => {
   it('uses the original candidate unless CLAHE strictly improves its measured contrast', async () => {
     sourcePixels = createSourcePixels([0, 0, 0, 255]);
     const fake = createFakeOpenCv({ enhanceLuminance: () => 255 });
-    const service = createService(vi.fn(async () => ({ default: fake.cv })));
+    const service = createService(vi.fn(() => Promise.resolve({ default: fake.cv })));
 
     const pending = service.optimize(ICON);
     runIdleTasks();
@@ -510,7 +513,11 @@ describe('TechnologyIconContrastService', () => {
 
     // Black on white remains stronger than the fake red luminance adjustment.
     expect(presentation.backgroundColor).toBe('#ffffff');
-    expect([...serializedPixels.at(-1)!.slice(0, 4)]).toEqual([0, 0, 0, 255]);
+    const lastPixels = serializedPixels.at(-1);
+    expect(lastPixels).toBeDefined();
+    if (lastPixels) {
+      expect([...lastPixels.slice(0, 4)]).toEqual([0, 0, 0, 255]);
+    }
     expect(fake.claheCalls).toHaveLength(2);
   });
 
@@ -518,7 +525,7 @@ describe('TechnologyIconContrastService', () => {
     vi.stubGlobal('requestIdleCallback', undefined);
     sourcePixels = createSourcePixels([0, 0, 0, 0]);
     const fake = createFakeOpenCv();
-    const loader = vi.fn(async () => ({ default: fake.cv }));
+    const loader = vi.fn(() => Promise.resolve({ default: fake.cv }));
     const service = createService(loader);
 
     const pending = service.optimize(ICON);
@@ -531,7 +538,7 @@ describe('TechnologyIconContrastService', () => {
   it('selects the light surface for an exact score tie', async () => {
     sourcePixels = createSourcePixels([91, 72, 53, 0]);
     const fake = createFakeOpenCv({ enhanceLuminance: () => 0 });
-    const service = createService(vi.fn(async () => ({ default: fake.cv })));
+    const service = createService(vi.fn(() => Promise.resolve({ default: fake.cv })));
 
     const pending = service.optimize(ICON);
     runIdleTasks();
@@ -539,13 +546,17 @@ describe('TechnologyIconContrastService', () => {
 
     expect(presentation.backgroundColor).toBe('#ffffff');
     expect(presentation.logo.surface).toBe('light');
-    expect([...serializedPixels.at(-1)!.slice(0, 4)]).toEqual([255, 255, 255, 255]);
+    const lastTiePixels = serializedPixels.at(-1);
+    expect(lastTiePixels).toBeDefined();
+    if (lastTiePixels) {
+      expect([...lastTiePixels.slice(0, 4)]).toEqual([255, 255, 255, 255]);
+    }
   });
 
   it('deduplicates identical work by source and intrinsic dimensions', async () => {
     sourcePixels = createSourcePixels([0, 0, 0, 0]);
     const fake = createFakeOpenCv();
-    const loader = vi.fn(async () => ({ default: fake.cv }));
+    const loader = vi.fn(() => Promise.resolve({ default: fake.cv }));
     const service = createService(loader);
 
     const first = service.optimize(ICON);
@@ -567,7 +578,7 @@ describe('TechnologyIconContrastService', () => {
     'resolves to the original light presentation after a %s failure',
     async (failure) => {
       const fake = createFakeOpenCv();
-      const loader = vi.fn(async () => ({ default: fake.cv }));
+      const loader = vi.fn(() => Promise.resolve({ default: fake.cv }));
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       failImageLoading = failure === 'image';
       canvasAvailable = failure !== 'canvas';
@@ -591,7 +602,7 @@ describe('TechnologyIconContrastService', () => {
 
   it('cleans up every OpenCV allocation when processing throws', async () => {
     const fake = createFakeOpenCv({ failDuringClahe: true });
-    const loader = vi.fn(async () => ({ default: fake.cv }));
+    const loader = vi.fn(() => Promise.resolve({ default: fake.cv }));
     const service = createService(loader);
 
     const pending = service.optimize(ICON);

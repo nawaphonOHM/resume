@@ -45,7 +45,9 @@ export const waitForRuntimeInitialization = new InjectionToken<
 
           // Watchdog timer: reject if Emscripten fails to initialize within timeout window
           const timer = setTimeout(() => {
-            finish(() => reject(new Error('OpenCV runtime initialization timed out')));
+            finish(() => {
+              reject(new Error('OpenCV runtime initialization timed out'));
+            });
           }, timeoutMilliseconds);
 
           // Atomic settlement latch: ensures timer cleanup and single resolution
@@ -64,7 +66,10 @@ export const waitForRuntimeInitialization = new InjectionToken<
               previousInitialized?.call(candidate);
               finish(resolve);
             } catch (error) {
-              finish(() => reject(error));
+              const rejectionError = error instanceof Error ? error : new Error(String(error));
+              finish(() => {
+                reject(rejectionError);
+              });
             }
           };
 
@@ -73,7 +78,9 @@ export const waitForRuntimeInitialization = new InjectionToken<
             try {
               previousAbort?.call(candidate, reason);
             } finally {
-              finish(() => reject(new Error('OpenCV runtime initialization aborted')));
+              finish(() => {
+                reject(new Error('OpenCV runtime initialization aborted'));
+              });
             }
           };
 

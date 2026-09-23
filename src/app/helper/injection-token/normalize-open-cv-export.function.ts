@@ -65,7 +65,7 @@ export const normalizeOpenCvExport = new InjectionToken<
         }
 
         // Step 4: Await the asynchronous WebAssembly compilation and runtime initialization hook
-        await waitForRuntimeInitialization(candidate as InitializingOpenCvExport);
+        await waitForRuntimeInitialization(candidate);
 
         // Step 5: Final integrity check ensuring OpenCV C++ bindings (cv.Mat) are exposed
         if (!isOpenCvRuntime(candidate)) {

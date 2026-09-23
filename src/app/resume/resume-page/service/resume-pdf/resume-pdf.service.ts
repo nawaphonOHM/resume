@@ -121,12 +121,12 @@ export class ResumePdfService {
               }
             } catch (error: unknown) {
               isRejected = true;
-              reject(error);
+              reject(error instanceof Error ? error : (error as Error));
             }
           },
           error: (error: unknown) => {
             isRejected = true;
-            reject(error);
+            reject(error instanceof Error ? error : (error as Error));
           },
           complete: () => {
             if (!isRejected) {

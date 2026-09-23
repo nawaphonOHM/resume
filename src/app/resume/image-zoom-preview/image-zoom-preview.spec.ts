@@ -35,15 +35,22 @@ describe('ImageZoomPreview', () => {
     const host = fixture.nativeElement as HTMLElement;
     const panel = host.querySelector<HTMLElement>('.image-zoom-preview');
     const image = host.querySelector<HTMLImageElement>('img');
-    const imageStyle = getComputedStyle(image!);
+
+    expect(panel).not.toBeNull();
+    expect(image).not.toBeNull();
+    if (!panel || !image) {
+      throw new Error('Required preview elements were not found');
+    }
+
+    const imageStyle = getComputedStyle(image);
 
     expect(host.getAttribute('aria-hidden')).toBe('true');
     expect(host.getAttribute('tabindex')).toBeNull();
-    expect(panel?.classList.contains(`image-zoom-preview--${surface}`)).toBe(true);
-    expect(panel?.getAttribute('data-image-zoom-surface')).toBe(surface);
-    expect(panel?.style.getPropertyValue('--image-zoom-intrinsic-width')).toBe('640px');
-    expect(panel?.style.getPropertyValue('--image-zoom-intrinsic-height')).toBe('320px');
-    expect(getComputedStyle(panel!).backgroundColor).toBe(expectedSurface);
+    expect(panel.classList.contains(`image-zoom-preview--${surface}`)).toBe(true);
+    expect(panel.getAttribute('data-image-zoom-surface')).toBe(surface);
+    expect(panel.style.getPropertyValue('--image-zoom-intrinsic-width')).toBe('640px');
+    expect(panel.style.getPropertyValue('--image-zoom-intrinsic-height')).toBe('320px');
+    expect(getComputedStyle(panel).backgroundColor).toBe(expectedSurface);
     expect(imageStyle.contain).toBe('size');
     expect(imageStyle.getPropertyValue('contain-intrinsic-size')).toBe(
       'var(--image-zoom-intrinsic-width) var(--image-zoom-intrinsic-height)',
@@ -57,11 +64,11 @@ describe('ImageZoomPreview', () => {
       'var(--image-zoom-image-max-height, min(20vh, 100vh - 3.5rem))',
     );
     expect(imageStyle.objectFit).toBe('contain');
-    expect(image?.getAttribute('src')).toBe(logo.src);
-    expect(image?.getAttribute('width')).toBe('640');
-    expect(image?.getAttribute('height')).toBe('320');
-    expect(image?.getAttribute('alt')).toBe(data.label);
-    expect(image?.getAttribute('draggable')).toBe('false');
+    expect(image.getAttribute('src')).toBe(logo.src);
+    expect(image.getAttribute('width')).toBe('640');
+    expect(image.getAttribute('height')).toBe('320');
+    expect(image.getAttribute('alt')).toBe(data.label);
+    expect(image.getAttribute('draggable')).toBe('false');
     expect(host.querySelectorAll('a, button, input, [tabindex]')).toHaveLength(0);
   });
 

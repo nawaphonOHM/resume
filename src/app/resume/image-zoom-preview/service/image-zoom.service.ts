@@ -52,7 +52,9 @@ export class ImageZoomService {
 
   /** Ensures an attached overlay and all tracking resources are released with the service. */
   constructor() {
-    this.destroyRef.onDestroy(() => this.close());
+    this.destroyRef.onDestroy(() => {
+      this.close();
+    });
   }
 
   /**
@@ -91,8 +93,8 @@ export class ImageZoomService {
               'image-zoom-preview-overlay-pane--pointer-transparent',
             ]
           : ['image-zoom-preview-overlay-pane'],
-      maxWidth: `calc(100vw - ${this.viewportMargin * 2}px)`,
-      maxHeight: `calc(100vh - ${this.viewportMargin * 2}px)`,
+      maxWidth: `calc(100vw - ${String(this.viewportMargin * 2)}px)`,
+      maxHeight: `calc(100vh - ${String(this.viewportMargin * 2)}px)`,
       disposeOnNavigation: true,
     });
     const subscriptions = new Subscription();
@@ -117,7 +119,9 @@ export class ImageZoomService {
       }),
     );
     subscriptions.add(
-      overlayRef.detachments().subscribe(() => this.handleExternalDisposal(overlayRef)),
+      overlayRef.detachments().subscribe(() => {
+        this.handleExternalDisposal(overlayRef);
+      }),
     );
 
     try {
@@ -257,12 +261,12 @@ export class ImageZoomService {
     );
     const pane = overlayRef.overlayElement;
 
-    pane.style.maxWidth = `${maxWidth}px`;
-    pane.style.maxHeight = `${maxHeight}px`;
-    pane.style.setProperty('--image-zoom-preview-viewport-max-width', `${maxWidth}px`);
-    pane.style.setProperty('--image-zoom-preview-viewport-max-height', `${maxHeight}px`);
-    pane.style.setProperty('--image-zoom-preview-image-max-width', `${imageMaxWidth}px`);
-    pane.style.setProperty('--image-zoom-preview-image-max-height', `${imageMaxHeight}px`);
+    pane.style.maxWidth = `${String(maxWidth)}px`;
+    pane.style.maxHeight = `${String(maxHeight)}px`;
+    pane.style.setProperty('--image-zoom-preview-viewport-max-width', `${String(maxWidth)}px`);
+    pane.style.setProperty('--image-zoom-preview-viewport-max-height', `${String(maxHeight)}px`);
+    pane.style.setProperty('--image-zoom-preview-image-max-width', `${String(imageMaxWidth)}px`);
+    pane.style.setProperty('--image-zoom-preview-image-max-height', `${String(imageMaxHeight)}px`);
   }
 
   /**
@@ -327,8 +331,8 @@ export class ImageZoomService {
     // origin-gap transforms, which desync style.left from getBoundingClientRect().
     pane.style.inset = 'auto';
     pane.style.transform = 'none';
-    pane.style.left = `${nextLeft}px`;
-    pane.style.top = `${nextTop}px`;
+    pane.style.left = `${String(nextLeft)}px`;
+    pane.style.top = `${String(nextTop)}px`;
     pane.style.right = 'auto';
     pane.style.bottom = 'auto';
   }
@@ -361,7 +365,9 @@ export class ImageZoomService {
     }
 
     // Keep bounds correct if the preview box changes after image decode/layout.
-    this.paneResizeObserver = new ResizeObserverConstructor(() => syncPosition());
+    this.paneResizeObserver = new ResizeObserverConstructor(() => {
+      syncPosition();
+    });
     this.paneResizeObserver.observe(overlayRef.overlayElement);
   }
 
