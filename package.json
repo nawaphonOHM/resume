@@ -1,6 +1,6 @@
 {
   "name": "resume",
-  "version": "4.4.6",
+  "version": "4.4.7",
   "type": "module",
   "scripts": {
     "ng": "ng",
@@ -45,7 +45,7 @@
     "vitest": "^4.1.11"
   },
   "engines": {
-    "node": "22.23.1",
+    "node": "22.x",
     "npm": "10.9.8"
   }
 }
