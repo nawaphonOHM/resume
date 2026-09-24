@@ -33,4 +33,4 @@ updates:
           - 'patch'
           - 'minor'
           - 'major'
-    versioning-strategy: auto
+    versioning-strategy: increase
