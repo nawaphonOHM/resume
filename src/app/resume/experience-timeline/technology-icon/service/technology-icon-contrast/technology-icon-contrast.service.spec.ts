@@ -357,7 +357,7 @@ describe('TechnologyIconContrastService', () => {
   });
 
   it('retries loading and normalization at fixed one-second intervals before recovering', async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ toNotFake: ['requestIdleCallback', 'cancelIdleCallback'] });
     vi.setSystemTime(0);
     sourcePixels = createSourcePixels([0, 0, 0, 0]);
     const fake = createFakeOpenCv();
@@ -398,7 +398,7 @@ describe('TechnologyIconContrastService', () => {
   });
 
   it('shares exhausted retries and warns once across concurrent and later icons', async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ toNotFake: ['requestIdleCallback', 'cancelIdleCallback'] });
     const loader = vi.fn<TechnologyIconOpenCvLoader>(() => {
       return Promise.reject(new Error('Synthetic persistent CDN failure'));
     });
