@@ -2,10 +2,10 @@
 <br><br><br>
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![Dependabot Updates](https://github.com/nawaphonOHM/resume/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/nawaphonOHM/resume/actions/workflows/dependabot/dependabot-updates)
-[![Angular](https://img.shields.io/badge/Angular-22.1-DD0031.svg?style=flat-square&logo=angular&logoColor=white)](https://angular.dev/)
+[![Angular](https://img.shields.io/badge/Angular-22.2-DD0031.svg?style=flat-square&logo=angular&logoColor=white)](https://angular.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6.svg?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.3-06B6D4.svg?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![Vitest](https://img.shields.io/badge/Vitest-4.1-6E9F18.svg?style=flat-square&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-5.0-6E9F18.svg?style=flat-square&logo=vitest&logoColor=white)](https://vitest.dev/)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D22.22.3-339933.svg?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
 
 ## Key Features
@@ -21,22 +21,27 @@
 
 ## Technology Stack
 
-| Category                 | Technology / Package                                                                    | Version      | Purpose / Architectural Role                                                       |
-| :----------------------- | :-------------------------------------------------------------------------------------- | :----------- | :--------------------------------------------------------------------------------- |
-| **Core Framework**       | [Angular](https://angular.dev/) (`@angular/core`)                                       | `^22.1.6`    | Reactive web application framework with Signals & standalone components            |
-| **UI Components**        | [Angular Material](https://material.angular.io/) (`@angular/material`)                  | `^22.1.6`    | Material 3 UI component system (buttons, navigation, progress spinners)            |
-| **Component CDK**        | [Angular CDK](https://material.angular.io/cdk/categories) (`@angular/cdk`)              | `^22.1.6`    | Overlay popovers, accessibility primitives, and layout utilities                   |
-| **Styling Engine**       | [Tailwind CSS](https://tailwindcss.com/) (`tailwindcss`, `@tailwindcss/postcss`)        | `^4.3.3`     | Utility-first CSS v4 engine with `@theme inline` and custom properties             |
-| **Programming Language** | [TypeScript](https://www.typescriptlang.org/) (`typescript`)                            | `~6.0.2`     | Strongly-typed JavaScript with strict type checking and modern ECMAScript features |
-| **Build & Dev Tooling**  | [Angular CLI & Build](https://angular.dev/tools/cli) (`@angular/build`, `@angular/cli`) | `^22.1.8`    | Application bundler and Vite/esbuild development server                            |
-| **Unit Testing**         | [Vitest](https://vitest.dev/) (`vitest`, `@angular/build:unit-test`, `jsdom`)           | `^4.1.11`    | High-performance unit test runner executing in simulated DOM environment           |
-| **Reactive Streams**     | [RxJS](https://rxjs.dev/) (`rxjs`)                                                      | `~7.8.0`     | Asynchronous event streams, HTTP progress event observation, and timers            |
-| **Code Formatting**      | [Prettier](https://prettier.io/) (`prettier`)                                           | `^3.8.1`     | Multi-language code formatter for TypeScript, HTML, SCSS, JSON, and Markdown       |
-| **Dependency Analysis**  | [Skott](https://github.com/antoine-coulon/skott) (`skott`)                              | `^0.35.11`   | Architectural dependency graph visualization and cycle detection                   |
-| **Computer Vision**      | [OpenCV.js](https://docs.opencv.org/) (`@techstark/opencv-js` via CDN)                  | jsDelivr ESM | Client-side WebAssembly CLAHE contrast enhancement pipeline                        |
-| **Iconography**          | [Google Material Icons](https://fonts.google.com/icons) (`material-icons`)              | `^1.13.14`   | Material design system icon font                                                   |
-| **Runtime Environment**  | [Node.js](https://nodejs.org/)                                                          | `>=22.22.3`  | JavaScript runtime environment (compatible with Node.js 22 LTS and Node.js 24)     |
-| **Package Manager**      | [npm](https://www.npmjs.com/)                                                           | `10.9.8`     | Project package manager and script execution engine                                |
+| Category                      | Technology / Package                                                                            | Version              | Purpose / Architectural Role                                                       |
+| :---------------------------- | :---------------------------------------------------------------------------------------------- | :------------------- | :--------------------------------------------------------------------------------- |
+| **Core Framework**            | [Angular](https://angular.dev/) (`@angular/core`)                                               | `^22.2.0`            | Reactive web application framework with Signals & standalone components            |
+| **UI Components**             | [Angular Material](https://material.angular.io/) (`@angular/material`)                          | `^22.2.0`            | Material 3 UI component system (buttons, navigation, progress spinners)            |
+| **Component CDK**             | [Angular CDK](https://material.angular.io/cdk/categories) (`@angular/cdk`)                      | `^22.2.0`            | Overlay popovers, accessibility primitives, and layout utilities                   |
+| **Styling Engine**            | [Tailwind CSS](https://tailwindcss.com/) (`tailwindcss`, `@tailwindcss/postcss`)                | `^4.3.3`             | Utility-first CSS v4 engine with `@theme inline` and custom properties             |
+| **Programming Language**      | [TypeScript](https://www.typescriptlang.org/) (`typescript`)                                    | `~6.0.2`             | Strongly-typed JavaScript with strict type checking and modern ECMAScript features |
+| **Build & Dev Tooling**       | [Angular CLI & Build](https://angular.dev/tools/cli) (`@angular/build`, `@angular/cli`)         | `^22.2.0`            | Application bundler and Vite/esbuild development server                            |
+| **Unit Testing**              | [Vitest](https://vitest.dev/) (`vitest`, `@angular/build:unit-test`, `jsdom`)                   | `^5.0.2`             | High-performance unit test runner executing in simulated DOM environment           |
+| **Reactive Streams**          | [RxJS](https://rxjs.dev/) (`rxjs`)                                                              | `~7.8.0`             | Asynchronous event streams, HTTP progress event observation, and timers            |
+| **Code Formatting**           | [Prettier](https://prettier.io/) (`prettier`)                                                   | `^3.9.9`             | Multi-language code formatter for TypeScript, HTML, SCSS, JSON, and Markdown       |
+| **Dependency Analysis**       | [Skott](https://github.com/antoine-coulon/skott) (`skott`)                                      | `^0.35.12`           | Architectural dependency graph visualization and cycle detection                   |
+| **Linting & Static Analysis** | [Angular ESLint](https://github.com/angular-eslint/angular-eslint) (`angular-eslint`)           | `22.5.0`             | Angular-aware linting rules for TypeScript and templates                           |
+| **Linting & Static Analysis** | [ESLint](https://eslint.org/) (`eslint`)                                                        | `^10.9.1`            | Core JavaScript and TypeScript linting engine                                      |
+| **Linting & Static Analysis** | [TypeScript ESLint](https://typescript-eslint.io/) (`typescript-eslint`)                        | `8.70.0`             | TypeScript-aware parser and type-checked linting configurations                    |
+| **Linting & Static Analysis** | [ESLint JavaScript](https://github.com/eslint/eslint) (`@eslint/js`)                            | `^10.0.1`            | Recommended baseline ESLint JavaScript configurations                              |
+| **Computer Vision**           | [OpenCV.js](https://docs.opencv.org/) (`@techstark/opencv-js` via CDN)                          | jsDelivr ESM         | Client-side WebAssembly CLAHE contrast enhancement pipeline                        |
+| **Iconography**               | [Google Material Icons](https://fonts.google.com/icons) (`material-icons`)                      | `^1.13.14`           | Material design system icon font                                                   |
+| **Runtime Environment**       | [Node.js](https://nodejs.org/)                                                                  | `>=22.22.3`          | JavaScript runtime environment (compatible with Node.js 22 LTS and Node.js 24)     |
+| **Package Manager**           | [npm](https://www.npmjs.com/)                                                                   | `10.9.8`             | Project package manager and script execution engine                                |
+| **Hosting & Deployment**      | [Firebase Hosting](https://firebase.google.com/docs/hosting) (`firebase-tools`, GitHub Actions) | CLI / GitHub Actions | Static SPA hosting, preview channels, and automated deployments                    |
 
 ## Requirements & Prerequisites
 
@@ -524,11 +529,12 @@ The portfolio is engineered to meet strict accessibility standards:
 resume/
 ├── .github/                      # GitHub Actions workflows & repository configuration
 │   ├── workflows/
-│   │   ├── junie-tag.yml         # Automated semantic release & tagging workflow
-│   │   └── node.js.yml           # CI validation pipeline (build, test, format check)
+│   │   ├── firebase-hosting-merge.yml        # CI validation & live Firebase Hosting deployment on merge
+│   │   ├── firebase-hosting-pull-request.yml  # CI validation & PR preview channel deployment
+│   │   └── junie-tag.yml                     # Automated Junie AI agent interaction workflow
 │   ├── CODEOWNERS
 │   └── dependabot.yml            # Automated dependency update configuration
-├── public/                       # Reserved static-assets directory (currently empty; runtime assets use the CDN)
+├── public/                       # Reserved static-assets directory
 ├── scripts/
 │   └── test-runner.mjs           # Vitest execution runner with timeout & diagnostics
 ├── src/
@@ -639,11 +645,20 @@ resume/
 │   │   ├── app.scss              # Root shell layout styles
 │   │   ├── app.spec.ts
 │   │   └── app.ts                # Root AppComponent
+│   ├── test-setup.ts             # CI environment detection & headless IntersectionObserver mock
+│   ├── test-setup.spec.ts        # Test setup verification suite
 │   ├── index.html                # HTML entry point with pre-bootstrap splash loader
 │   ├── main.ts                   # Angular application bootstrap entry point
 │   ├── material-theme.scss       # Angular Material 3 global theme & typography
 │   └── styles.scss               # Global design tokens, Tailwind v4, A4 print, a11y
+├── .editorconfig
+├── .firebaserc                   # Firebase project target configuration
+├── .postcssrc.json
+├── .prettierignore
+├── .prettierrc
 ├── angular.json                  # Angular CLI workspace & target configuration
+├── eslint.config.js              # Flat ESLint configuration with Angular-ESLint & TypeScript-ESLint
+├── firebase.json                 # Firebase Hosting configuration & SPA rewrite rules
 ├── package.json                  # Project metadata, dependencies, and npm scripts
 ├── tsconfig.app.json             # TypeScript compiler configuration for application
 ├── tsconfig.json                 # Base TypeScript compiler options
@@ -681,24 +696,37 @@ All publishable résumé facts live in `src/app/helper/injection-token/resume.da
 
 All primary development workflows, validation tasks, and build commands are managed through scripts defined in `package.json`:
 
-| Command                        | Script / Invocation                            | Description                                                                              |
-| :----------------------------- | :--------------------------------------------- | :--------------------------------------------------------------------------------------- |
-| `npm start`                    | `ng serve`                                     | Launch the local Angular development server on `http://localhost:4200` with live reload. |
-| `npm run build`                | `ng build --configuration production`          | Compile the static production deployment bundle to `dist/resume/browser/`.               |
-| `npm run watch`                | `ng build --watch --configuration development` | Continuously compile development artifacts as project files change.                      |
-| `npm test`                     | `ng test --watch=false`                        | Execute the full Vitest unit test suite once in non-watching mode.                       |
-| `npm run format`               | `prettier --write .`                           | Automatically format all TypeScript, HTML, SCSS, JSON, and Markdown files.               |
-| `npm run format:check`         | `prettier --check .`                           | Verify repository code formatting compliance against Prettier rules.                     |
-| `npm run ng -- <args>`         | `ng <args>`                                    | Execute raw Angular CLI commands directly (e.g., `npm run ng -- version`).               |
-| `node scripts/test-runner.mjs` | `scripts/test-runner.mjs`                      | Run unit tests with process timeout enforcement and structured failure diagnostics.      |
+| Command                        | Script / Invocation                                | Description                                                                              |
+| :----------------------------- | :------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+| `npm start`                    | `ng serve`                                         | Launch the local Angular development server on `http://localhost:4200` with live reload. |
+| `npm run build`                | `ng build --configuration production`              | Compile the static production deployment bundle to `dist/resume/browser/`.               |
+| `npm run test:ci`              | `ng test --watch=false`                            | Execute the full Vitest unit test suite once in headless non-watching mode.              |
+| `npm run test:not-ci`          | `ng test --watch=true --configuration development` | Run Vitest unit tests in continuous watch mode with development configuration.           |
+| `npm run check-format`         | `prettier --check .`                               | Verify repository code formatting compliance against Prettier rules.                     |
+| `npm run formatting`           | `prettier --write .`                               | Automatically format all TypeScript, HTML, SCSS, JSON, and Markdown files.               |
+| `npm run lint`                 | `ng lint`                                          | Lint all TypeScript and HTML template files via `angular-eslint` and `eslint`.           |
+| `npm run deploy`               | `ng build && firebase deploy --only hosting`       | Build production bundle and deploy to live Firebase Hosting channel.                     |
+| `npm run preview`              | `firebase hosting:channel:deploy`                  | Deploy a preview channel build to Firebase Hosting.                                      |
+| `npm run serve:firebase`       | `firebase emulators:start --only hosting`          | Serve local static build via Firebase Hosting emulator.                                  |
+| `npm run ng -- <args>`         | `ng <args>`                                        | Execute raw Angular CLI commands directly.                                               |
+| `node scripts/test-runner.mjs` | `scripts/test-runner.mjs`                          | Run unit tests with process timeout enforcement and structured failure diagnostics.      |
 
 ### Code Quality & Static Type Checking
 
-This repository enforces code hygiene, architectural integrity, and runtime correctness through strict TypeScript compiler options and automated Prettier formatting rather than a standalone ESLint configuration:
+This repository enforces code hygiene, architectural integrity, and runtime correctness through strict TypeScript compiler options, automated Prettier formatting, and a robust ESLint configuration (`eslint.config.js`):
+
+- **Flat ESLint Configuration (`eslint.config.js`)**:
+  - `languageOptions.parserOptions.projectService: true` for type-checked linting.
+  - `eslint.configs.recommended`, `tseslint.configs.strictTypeChecked`, and `tseslint.configs.stylisticTypeChecked`.
+  - `angular.configs.tsRecommended` for TypeScript files and `angular.processInlineTemplates` processor.
+  - `angular.configs.templateRecommended` and `angular.configs.templateAccessibility` for HTML template files.
+  - Custom selector rules: `@angular-eslint/directive-selector` (camelCase with `app` prefix) and `@angular-eslint/component-selector` (kebab-case with `app` prefix).
+- **TypeScript Strictness**: `tsconfig.json` compiler options.
+- **Automated Formatting**: Prettier configuration.
 
 - **Strict TypeScript Compiler Settings**: `tsconfig.json` enables `noImplicitOverride: true`, `noPropertyAccessFromIndexSignature: true`, `noImplicitReturns: true`, `noFallthroughCasesInSwitch: true`, `isolatedModules: true`, and `verbatimModuleSyntax: true`.
 - **Angular Template Strictness**: Angular compiler options enforce `strictInjectionParameters: true` and `strictInputAccessModifiers: true`.
-- **Formatting Enforcement**: Prettier guarantees uniform code styling across all TypeScript, HTML, SCSS, JSON, and Markdown files (`npm run format:check` in CI).
+- **Formatting Enforcement**: Prettier guarantees uniform code styling across all TypeScript, HTML, SCSS, JSON, and Markdown files (`npm run check-format` in CI).
 
 ---
 
@@ -710,7 +738,10 @@ The project uses [Vitest](https://vitest.dev/) via `@angular/build:unit-test` an
 
 ```bash
 # Execute the full unit test suite once in non-watching mode
-npm test
+npm run test:ci
+
+# Run tests in continuous watch mode
+npm run test:not-ci
 
 # Run tests via the custom diagnostic wrapper with timeout guard
 node scripts/test-runner.mjs
@@ -735,10 +766,11 @@ The `scripts/test-runner.mjs` script acts as a resilient process supervisor and 
 
 ### Test Suite Structure & Coverage Map
 
-The test suite contains **16 test suites** and **200+ unit tests** validating key architectural invariants:
+The test suite contains **17 test suites** and **200+ unit tests** validating key architectural invariants:
 
 | Test Suite File                                                                                                                | Scope & Invariants Verified                                                                                                                                                                                                                                       |
 | :----------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/test-setup.spec.ts`                                                                                                       | Verifies CI environment detection via `isCiEnvironment()` and headless `MockIntersectionObserver` DOM mock lifecycle.                                                                                                                                             |
 | `src/app/app.spec.ts`                                                                                                          | Root component instantiation, document title setting, and splash screen lifecycle.                                                                                                                                                                                |
 | `src/app/app.routes.spec.ts`                                                                                                   | Route table configuration, lazy-loading resolution for `ResumePageComponent`, and wildcard redirect handling.                                                                                                                                                     |
 | `src/app/helper/core/favicon.service.spec.ts`                                                                                  | Dynamic SVG favicon element selection, creation, and reactive URL synchronization.                                                                                                                                                                                |
@@ -863,15 +895,42 @@ Inline comments explicitly mark privacy constraints (such as redacting candidate
 
 ## Production Build & Static Deployment
 
+The project is configured for seamless deployment to **Firebase Hosting**, leveraging automated GitHub Actions workflows for both live production updates and ephemeral preview channels for pull requests.
+
+### 1. Firebase Hosting Configuration (`firebase.json`)
+
+The `firebase.json` configuration ensures that the Single Page Application (SPA) correctly handles client-side routing by rewriting all requests to `index.html`:
+
+```json
+{
+  "hosting": {
+    "public": "dist/resume/browser",
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
+```
+
+### 2. Local Emulator
+
+To preview the production build locally exactly as it will appear in production, use the Firebase Hosting emulator:
+
 ```bash
-# Build the production-ready static bundle
-npm run build
+npm run serve:firebase
 ```
 
-The production command compiles the standalone Angular application with ahead-of-time (AOT) compilation, tree-shaking, and minification into:
+### 3. Deployment Workflow
 
-```text
-dist/resume/browser/
-```
+- **Live Deployment**: `npm run deploy` builds the application (`production` configuration) and deploys to the default Firebase project hosting channel.
+- **Preview Deployment**: `npm run preview` deploys the current build state to an ephemeral Firebase Hosting preview URL, facilitating pull request reviews.
 
-The emitted artifacts are completely static and host-neutral, optimized for CDN and static hosting platforms (e.g., Cloudflare Pages, DigitalOcean App Platform, AWS S3/CloudFront, GitHub Pages) without requiring server-side rendering, runtime APIs, or backend route rewriting.
+### 4. Continuous Integration (CI/CD)
+
+The repository automatically handles deployment via GitHub Actions:
+
+- **`firebase-hosting-merge.yml`**: Triggers on merges to `master`, running CI validation before deploying to the live site.
+- **`firebase-hosting-pull-request.yml`**: Triggers on pull requests, deploying to an ephemeral preview channel to visualize changes without affecting production.
