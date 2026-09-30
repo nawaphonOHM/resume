@@ -51,7 +51,7 @@ export class ResumeNavigation {
   /** Requests that the parent switch to the opposite theme. */
   readonly themeToggled = output();
 
-  /** Requests on-demand PDF generation without coupling navigation to the browser runtime. */
+  /** Requests on-demand PDF download without coupling navigation to the browser runtime. */
   readonly downloadRequested = output();
 
   /** Progress spinner mode based on whether determinate progress is known. */

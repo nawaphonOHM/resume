@@ -21,27 +21,27 @@
 
 ## Technology Stack
 
-| Category                      | Technology / Package                                                                            | Version              | Purpose / Architectural Role                                                       |
-| :---------------------------- | :---------------------------------------------------------------------------------------------- | :------------------- | :--------------------------------------------------------------------------------- |
-| **Core Framework**            | [Angular](https://angular.dev/) (`@angular/core`)                                               | `^22.2.0`            | Reactive web application framework with Signals & standalone components            |
-| **UI Components**             | [Angular Material](https://material.angular.io/) (`@angular/material`)                          | `^22.2.0`            | Material 3 UI component system (buttons, navigation, progress spinners)            |
-| **Component CDK**             | [Angular CDK](https://material.angular.io/cdk/categories) (`@angular/cdk`)                      | `^22.2.0`            | Overlay popovers, accessibility primitives, and layout utilities                   |
-| **Styling Engine**            | [Tailwind CSS](https://tailwindcss.com/) (`tailwindcss`, `@tailwindcss/postcss`)                | `^4.3.3`             | Utility-first CSS v4 engine with `@theme inline` and custom properties             |
-| **Programming Language**      | [TypeScript](https://www.typescriptlang.org/) (`typescript`)                                    | `~6.0.2`             | Strongly-typed JavaScript with strict type checking and modern ECMAScript features |
-| **Build & Dev Tooling**       | [Angular CLI & Build](https://angular.dev/tools/cli) (`@angular/build`, `@angular/cli`)         | `^22.2.0`            | Application bundler and Vite/esbuild development server                            |
-| **Unit Testing**              | [Vitest](https://vitest.dev/) (`vitest`, `@angular/build:unit-test`, `jsdom`)                   | `^5.0.2`             | High-performance unit test runner executing in simulated DOM environment           |
-| **Reactive Streams**          | [RxJS](https://rxjs.dev/) (`rxjs`)                                                              | `~7.8.0`             | Asynchronous event streams, HTTP progress event observation, and timers            |
-| **Code Formatting**           | [Prettier](https://prettier.io/) (`prettier`)                                                   | `^3.9.9`             | Multi-language code formatter for TypeScript, HTML, SCSS, JSON, and Markdown       |
-| **Dependency Analysis**       | [Skott](https://github.com/antoine-coulon/skott) (`skott`)                                      | `^0.35.12`           | Architectural dependency graph visualization and cycle detection                   |
-| **Linting & Static Analysis** | [Angular ESLint](https://github.com/angular-eslint/angular-eslint) (`angular-eslint`)           | `22.5.0`             | Angular-aware linting rules for TypeScript and templates                           |
-| **Linting & Static Analysis** | [ESLint](https://eslint.org/) (`eslint`)                                                        | `^10.9.1`            | Core JavaScript and TypeScript linting engine                                      |
-| **Linting & Static Analysis** | [TypeScript ESLint](https://typescript-eslint.io/) (`typescript-eslint`)                        | `8.70.0`             | TypeScript-aware parser and type-checked linting configurations                    |
-| **Linting & Static Analysis** | [ESLint JavaScript](https://github.com/eslint/eslint) (`@eslint/js`)                            | `^10.0.1`            | Recommended baseline ESLint JavaScript configurations                              |
-| **Computer Vision**           | [OpenCV.js](https://docs.opencv.org/) (`@techstark/opencv-js` via CDN)                          | jsDelivr ESM         | Client-side WebAssembly CLAHE contrast enhancement pipeline                        |
-| **Iconography**               | [Google Material Icons](https://fonts.google.com/icons) (`material-icons`)                      | `^1.13.14`           | Material design system icon font                                                   |
-| **Runtime Environment**       | [Node.js](https://nodejs.org/)                                                                  | `>=22.22.3`          | JavaScript runtime environment (compatible with Node.js 22 LTS and Node.js 24)     |
-| **Package Manager**           | [npm](https://www.npmjs.com/)                                                                   | `10.9.8`             | Project package manager and script execution engine                                |
-| **Hosting & Deployment**      | [Firebase Hosting](https://firebase.google.com/docs/hosting) (`firebase-tools`, GitHub Actions) | CLI / GitHub Actions | Static SPA hosting, preview channels, and automated deployments                    |
+| Category                      | Technology / Package                                                                            | Version                 | Purpose / Architectural Role                                                       |
+| :---------------------------- | :---------------------------------------------------------------------------------------------- | :---------------------- | :--------------------------------------------------------------------------------- |
+| **Core Framework**            | [Angular](https://angular.dev/) (`@angular/core`)                                               | `^22.2.0`               | Reactive web application framework with Signals & standalone components            |
+| **UI Components**             | [Angular Material](https://material.angular.io/) (`@angular/material`)                          | `^22.2.0`               | Material 3 UI component system (buttons, navigation, progress spinners)            |
+| **Component CDK**             | [Angular CDK](https://material.angular.io/cdk/categories) (`@angular/cdk`)                      | `^22.2.0`               | Overlay popovers, accessibility primitives, and layout utilities                   |
+| **Styling Engine**            | [Tailwind CSS](https://tailwindcss.com/) (`tailwindcss`, `@tailwindcss/postcss`)                | `^4.3.3`                | Utility-first CSS v4 engine with `@theme inline` and custom properties             |
+| **Programming Language**      | [TypeScript](https://www.typescriptlang.org/) (`typescript`)                                    | `~6.0.2`                | Strongly-typed JavaScript with strict type checking and modern ECMAScript features |
+| **Build & Dev Tooling**       | [Angular CLI & Build](https://angular.dev/tools/cli) (`@angular/build`, `@angular/cli`)         | `^22.2.0`               | Application bundler and Vite/esbuild development server                            |
+| **Unit Testing**              | [Vitest](https://vitest.dev/) (`vitest`, `@angular/build:unit-test`, `jsdom`)                   | `^5.0.2`                | High-performance unit test runner executing in simulated DOM environment           |
+| **Reactive Streams**          | [RxJS](https://rxjs.dev/) (`rxjs`)                                                              | `~7.8.0`                | Asynchronous event streams, HTTP progress event observation, and timers            |
+| **Code Formatting**           | [Prettier](https://prettier.io/) (`prettier`)                                                   | `^3.9.9`                | Multi-language code formatter for TypeScript, HTML, SCSS, JSON, and Markdown       |
+| **Dependency Analysis**       | [Skott](https://github.com/antoine-coulon/skott) (`skott`)                                      | `^0.35.12`              | Architectural dependency graph visualization and cycle detection                   |
+| **Linting & Static Analysis** | [Angular ESLint](https://github.com/angular-eslint/angular-eslint) (`angular-eslint`)           | `22.5.0`                | Angular-aware linting rules for TypeScript and templates                           |
+| **Linting & Static Analysis** | [ESLint](https://eslint.org/) (`eslint`)                                                        | `^10.9.1`               | Core JavaScript and TypeScript linting engine                                      |
+| **Linting & Static Analysis** | [TypeScript ESLint](https://typescript-eslint.io/) (`typescript-eslint`)                        | `8.70.0`                | TypeScript-aware parser and type-checked linting configurations                    |
+| **Linting & Static Analysis** | [ESLint JavaScript](https://github.com/eslint/eslint) (`@eslint/js`)                            | `^10.0.1`               | Recommended baseline ESLint JavaScript configurations                              |
+| **Computer Vision**           | [OpenCV.js](https://docs.opencv.org/4.13.0/) (`@techstark/opencv-js` via CDN)                   | `4.13.0` (jsDelivr ESM) | Client-side WebAssembly CLAHE contrast enhancement pipeline                        |
+| **Iconography**               | [Google Material Icons](https://fonts.google.com/icons) (`material-icons`)                      | `^1.13.14`              | Material design system icon font                                                   |
+| **Runtime Environment**       | [Node.js](https://nodejs.org/)                                                                  | `>=22.22.3`             | JavaScript runtime environment (compatible with Node.js 22 LTS and Node.js 24)     |
+| **Package Manager**           | [npm](https://www.npmjs.com/)                                                                   | `10.9.8`                | Project package manager and script execution engine                                |
+| **Hosting & Deployment**      | [Firebase Hosting](https://firebase.google.com/docs/hosting) (`firebase-tools`, GitHub Actions) | CLI / GitHub Actions    | Static SPA hosting, preview channels, and automated deployments                    |
 
 ## Requirements & Prerequisites
 
@@ -118,7 +118,7 @@ graph TD
 
     subgraph External["External Assets & CDN Runtimes"]
         PDF_SERVICE -.->|HEAD check & GET stream| PDF_ASSET["DigitalOcean Spaces CDN<br/>Hosted PDF Asset"]
-        CONTRAST_SERVICE -.->|lazy ESM import| OPENCV_CDN["jsDelivr CDN<br/>@techstark/opencv-js"]
+        CONTRAST_SERVICE -.->|lazy ESM import| OPENCV_CDN["jsDelivr CDN<br/>@techstark/opencv-js 4.13.0"]
         EXPERIENCE -.->|remote images| DO_SPACES["DigitalOcean Spaces CDN<br/>image assets"]
         EDUCATION -.->|remote images| DO_SPACES
         PROFILE -.->|remote images| DO_SPACES
@@ -258,7 +258,8 @@ Driven by `requestAnimationFrame` and executed after initial render (`afterNextR
 flowchart TD
     A[SVG Icon URL] --> B[requestIdleCallback Scheduling]
     B --> C[Offscreen Canvas 2D Rasterization willReadFrequently: true]
-    C --> D[Lazy Dynamic ESM Import: OpenCV.js with Exponential Backoff]
+    D["Lazy Dynamic ESM Import: OpenCV.js (OpenCvRuntime) with Exponential Backoff"]
+    C --> D
     D --> E[Alpha Compositing over Surface RGB]
     E --> F[cv.cvtColor: RGBA -> RGB -> CIE Lab]
     F --> G[cv.split: Extract L* Lightness Channel]
@@ -273,7 +274,7 @@ flowchart TD
 ```
 
 1. **Cooperative Idle Scheduling**: Defers processing via `requestIdleCallback` (`IDLE_TIMEOUT_MS = 1000ms`), preventing main-thread contention during initial page load.
-2. **Lazy ESM Import & Retry Loop**: Dynamically imports `@techstark/opencv-js` from jsDelivr CDN (`https://cdn.jsdelivr.net/npm/@techstark/opencv-js/+esm`) on demand, utilizing configured retry parameters (`OPEN_CV_RETRY_COUNT = 3`, `OPEN_CV_RETRY_DELAY_MS = 1000ms`, `OPEN_CV_RETRY_DELAY_MULTIPLIER = 1.0`, `OPEN_CV_RETRY_JITTER_MS = 0`) with cache-busting query strings (`?retry=${retry}`).
+2. **Lazy ESM Import & Runtime Initialization (`OpenCvRuntime`)**: Dynamically imports `@techstark/opencv-js` (OpenCV.js 4.13.0) from jsDelivr CDN (`https://cdn.jsdelivr.net/npm/@techstark/opencv-js/+esm`) on demand, normalizing and initializing the WebAssembly module into a strongly-typed `OpenCvRuntime` instance via `normalizeOpenCvExport` and `waitForRuntimeInitialization`, utilizing configured retry parameters (`OPEN_CV_RETRY_COUNT = 3`, `OPEN_CV_RETRY_DELAY_MS = 1000ms`, `OPEN_CV_RETRY_DELAY_MULTIPLIER = 1.0`, `OPEN_CV_RETRY_JITTER_MS = 0`) with cache-busting query strings (`?retry=${retry}`).
 3. **Canvas 2D Rasterization & Color Space Transformation**:
    - Rasterizes remote SVG icons asynchronously onto an `HTMLCanvasElement` configured with `{ willReadFrequently: true }`.
    - Converts raw 4-channel RGBA pixels $\to$ 3-channel RGB $\to$ CIE $L^{\ast}a^{\ast}b^{\ast}$ (`cv.cvtColor`), decoupling perceptual lightness ($L^{\ast}$) from chromaticity ($a^{\ast}, b^{\ast}$).
@@ -571,6 +572,7 @@ resume/
 │   │   │   │   ├── card-surface/          # Light/Dark candidate surface evaluation
 │   │   │   │   ├── disposable/            # WebAssembly resource cleanup interfaces
 │   │   │   │   ├── experience/            # Work experience & employment data models
+│   │   │   │   ├── open-cv-runtime/       # OpenCV.js WebAssembly runtime contract
 │   │   │   │   ├── resume-profile/        # Complete résumé profile data model
 │   │   │   │   └── ...
 │   │   │   └── type/             # TypeScript union types & type aliases
@@ -680,7 +682,7 @@ All static images, company logos, university emblems, dynamic status favicons, a
   - `/favicons/{available|limited|unavailable}/favicon.svg`: Dynamic UTC+7 availability status favicons.
   - `/downloadable-resume/Nawaphon_Isarathanachaikul.pdf`: Canonical downloadable curriculum vitae PDF.
 - **CORS Requirements**: The CDN bucket serves `Access-Control-Allow-Origin: *` headers, enabling unauthenticated browser `GET` requests, offscreen Canvas pixel extraction for CLAHE processing, and binary `HttpClient` progress streaming.
-- **External WebAssembly Runtime**: OpenCV.js is dynamically imported on demand from `https://cdn.jsdelivr.net/npm/@techstark/opencv-js/+esm` (jsDelivr CDN).
+- **External WebAssembly Runtime**: OpenCV.js 4.13.0 is dynamically imported on demand from `https://cdn.jsdelivr.net/npm/@techstark/opencv-js/+esm` (jsDelivr CDN) and initialized as `OpenCvRuntime`.
 
 ---
 
@@ -766,7 +768,7 @@ The `scripts/test-runner.mjs` script acts as a resilient process supervisor and 
 
 ### Test Suite Structure & Coverage Map
 
-The test suite contains **17 test suites** and **200+ unit tests** validating key architectural invariants:
+The test suite contains **18 test suites** and **230+ unit tests** validating key architectural invariants:
 
 | Test Suite File                                                                                                                | Scope & Invariants Verified                                                                                                                                                                                                                                       |
 | :----------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -776,6 +778,7 @@ The test suite contains **17 test suites** and **200+ unit tests** validating ke
 | `src/app/helper/core/favicon.service.spec.ts`                                                                                  | Dynamic SVG favicon element selection, creation, and reactive URL synchronization.                                                                                                                                                                                |
 | `src/app/helper/core/theme.service.spec.ts`                                                                                    | Theme resolution hierarchy (localStorage $\to$ media query $\to$ light default), transition classes, and persistence.                                                                                                                                             |
 | `src/app/helper/directive/image-zome/image-zoom.directive.spec.ts`                                                             | Image downscale threshold detection ($< 1 - \text{tolerance}$), mouse hover triggers, and touch tap interactions.                                                                                                                                                 |
+| `src/app/helper/injection-token/hero-code-position.function.spec.ts`                                                           | Cartesian orbit coordinates in percentage units, dynamic calendar frequency scaling, and parametric circular trajectory calculations.                                                                                                                             |
 | `src/app/helper/injection-token/status-favicon-for-status-color.function.spec.ts`                                              | Availability status color (`available`, `limited`, `unavailable`) to CDN favicon SVG URL mappings.                                                                                                                                                                |
 | `src/app/resume/experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.spec.ts` | OpenCV.js lazy loader, LAB color conversion, CLAHE tile sizing, WCAG relative luminance scoring, and WASM memory cleanup.                                                                                                                                         |
 | `src/app/resume/experience-timeline/technology-icon/technology-icon.spec.ts`                                                   | Technology icon component rendering, reactive surface contrast score binding, and fallback image states.                                                                                                                                                          |
@@ -877,7 +880,7 @@ Where external WebAssembly runtimes, DOM overlays, synthetic Blob URLs, or long-
 /**
  * @remarks
  * WebAssembly Memory Management:
- * OpenCV.js creates native C++ heap objects that are NOT garbage collected by JavaScript.
+ * OpenCV.js (OpenCvRuntime) creates native C++ heap objects that are NOT garbage collected by JavaScript.
  * All allocated `cv.Mat`, `cv.MatVector`, `cv.Size`, and `cv.CLAHE` instances must be
  * deterministically released using `.delete()` in a `finally` block or via `dispose()`.
  */

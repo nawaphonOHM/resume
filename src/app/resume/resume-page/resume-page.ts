@@ -31,7 +31,7 @@ import { SECTION_ACTIVATION_RATIO } from '../../helper/injection-token/section-a
 import type { ResumePdfConfirmDialogResult } from '../../helper/type/resume-pdf-confirm-dialog-result.type.ts';
 
 /**
- * Composes the canonical résumé and coordinates navigation, theme, and PDF generation.
+ * Composes the canonical résumé and coordinates navigation, theme, and streaming PDF download.
  *
  * @remarks
  * ### Viewport Section Spy Architecture
@@ -95,7 +95,7 @@ export default class ResumePage {
   /** Availability of the remote PDF asset for download. */
   protected readonly downloadAvailable = this.resumePdfService.isAvailable;
 
-  /** Whether one user-triggered PDF generation request is currently running. */
+  /** Whether one user-triggered PDF download request is currently running. */
   protected readonly downloadPending = signal(false);
 
   /** Current download progress percentage (0..100) or null if indeterminate/idle. */

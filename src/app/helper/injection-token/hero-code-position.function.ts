@@ -57,8 +57,8 @@ import { GCD } from './gcd.function.ts';
  *   in radians (default: $0\text{ rad}$).
  * - **$\phi_{\text{right}}$ (`HERO_CODE_PHI_RIGHT`)**: Initial phase angle offset for the right badge
  *   in radians (default: $0\text{ rad}$).
- * - **$r_{\text{left}}$ (`HERO_CODE_R_LEFT`)**: Polar orbit radius in pixels for the left badge (default: `37px`).
- * - **$r_{\text{right}}$ (`HERO_CODE_R_RIGHT`)**: Polar orbit radius in pixels for the right badge (default: `50px`).
+ * - **$r_{\text{left}}$ (`HERO_CODE_R_LEFT`)**: Polar orbit radius in percentage units for the left badge (default: `37%`).
+ * - **$r_{\text{right}}$ (`HERO_CODE_R_RIGHT`)**: Polar orbit radius in percentage units for the right badge (default: `50%`).
  *
  * @returns An injection token providing a factory function `(elapsedSeconds: number) => HeroCodeOrbitPositions`.
  */
