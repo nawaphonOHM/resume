@@ -75,7 +75,12 @@ export const calculateHeroCodePosition = new InjectionToken<
       rRight: number,
       gcd: (a: number, b: number) => number,
     ) => {
-      // Compute GCD to find the minimal coprime revolution ratio and fundamental period T
+      /**
+       * Compute GCD to find the minimal coprime revolution ratio and fundamental period T.
+       *
+       * For reducing the orbital revolution ratio `rLeft / rRight` to its lowest coprime terms,
+       * ensuring the computed combined orbital cycle period is minimal (fundamental).
+       */
       const g = gcd(rLeft, rRight);
       const period = omega > 0 && rLeft > 0 && rRight > 0 ? (2 * Math.PI * (rLeft / g)) / omega : 0;
 
