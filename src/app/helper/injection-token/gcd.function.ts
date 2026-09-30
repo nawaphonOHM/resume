@@ -1,5 +1,4 @@
-import {InjectionToken} from '@angular/core';
-
+import { InjectionToken } from '@angular/core';
 
 /**
  * Calculates the greatest common divisor (GCD) of two numbers using the Euclidean algorithm.
@@ -20,6 +19,6 @@ export const GCD = new InjectionToken<(a: number, b: number) => number>('gcd', {
         x = temp;
       }
       return x || 1;
-    }
-  }
+    };
+  },
 });

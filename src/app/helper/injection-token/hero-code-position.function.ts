@@ -1,13 +1,11 @@
-import {inject, InjectionToken} from '@angular/core';
-import type {
-  HeroCodeOrbitPositions
-} from '../interface/hero-code-orbit-positions/hero-code-orbit-positions.interface.ts';
-import {HERO_CODE_OMEGA} from './hero-code-parameters.omega.variable.ts';
-import {HERO_CODE_PHI_LEFT} from './hero-code-parameters.phi-left.variable.ts';
-import {HERO_CODE_PHI_RIGHT} from './hero-code-parameters.phi-right.variable.ts';
-import {HERO_CODE_R_LEFT} from './hero-code-parameters.radius-left.variable.ts';
-import {HERO_CODE_R_RIGHT} from './hero-code-parameters.radius-right.variable.ts';
-import {GCD} from './gcd.function.ts';
+import { inject, InjectionToken } from '@angular/core';
+import type { HeroCodeOrbitPositions } from '../interface/hero-code-orbit-positions/hero-code-orbit-positions.interface.ts';
+import { HERO_CODE_OMEGA } from './hero-code-parameters.omega.variable.ts';
+import { HERO_CODE_PHI_LEFT } from './hero-code-parameters.phi-left.variable.ts';
+import { HERO_CODE_PHI_RIGHT } from './hero-code-parameters.phi-right.variable.ts';
+import { HERO_CODE_R_LEFT } from './hero-code-parameters.radius-left.variable.ts';
+import { HERO_CODE_R_RIGHT } from './hero-code-parameters.radius-right.variable.ts';
+import { GCD } from './gcd.function.ts';
 
 /**
  * Calculates continuous two-dimensional circular orbital positions for the left and right
@@ -75,7 +73,7 @@ export const calculateHeroCodePosition = new InjectionToken<
       phiRight: number,
       rLeft: number,
       rRight: number,
-      gcd: (a: number, b: number) => number
+      gcd: (a: number, b: number) => number,
     ) => {
       // Compute GCD to find the minimal coprime revolution ratio and fundamental period T
       const g = gcd(rLeft, rRight);
