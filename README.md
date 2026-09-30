@@ -14,7 +14,7 @@
 - **Inverted Dependency Injection**: Strict decoupling of data tokens, utility functions, physical constants, and UI components via 60+ granular `InjectionToken` definitions in `src/app/helper/injection-token/`.
 - **Live UTC+7 Bangkok Clock & Dynamic Status Favicon**: Real-time availability engine that tracks working hours in Asia/Bangkok time, drives status dot harmonic luminance oscillation ($f = 0.5\text{ Hz}$), and dynamically updates the browser favicon from CDN endpoints (`/favicons/{available|limited|unavailable}/favicon.svg`).
 - **Physics-Driven Orbital Badges**: Hero section code badge kinematics computed in 60fps frame loops via time-dependent parametric trigonometry with zero default phase offsets ($x = r \cos(\omega t)$, $y = r \sin(\omega t)$) and injectable phase tokens, with starter positions seeded by current Unix epoch time in seconds (`Date.now() / 1000`), continuous animation time integration ($t = t_{\text{unixStart}} + t_{\text{elapsed}}$), and deterministic frequency derived from the calendar day of the month ($f = \text{dayOfMonth} / 3600\text{ Hz}$).
-- **Client-Side OpenCV.js CLAHE Image Enhancement**: Real-time contrast optimization for dark technology icons using WebAssembly CLAHE in CIE $L^*a^_b^_$ color space with cooperative idle scheduling (`requestIdleCallback`) and explicit C++ memory management.
+- **Client-Side OpenCV.js CLAHE Image Enhancement**: Real-time contrast optimization for dark technology icons using WebAssembly CLAHE in CIE $L^{\ast}a^{\ast}b^{\ast}$ color space with cooperative idle scheduling (`requestIdleCallback`) and explicit C++ memory management.
 - **Smart Image Zoom Previews**: Image preview overlay powered by Angular CDK Overlay with `ResizeObserver`-driven downscale detection and automatic viewport collision containment.
 - **Resilient Streaming PDF Download & Pre-Flight Verification**: User-triggered résumé PDF download featuring pre-flight remote asset availability verification (`HEAD` request), reactive availability status signaling (`isAvailable`), accessible confirmation alert dialog (`ResumePdfConfirmDialog`) for proceeding with unverified or unavailable assets, Angular `HttpClient` event streaming with real-time percentage progress tracking, and automatic object URL cleanup.
 - **Material 3 Theme System & Print Foundation**: CSS `@property` color token interpolation supporting Light, Dark, and System modes with dedicated A4 print layout stylesheets and WCAG AA accessibility compliance.
@@ -242,7 +242,7 @@ Driven by `requestAnimationFrame` and executed after initial render (`afterNextR
 
 - **Harmonic Status Dot Luminance Pulsation**:
   The status indicator dot pulses with continuous harmonic luminance:
-  $$L(t) = \operatorname{clamp}\left(0.5 + A \cdot \cos(\omega t + \phi), 0, 1\right)$$
+  $$L(t) = \mathrm{clamp}\left(0.5 + A \cdot \cos(\omega t + \phi), 0, 1\right)$$
   where $A = 0.5$ (`STATUS_LUMINANCE_A`), $f = 0.5\text{ Hz}$ (`STATUS_LUMINANCE_F`, period $T = 2\text{ s}$), $\omega = \pi\text{ rad/s}$ (`STATUS_LUMINANCE_OMEGA`), and $\phi = 0\text{ rad}$ (`STATUS_LUMINANCE_PHI`).
   The calculated value is written directly to `--status-dot-luminance` on the host element.
 
@@ -276,11 +276,11 @@ flowchart TD
 2. **Lazy ESM Import & Retry Loop**: Dynamically imports `@techstark/opencv-js` from jsDelivr CDN (`https://cdn.jsdelivr.net/npm/@techstark/opencv-js/+esm`) on demand, utilizing configured retry parameters (`OPEN_CV_RETRY_COUNT = 3`, `OPEN_CV_RETRY_DELAY_MS = 1000ms`, `OPEN_CV_RETRY_DELAY_MULTIPLIER = 1.0`, `OPEN_CV_RETRY_JITTER_MS = 0`) with cache-busting query strings (`?retry=${retry}`).
 3. **Canvas 2D Rasterization & Color Space Transformation**:
    - Rasterizes remote SVG icons asynchronously onto an `HTMLCanvasElement` configured with `{ willReadFrequently: true }`.
-   - Converts raw 4-channel RGBA pixels $\to$ 3-channel RGB $\to$ CIE $L^_a^*b^*$ (`cv.cvtColor`), decoupling perceptual lightness ($L^_$) from chromaticity ($a^_, b^_$).
+   - Converts raw 4-channel RGBA pixels $\to$ 3-channel RGB $\to$ CIE $L^{\ast}a^{\ast}b^{\ast}$ (`cv.cvtColor`), decoupling perceptual lightness ($L^{\ast}$) from chromaticity ($a^{\ast}, b^{\ast}$).
 4. **Adaptive Tile Grid CLAHE Equalization**:
    Calculates local tile grid dimensions based on target tile pixel size ($16\text{px}$) clamped between $2$ and $8$ tiles:
    $$\text{tileCount}(\text{dimension}) = \max\left(\text{minTiles}, \min\left(\text{maxTiles}, \left\lceil \frac{\text{dimension}}{\text{pixelTarget}} \right\rceil\right)\right)$$
-   Applies `cv.CLAHE(clipLimit = 2.0, tileGrid)` exclusively to the isolated $L^*$ channel, equalizing local contrast while preserving original brand colors.
+   Applies `cv.CLAHE(clipLimit = 2.0, tileGrid)` exclusively to the isolated $L^{\ast}$ channel, equalizing local contrast while preserving original brand colors.
 5. **Dual Candidate Surface Scoring via Alpha-Weighted WCAG 2.1 Contrast**:
    Evaluates original and enhanced marks across `LightSurface` (`#ffffff`, RGB `[255, 255, 255]`) and `DarkSurface` (`#0d1b2d`, RGB `[13, 27, 45]`).
    Computes alpha-weighted WCAG 2.1 relative luminance contrast:
@@ -305,7 +305,7 @@ flowchart TD
     BOUNDS --> CULL{Frustum Culling: bottom > vp.top AND top < vp.bottom}
     CULL -->|Visible Sections| COLLIDE{Direct Collision: top <= scanline <= bottom}
     COLLIDE -->|Match Found| SET_ACTIVE[activeSection.set: Current Section ID]
-    COLLIDE -->|No Direct Match Gap| NEAREST[Sort Visible by |top - scanline|: Select Nearest]
+    COLLIDE -->|No Direct Match Gap| NEAREST["Sort Visible by |top - scanline|: Select Nearest"]
     NEAREST --> SET_ACTIVE
     SET_ACTIVE --> NAV_PILL[Update Navigation Active State & Indicator Pill]
 ```
@@ -338,7 +338,7 @@ Located at `src/app/helper/directive/image-zome/image-zoom.directive.ts` and `sr
   $$W_{\text{content}} = W_{\text{bounds}} - (\text{border}_{\text{left}} + \text{border}_{\text{right}} + \text{padding}_{\text{left}} + \text{padding}_{\text{right}})$$
   $$H_{\text{content}} = H_{\text{bounds}} - (\text{border}_{\text{top}} + \text{border}_{\text{bottom}} + \text{padding}_{\text{top}} + \text{padding}_{\text{bottom}})$$
   $$\text{containedScale} = \min\left(\frac{W_{\text{content}}}{\text{naturalWidth}}, \frac{H_{\text{content}}}{\text{naturalHeight}}\right)$$
-  An image is marked eligible for zoom if and only if $\text{containedScale} < 1 - \text{DOWNSCALE\_TOLERANCE}$ (with `DOWNSCALE_TOLERANCE = 0.01`). Full-scale, upscaled, or broken images remain inert.
+  An image is marked eligible for zoom if and only if $\text{containedScale} < 1 - \text{tolerance}$ (with `DOWNSCALE_TOLERANCE = 0.01`). Full-scale, upscaled, or broken images remain inert.
 - **Dual Interaction Ownership**:
   - **Pointer Hover Mode**: `pointerenter` opens a hover-owned overlay with `pointer-events: none` on the overlay pane, preventing mouse cursor trap and flickering. `pointerleave` automatically closes hover ownership.
   - **Mobile Touch Mode**: Tap (`click`) toggles an interactive touch-owned overlay panel.
@@ -372,7 +372,7 @@ Located at `src/app/resume/resume-page/service/resume-pdf/resume-pdf.service.ts`
   Streams the remote résumé PDF (`https://resume-images.ohm-mho.space/downloadable-resume/Nawaphon_Isarathanachaikul.pdf`) via Angular `HttpClient` using `{ reportDownloadProgress: true, observe: 'events', responseType: 'blob' }`.
 - **Live Percentage Calculation**:
   Observes `HttpEventType.DownloadProgress` events, calculating real-time download percentage as:
-  $$\text{percentage} = \min\left(100, \max\left(0, \operatorname{round}\left(\frac{\text{loaded}}{\text{total}} \times 100\right)\right)\right)$$
+  $$\text{percentage} = \min\left(100, \max\left(0, \mathrm{round}\left(\frac{\text{loaded}}{\text{total}} \times 100\right)\right)\right)$$
   Emits `null` when `Content-Length` is absent (indeterminate stream).
 - **Dynamic Spinner UI States**:
   - Renders `mat-progress-spinner` in `mode="indeterminate"` while establishing the HTTP stream or when the `total` content length is indeterminate.
