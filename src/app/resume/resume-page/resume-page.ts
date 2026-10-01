@@ -87,25 +87,25 @@ export default class ResumePage {
   private readonly sectionActivationRatio = inject(SECTION_ACTIVATION_RATIO);
 
   /** Canonical profile distributed to the presentational section components. */
-  protected readonly resume = inject(resumeData);
+  private readonly resume = inject(resumeData);
 
   /** Section currently represented as active in responsive navigation. */
-  protected readonly activeSection = signal<ResumeSectionId>('about');
+  private readonly activeSection = signal<ResumeSectionId>('about');
 
   /** Availability of the remote PDF asset for download. */
-  protected readonly downloadAvailable = this.resumePdfService.isAvailable;
+  private readonly downloadAvailable = this.resumePdfService.isAvailable;
 
   /** Whether one user-triggered PDF download request is currently running. */
-  protected readonly downloadPending = signal(false);
+  private readonly downloadPending = signal(false);
 
   /** Current download progress percentage (0..100) or null if indeterminate/idle. */
-  protected readonly downloadProgress = signal<number | null>(null);
+  private readonly downloadProgress = signal<number | null>(null);
 
   /** Forces every post-hero boundary to render when a later app-controlled action requires it. */
-  protected readonly renderAllSections = signal(false);
+  private readonly renderAllSections = signal(false);
 
   /** Template-facing reference to the theme service's selected preference. */
-  protected readonly theme = this.themeService.theme;
+  private readonly theme = this.themeService.theme;
 
   /** Synchronizes routed fragments immediately and defers viewport tracking until initial render. */
   constructor() {
@@ -128,7 +128,7 @@ export default class ResumePage {
   }
 
   /** Delegates explicit theme switching and persistence to the theme service. */
-  protected toggleTheme(): void {
+  private toggleTheme(): void {
     this.themeService.toggle();
   }
 
@@ -140,7 +140,7 @@ export default class ResumePage {
    * content containers to render immediately into the DOM so the browser's print layout engine
    * captures the complete resume rather than unrendered placeholder boundaries.
    */
-  protected prepareForNativePrint(): void {
+  private prepareForNativePrint(): void {
     this.renderAllSections.set(true);
   }
 
@@ -157,7 +157,7 @@ export default class ResumePage {
    * 4. **Cleanup & Error Handling**: Resets pending and progress state in a `finally` block, routing unexpected
    *    exceptions to `ErrorHandler`.
    */
-  protected async downloadResume(): Promise<void> {
+  private async downloadResume(): Promise<void> {
     if (this.downloadPending()) {
       return;
     }

@@ -39,22 +39,22 @@ export class TechnologyIconComponent {
   });
 
   /** Atomic artwork-and-surface state consumed by both the chip frame and zoom directive. */
-  protected readonly presentation = computed<TechnologyIconPresentation>(() =>
+  private readonly presentation = computed<TechnologyIconPresentation>(() =>
     this.optimizedPresentation.hasValue()
       ? this.optimizedPresentation.value()
       : this.fallbackPresentation(),
   );
 
-  protected readonly isLoading = linkedSignal<string, boolean>({
+  private readonly isLoading = linkedSignal<string, boolean>({
     source: () => this.presentation().logo.src,
     computation: () => true,
   });
 
-  protected onImageLoad(): void {
+  private onImageLoad(): void {
     this.isLoading.set(false);
   }
 
-  protected onImageError(): void {
+  private onImageError(): void {
     this.isLoading.set(false);
   }
 }

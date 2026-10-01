@@ -55,25 +55,25 @@ export class ResumeNavigation {
   readonly downloadRequested = output();
 
   /** Progress spinner mode based on whether determinate progress is known. */
-  protected readonly downloadSpinnerMode = computed<ProgressSpinnerMode>(() =>
+  private readonly downloadSpinnerMode = computed<ProgressSpinnerMode>(() =>
     typeof this.downloadProgress() === 'number' ? 'determinate' : 'indeterminate',
   );
 
   /** Shared section registry exposed to both desktop and mobile templates. */
-  protected readonly sections = inject(RESUME_SECTIONS);
+  private readonly sections = inject(RESUME_SECTIONS);
 
   /** @returns An accessible action label naming the theme that will be selected. */
-  protected themeControlLabel(): string {
+  private themeControlLabel(): string {
     return this.theme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
   }
 
   /** @returns The Material icon representing the theme that will be selected. */
-  protected themeIcon(): string {
+  private themeIcon(): string {
     return this.theme() === 'dark' ? 'light_mode' : 'dark_mode';
   }
 
   /** @returns The accessible label describing the current PDF download state. */
-  protected downloadControlLabel(): string {
+  private downloadControlLabel(): string {
     if (!this.downloadPending()) {
       return this.downloadAvailable() === false
         ? 'Download résumé as PDF (file may be unavailable)'
@@ -87,7 +87,7 @@ export class ResumeNavigation {
   }
 
   /** @returns The concise mobile-menu label for the current PDF download state. */
-  protected downloadControlText(): string {
+  private downloadControlText(): string {
     if (!this.downloadPending()) {
       return this.downloadAvailable() === false ? 'Download PDF (unavailable)' : 'Download PDF';
     }

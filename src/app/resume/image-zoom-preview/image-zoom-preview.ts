@@ -20,5 +20,5 @@ import { IMAGE_ZOOM_PREVIEW_DATA } from '../../helper/injection-token/image-zoom
 })
 export class ImageZoomPreview {
   /** Content scoped to this component's overlay injector. */
-  protected readonly data = inject(IMAGE_ZOOM_PREVIEW_DATA);
+  private readonly data = inject(IMAGE_ZOOM_PREVIEW_DATA);
 }

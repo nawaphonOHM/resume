@@ -29,7 +29,7 @@ export class ProfileSidebar {
   readonly profile = input.required<ResumeProfile>();
 
   /** @returns A direct email URI for the profile's public address. */
-  protected emailHref(): string {
+  private emailHref(): string {
     return `mailto:${this.profile().details.email}`;
   }
 }

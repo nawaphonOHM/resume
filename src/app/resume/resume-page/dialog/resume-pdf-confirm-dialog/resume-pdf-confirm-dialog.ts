@@ -21,5 +21,5 @@ import {
   },
 })
 export class ResumePdfConfirmDialog {
-  protected readonly dialogTitle = 'Confirm Download';
+  private readonly dialogTitle = 'Confirm Download';
 }

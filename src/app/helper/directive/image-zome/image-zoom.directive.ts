@@ -118,7 +118,7 @@ export class ImageZoomDirective {
   }
 
   /** Opens hover ownership only for mouse or pen entry on an eligible image. */
-  protected handlePointerEnter(event: PointerEvent): void {
+  private handlePointerEnter(event: PointerEvent): void {
     if (!this.isHoverPointer(event) || !this.updateEligibility()) {
       return;
     }
@@ -127,14 +127,14 @@ export class ImageZoomDirective {
   }
 
   /** Releases hover ownership without closing a touch-owned preview for the same image. */
-  protected handlePointerLeave(event: PointerEvent): void {
+  private handlePointerLeave(event: PointerEvent): void {
     if (this.isHoverPointer(event)) {
       this.imageZoomService.close(this.image, 'hover');
     }
   }
 
   /** Toggles an eligible preview only for completed touch clicks when touch support is enabled. */
-  protected handleClick(event: PointerEvent): void {
+  private handleClick(event: PointerEvent): void {
     if (event.pointerType !== 'touch' || !this.imageZoomTouch() || !this.updateEligibility()) {
       return;
     }
@@ -143,12 +143,12 @@ export class ImageZoomDirective {
   }
 
   /** Clears failure state and reevaluates the image after a successful load. */
-  protected handleLoad(): void {
+  private handleLoad(): void {
     this.updateEligibility(false);
   }
 
   /** Marks the image ineligible and closes any preview it owns after a load failure. */
-  protected handleError(): void {
+  private handleError(): void {
     this.updateEligibility(true);
   }
 

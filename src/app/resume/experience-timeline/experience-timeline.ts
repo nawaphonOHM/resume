@@ -30,5 +30,5 @@ export class ExperienceTimeline {
   readonly experience = input.required<readonly Experience[]>();
 
   /** Exact-label icon lookup exposed to the template; absence selects its generic fallback. */
-  protected readonly resolveTechnologyIcon = inject(resolveTechnologyIcon);
+  private readonly resolveTechnologyIcon = inject(resolveTechnologyIcon);
 }

@@ -53,7 +53,7 @@ import { statusFaviconForStatusColor } from '../../helper/injection-token/status
 })
 export class HeroSection {
   private readonly destroyRef = inject(DestroyRef);
-  protected readonly currentInstant = signal(new Date());
+  private readonly currentInstant = signal(new Date());
   private readonly clockUpdateIntervalMs = inject(CLOCK_UPDATE_INTERVAL_MS);
   private readonly statusColorForUtcPlusSeven = inject(statusColorForUtcPlusSeven);
   private readonly calculateStatusLuminanceFn = inject(calculateStatusLuminance);
@@ -63,27 +63,27 @@ export class HeroSection {
   private readonly theDocument = inject(DOCUMENT);
 
   /** Selected transition effect applied on each clock tick. */
-  protected readonly clockTransition = inject(heroClockTransitionPicker)();
+  private readonly clockTransition = inject(heroClockTransitionPicker)();
 
   /** Complete profile supplying the candidate identity and public contact details. */
   readonly profile = input.required<ResumeProfile>();
 
   /** Alternates on each clock tick to re-trigger slide-and-fade CSS animations. */
-  protected readonly isTickAlternate = signal(false);
+  private readonly isTickAlternate = signal(false);
 
   /** Availability color for the same current instant as the visible UTC+7 clock. */
-  protected readonly statusColor = computed(() =>
+  private readonly statusColor = computed(() =>
     this.statusColorForUtcPlusSeven(this.currentInstant()),
   );
 
   /** Oscillating luminance level of the availability status indicator. */
-  protected readonly statusLuminance = signal(this.calculateStatusLuminanceFn(0));
+  private readonly statusLuminance = signal(this.calculateStatusLuminanceFn(0));
 
   /** Orbital coordinates for the left hero code badge. */
-  protected readonly leftCodePosition;
+  private readonly leftCodePosition;
 
   /** Orbital coordinates for the right hero code badge. */
-  protected readonly rightCodePosition;
+  private readonly rightCodePosition;
 
   /**
    * Initializes reactive status effects, sets initial starter orbital code badge positions
@@ -148,7 +148,7 @@ export class HeroSection {
   }
 
   /** @returns A direct email URI for the profile's public address. */
-  protected emailHref(): string {
+  private emailHref(): string {
     return `mailto:${this.profile().details.email}`;
   }
 }
