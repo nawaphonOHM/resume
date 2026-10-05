@@ -1,10 +1,11 @@
 import { DOCUMENT, ViewportScroller } from '@angular/common';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, withInMemoryScrolling, withRouterConfig } from '@angular/router';
 import type { ApplicationConfig } from '@angular/core';
 
 import { routes } from './app.routes';
+import { resumeApiRetryInterceptor } from './helper/interceptor/resume-api-retry.interceptor.ts';
 
 /** Applies the CSS-owned sticky-header clearance before the Router's initial navigation. */
 function configureViewportOffset(): void {
@@ -30,7 +31,7 @@ function configureViewportOffset(): void {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([resumeApiRetryInterceptor])),
     provideRouter(
       routes,
       withInMemoryScrolling({

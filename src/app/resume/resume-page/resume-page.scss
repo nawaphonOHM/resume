@@ -38,11 +38,6 @@ main {
     radial-gradient(circle at 3% 12%, rgba(45, 128, 237, 0.08), transparent 22rem),
     radial-gradient(circle at 98% 55%, rgba(45, 128, 237, 0.07), transparent 26rem),
     var(--resume-page);
-
-  > div {
-    position: relative;
-    z-index: 1;
-  }
 }
 
 // Motion tokens aligning with application loading transitions (src/app/app.scss).
@@ -57,9 +52,7 @@ $resume-defer-enter-distance: 0.5rem;
   }
 }
 
-$resume-defer-targets: 'app-summary-section, app-experience-timeline, app-education-section, app-profile-sidebar, .resume-defer-error';
-
-#{$resume-defer-targets} {
+.resume-defer-target {
   animation: resume-defer-enter $resume-defer-enter-duration $resume-defer-enter-timing-function
     both;
 }
@@ -78,61 +71,34 @@ $resume-defer-targets: 'app-summary-section, app-experience-timeline, app-educat
 }
 
 .resume-defer-reserve {
-  &--summary,
-  &--education {
-    min-height: 38rem;
+  &--summary {
+    min-height: clamp(38rem, 50rem - 15vw, 44rem);
   }
 
   &--experience {
-    min-height: 130rem;
+    min-height: clamp(130rem, 230rem - 125vw, 180rem);
+  }
+
+  &--education {
+    min-height: clamp(38rem, 66rem - 35vw, 52rem);
   }
 
   &--skills {
-    min-height: 30rem;
+    min-height: clamp(30rem, 42rem - 15vw, 36rem);
   }
 
   &--profile {
-    min-height: 42rem;
+    min-height: clamp(42rem, 66rem - 30vw, 54rem);
   }
 }
 
 .resume-defer-message {
-  display: flex;
-  width: 100%;
-  gap: 1rem;
-  align-items: flex-start;
-  padding: clamp(1.35rem, 3vw, 2rem);
   border: 1px solid var(--resume-border);
   border-radius: 1.4rem;
   background: color-mix(in srgb, var(--resume-surface) 92%, var(--resume-brand-soft));
-  color: var(--resume-muted);
-  box-shadow: 0 0.75rem 2rem rgba(8, 35, 62, 0.05);
-
-  h2 {
-    margin: 0;
-    color: var(--resume-text);
-    font-size: clamp(1.45rem, 3vw, 2rem);
-    line-height: 1.15;
-  }
-
-  p:last-child {
-    margin: 0.75rem 0 0;
-    line-height: 1.65;
-  }
-}
-
-.resume-defer-kicker {
-  margin: 0 0 0.55rem;
-  color: var(--resume-accent);
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
 }
 
 .resume-defer-spinner {
-  flex: 0 0 auto;
-  margin-top: 0.2rem;
   --mat-progress-spinner-active-indicator-color: var(--resume-accent);
 }
 
@@ -147,14 +113,34 @@ $resume-defer-targets: 'app-summary-section, app-experience-timeline, app-educat
   }
 }
 
-footer {
-  border-top: 1px solid var(--resume-border);
-  background: var(--resume-surface);
-  color: var(--resume-muted);
-  font-size: 0.88rem;
+.resume-page-loading mat-progress-bar {
+  --mat-progress-bar-active-indicator-color: var(--resume-accent);
+}
 
-  p {
-    margin: 0;
+.resume-page-error {
+  border: 1px solid color-mix(in srgb, #b42318 55%, var(--resume-border));
+  border-radius: 1.4rem;
+  background: color-mix(in srgb, #fff0ee 55%, var(--resume-surface));
+}
+
+.resume-page-error-title {
+  color: color-mix(in srgb, #b42318 85%, var(--resume-text));
+}
+
+.resume-page-retry-button {
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--resume-accent) 40%, transparent);
+  background: var(--resume-accent);
+  color: #fff;
+
+  &:hover {
+    background: color-mix(in srgb, var(--resume-accent) 85%, #000);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 0.2rem solid color-mix(in srgb, var(--resume-accent) 75%, transparent);
+    outline-offset: 0.2rem;
   }
 }
 
@@ -163,32 +149,8 @@ footer {
     transition: none;
   }
 
-  #{$resume-defer-targets} {
+  .resume-defer-target {
     animation: none !important;
-  }
-}
-
-@media (max-width: 48rem) {
-  .resume-defer-reserve {
-    &--summary {
-      min-height: 44rem;
-    }
-
-    &--experience {
-      min-height: 180rem;
-    }
-
-    &--education {
-      min-height: 52rem;
-    }
-
-    &--skills {
-      min-height: 36rem;
-    }
-
-    &--profile {
-      min-height: 54rem;
-    }
   }
 }
 
@@ -204,7 +166,7 @@ footer {
     display: none !important;
   }
 
-  #{$resume-defer-targets} {
+  .resume-defer-target {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;

@@ -14,6 +14,7 @@ import type { ComponentFixture } from '@angular/core/testing';
 import { DeferBlockBehavior, DeferBlockState, TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenuTrigger } from '@angular/material/menu';
+import { MatProgressBar } from '@angular/material/progress-bar';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { By } from '@angular/platform-browser';
 import {
@@ -30,6 +31,7 @@ import { vi } from 'vitest';
 import { routes } from '../../app.routes';
 import { RESUME_THEME_STORAGE_KEY } from '../../helper/injection-token/resume-theme-storage-key.variable.ts';
 import { resumeData } from '../../helper/injection-token/resume.data.ts';
+import { ResumeDataService } from '../../helper/core/resume-data.service.ts';
 import { IMAGE_ASSET_ORIGIN as IMAGE_ASSET_ORIGIN_TOKEN } from '../../helper/injection-token/image-asset-origin.variable.ts';
 import { resolveTechnologyIcon as resolveTechnologyIconToken } from '../../helper/injection-token/resolve-technology-icon.function.ts';
 import { TechnologyIconContrastService } from '../experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts';
@@ -167,6 +169,12 @@ describe('ResumePage', () => {
   /** Angular error-handler fixture that records rejected download attempts. */
   let handleError: ReturnType<typeof vi.fn<ErrorHandler['handleError']>>;
 
+  /** ResumeDataService mock signals and reload spy. */
+  let mockResumeProfile: WritableSignal<ResumeProfile | undefined>;
+  let mockIsLoading: WritableSignal<boolean>;
+  let mockHasError: WritableSignal<boolean>;
+  let reloadAllSpy: ReturnType<typeof vi.fn>;
+
   beforeEach(async () => {
     scrollEvents = new Subject<void>();
     viewportChangeEvents = new Subject<Event>();
@@ -198,6 +206,11 @@ describe('ResumePage', () => {
     isAvailable = signal<boolean | null>(true);
     handleError = vi.fn<ErrorHandler['handleError']>();
 
+    mockResumeProfile = signal<ResumeProfile | undefined>(undefined);
+    mockIsLoading = signal(false);
+    mockHasError = signal(false);
+    reloadAllSpy = vi.fn();
+
     await TestBed.configureTestingModule({
       deferBlockBehavior: DeferBlockBehavior.Manual,
       imports: [ResumePage],
@@ -213,10 +226,20 @@ describe('ResumePage', () => {
         { provide: TechnologyIconContrastService, useValue: { optimize } },
         { provide: ResumePdfService, useValue: { download, isAvailable } },
         { provide: ErrorHandler, useValue: { handleError } },
+        {
+          provide: ResumeDataService,
+          useValue: {
+            profile: mockResumeProfile,
+            isLoading: mockIsLoading,
+            hasError: mockHasError,
+            reloadAll: reloadAllSpy,
+          },
+        },
       ],
     }).compileComponents();
 
     RESUME = TestBed.inject(resumeData);
+    mockResumeProfile.set(RESUME);
     IMAGE_ASSET_ORIGIN = TestBed.inject(IMAGE_ASSET_ORIGIN_TOKEN);
     resolveTechnologyIcon = TestBed.inject(resolveTechnologyIconToken);
 
@@ -373,16 +396,12 @@ describe('ResumePage', () => {
     const resumePageStyles = Array.from(document.head.querySelectorAll<HTMLStyleElement>('style'))
       .map((style) => style.textContent)
       .find(
-        (styles) => styles.includes('resume-defer-enter') && styles.includes('resume-defer-error'),
+        (styles) => styles.includes('resume-defer-enter') && styles.includes('resume-defer-target'),
       );
 
     expect(resumePageStyles).toBeDefined();
     expect(resumePageStyles).toMatch(/@keyframes\s+.*resume-defer-enter/);
-    expect(resumePageStyles).toMatch(/app-summary-section/);
-    expect(resumePageStyles).toMatch(/app-experience-timeline/);
-    expect(resumePageStyles).toMatch(/app-education-section/);
-    expect(resumePageStyles).toMatch(/app-profile-sidebar/);
-    expect(resumePageStyles).toMatch(/\.resume-defer-error/);
+    expect(resumePageStyles).toMatch(/\.resume-defer-target/);
 
     // Verify prefers-reduced-motion overrides disable transitions
     expect(resumePageStyles).toMatch(
@@ -1376,5 +1395,82 @@ describe('ResumePage', () => {
     expect(TestBed.inject(Router).url).toBe('/#main-content');
     expect(document.activeElement).toBe(main);
     expect(scrollTo).toHaveBeenCalled();
+  });
+
+  it('displays accessible indeterminate progress bar while resume data is loading', () => {
+    mockIsLoading.set(true);
+    mockResumeProfile.set(undefined);
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const loadingContainer = element.querySelector<HTMLElement>('.resume-page-loading');
+    expect(loadingContainer).not.toBeNull();
+    expect(loadingContainer?.getAttribute('role')).toBe('status');
+    expect(loadingContainer?.getAttribute('aria-busy')).toBe('true');
+    expect(loadingContainer?.getAttribute('aria-live')).toBe('polite');
+
+    const progressBarDebug = fixture.debugElement.query(By.directive(MatProgressBar));
+    expect(progressBarDebug).not.toBeNull();
+    const progressBar = progressBarDebug.componentInstance as MatProgressBar;
+    expect(progressBar.mode).toBe('indeterminate');
+
+    const progressBarEl = progressBarDebug.nativeElement as HTMLElement;
+    expect(progressBarEl.getAttribute('role')).toBe('progressbar');
+    expect(progressBarEl.getAttribute('aria-busy')).toBe('true');
+    expect(progressBarEl.getAttribute('aria-label')).toBe('Loading resume data');
+
+    const loadingText = element.querySelector('.resume-page-loading-text');
+    expect(loadingText?.textContent).toContain('Loading resume data');
+
+    expect(element.querySelector('app-hero-section')).toBeNull();
+    expect(element.querySelector('footer')).toBeNull();
+  });
+
+  it('displays accessible error message with retry action when retries are exhausted', () => {
+    mockIsLoading.set(false);
+    mockHasError.set(true);
+    mockResumeProfile.set(undefined);
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const errorContainer = element.querySelector<HTMLElement>('.resume-page-error');
+    expect(errorContainer).not.toBeNull();
+    expect(errorContainer?.getAttribute('role')).toBe('alert');
+    expect(errorContainer?.getAttribute('aria-live')).toBe('assertive');
+
+    const errorTitle = element.querySelector('.resume-page-error-title');
+    expect(errorTitle?.textContent).toContain('Unable to load resume');
+
+    const retryBtn = element.querySelector<HTMLButtonElement>('.resume-page-retry-button');
+    expect(retryBtn).not.toBeNull();
+    if (retryBtn) {
+      expect(retryBtn.textContent.trim()).toBe('Retry');
+      retryBtn.click();
+    }
+    expect(reloadAllSpy).toHaveBeenCalledOnce();
+
+    expect(element.querySelector('app-hero-section')).toBeNull();
+    expect(element.querySelector('footer')).toBeNull();
+  });
+
+  it('transitions from loading progress bar to complete profile when data resolves', () => {
+    mockIsLoading.set(true);
+    mockResumeProfile.set(undefined);
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('.resume-page-loading')).not.toBeNull();
+    expect(element.querySelector('app-hero-section')).toBeNull();
+
+    mockIsLoading.set(false);
+    mockResumeProfile.set(RESUME);
+    fixture.detectChanges();
+
+    expect(element.querySelector('.resume-page-loading')).toBeNull();
+    expect(element.querySelector('app-hero-section')).not.toBeNull();
+    expect(element.querySelector('footer')).not.toBeNull();
   });
 });

@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
+import { MatProgressBar } from '@angular/material/progress-bar';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { firstValueFrom, merge } from 'rxjs';
@@ -23,7 +24,7 @@ import { ResumeNavigation } from '../resume-navigation/resume-navigation';
 import type { ResumeSectionId } from '../../helper/type/resume-section-id.type.ts';
 import { RESUME_SECTIONS } from '../../helper/injection-token/resume-sections.variable.ts';
 import { SummarySection } from '../summary-section/summary-section';
-import { resumeData } from '../../helper/injection-token/resume.data.ts';
+import { ResumeDataService } from '../../helper/core/resume-data.service.ts';
 import { ResumePdfConfirmDialog } from './dialog/resume-pdf-confirm-dialog/resume-pdf-confirm-dialog.ts';
 import { ResumePdfService } from './service/resume-pdf/resume-pdf.service.ts';
 import { VIEWPORT_EVENT_THROTTLE_MS } from '../../helper/injection-token/viewport-event-throttle-ms.variable.ts';
@@ -60,6 +61,7 @@ import type { ResumePdfConfirmDialogResult } from '../../helper/type/resume-pdf-
     EducationSection,
     ExperienceTimeline,
     HeroSection,
+    MatProgressBar,
     MatProgressSpinner,
     ProfileSidebar,
     ResumeNavigation,
@@ -85,9 +87,16 @@ export default class ResumePage {
   private readonly sections = inject(RESUME_SECTIONS);
   private readonly viewportEventThrottleMs = inject(VIEWPORT_EVENT_THROTTLE_MS);
   private readonly sectionActivationRatio = inject(SECTION_ACTIVATION_RATIO);
+  private readonly resumeDataService = inject(ResumeDataService);
 
-  /** Canonical profile distributed to the presentational section components. */
-  private readonly resume = inject(resumeData);
+  /** Canonical profile aggregated reactively from ResumeDataService. */
+  protected readonly profile = this.resumeDataService.profile;
+
+  /** Whether resume data resources are currently being fetched. */
+  protected readonly isLoading = this.resumeDataService.isLoading;
+
+  /** Whether an error occurred loading resume data resources. */
+  protected readonly hasError = this.resumeDataService.hasError;
 
   /** Section currently represented as active in responsive navigation. */
   private readonly activeSection = signal<ResumeSectionId>('about');
@@ -130,6 +139,11 @@ export default class ResumePage {
   /** Delegates explicit theme switching and persistence to the theme service. */
   private toggleTheme(): void {
     this.themeService.toggle();
+  }
+
+  /** Triggers reload across all résumé data endpoints after error. */
+  protected reloadResumeData(): void {
+    this.resumeDataService.reloadAll();
   }
 
   /**
