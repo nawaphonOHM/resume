@@ -30,11 +30,11 @@ describe('FaviconService', () => {
     const initialLink = document.createElement('link');
     initialLink.setAttribute('rel', 'icon');
     initialLink.setAttribute('type', 'image/svg+xml');
-    initialLink.setAttribute('href', 'https://resume-images.ohm-mho.space/favicon.svg');
+    initialLink.setAttribute('href', '/favicon.svg');
     document.head.appendChild(initialLink);
 
     const service = TestBed.inject(FaviconService);
-    const targetUrl = 'https://resume-images.ohm-mho.space/favicons/available/favicon.svg';
+    const targetUrl = '/favicons/available/favicon.svg';
 
     service.setFavicon(targetUrl);
 
@@ -45,7 +45,7 @@ describe('FaviconService', () => {
 
   it('creates and appends a new link[rel="icon"] if none exists in document.head', () => {
     const service = TestBed.inject(FaviconService);
-    const targetUrl = 'https://resume-images.ohm-mho.space/favicons/limited/favicon.svg';
+    const targetUrl = '/favicons/limited/favicon.svg';
 
     service.setFavicon(targetUrl);
 
@@ -60,18 +60,14 @@ describe('FaviconService', () => {
   it('updates the favicon across consecutive calls without creating duplicate elements', () => {
     const service = TestBed.inject(FaviconService);
 
-    service.setFavicon('https://resume-images.ohm-mho.space/favicons/available/favicon.svg');
-    service.setFavicon('https://resume-images.ohm-mho.space/favicons/limited/favicon.svg');
-    service.setFavicon('https://resume-images.ohm-mho.space/favicons/unavailable/favicon.svg');
+    service.setFavicon('/favicons/available/favicon.svg');
+    service.setFavicon('/favicons/limited/favicon.svg');
+    service.setFavicon('/favicons/unavailable/favicon.svg');
 
     const iconLinks = document.head.querySelectorAll<HTMLLinkElement>('link[rel="icon"]');
     expect(iconLinks.length).toBe(1);
-    expect(iconLinks[0].getAttribute('href')).toBe(
-      'https://resume-images.ohm-mho.space/favicons/unavailable/favicon.svg',
-    );
-    expect(service.getFavicon()).toBe(
-      'https://resume-images.ohm-mho.space/favicons/unavailable/favicon.svg',
-    );
+    expect(iconLinks[0].getAttribute('href')).toBe('/favicons/unavailable/favicon.svg');
+    expect(service.getFavicon()).toBe('/favicons/unavailable/favicon.svg');
   });
 
   it('returns null for getFavicon when no favicon link exists', () => {
@@ -89,7 +85,7 @@ describe('FaviconService', () => {
     const service = TestBed.inject(FaviconService);
 
     expect(() => {
-      service.setFavicon('https://resume-images.ohm-mho.space/favicons/available/favicon.svg');
+      service.setFavicon('/favicons/available/favicon.svg');
     }).not.toThrow();
 
     expect(service.getFavicon()).toBeNull();

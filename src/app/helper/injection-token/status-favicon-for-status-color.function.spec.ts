@@ -14,27 +14,17 @@ describe('statusFaviconForStatusColor', () => {
     TestBed.configureTestingModule({});
     const resolveFavicon = TestBed.inject(statusFaviconForStatusColor);
 
-    expect(resolveFavicon('#92C353')).toBe(
-      'https://resume-images.ohm-mho.space/favicons/available/favicon.svg',
-    );
-    expect(resolveFavicon('#F7A600')).toBe(
-      'https://resume-images.ohm-mho.space/favicons/limited/favicon.svg',
-    );
-    expect(resolveFavicon('#D1D1D1')).toBe(
-      'https://resume-images.ohm-mho.space/favicons/unavailable/favicon.svg',
-    );
+    expect(resolveFavicon('#92C353')).toBe('/favicons/available/favicon.svg');
+    expect(resolveFavicon('#F7A600')).toBe('/favicons/limited/favicon.svg');
+    expect(resolveFavicon('#D1D1D1')).toBe('/favicons/unavailable/favicon.svg');
   });
 
   it('falls back to the unavailable favicon URL for unrecognized status colors', () => {
     TestBed.configureTestingModule({});
     const resolveFavicon = TestBed.inject(statusFaviconForStatusColor);
 
-    expect(resolveFavicon('#000000')).toBe(
-      'https://resume-images.ohm-mho.space/favicons/unavailable/favicon.svg',
-    );
-    expect(resolveFavicon('')).toBe(
-      'https://resume-images.ohm-mho.space/favicons/unavailable/favicon.svg',
-    );
+    expect(resolveFavicon('#000000')).toBe('/favicons/unavailable/favicon.svg');
+    expect(resolveFavicon('')).toBe('/favicons/unavailable/favicon.svg');
   });
 
   it('honors overridden IMAGE_ASSET_ORIGIN and statusColor tokens', () => {

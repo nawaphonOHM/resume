@@ -31,9 +31,9 @@ const AVAILABLE_COLOR = '#92C353';
 const LIMITED_COLOR = '#F7A600';
 const UNAVAILABLE_COLOR = '#D1D1D1';
 
-const AVAILABLE_FAVICON = 'https://resume-images.ohm-mho.space/favicons/available/favicon.svg';
-const LIMITED_FAVICON = 'https://resume-images.ohm-mho.space/favicons/limited/favicon.svg';
-const UNAVAILABLE_FAVICON = 'https://resume-images.ohm-mho.space/favicons/unavailable/favicon.svg';
+const AVAILABLE_FAVICON = '/favicons/available/favicon.svg';
+const LIMITED_FAVICON = '/favicons/limited/favicon.svg';
+const UNAVAILABLE_FAVICON = '/favicons/unavailable/favicon.svg';
 
 const COLOR_TO_FAVICON: Record<string, string> = {
   [AVAILABLE_COLOR]: AVAILABLE_FAVICON,
@@ -403,7 +403,7 @@ describe('HeroSection', () => {
       const initialLink = document.createElement('link');
       initialLink.setAttribute('rel', 'icon');
       initialLink.setAttribute('type', 'image/svg+xml');
-      initialLink.setAttribute('href', 'https://resume-images.ohm-mho.space/favicon.svg');
+      initialLink.setAttribute('href', '/favicon.svg');
       document.head.appendChild(initialLink);
 
       vi.setSystemTime(new Date('2026-01-05T10:00:00+07:00'));

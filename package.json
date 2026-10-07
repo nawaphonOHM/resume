@@ -1,6 +1,6 @@
 {
   "name": "resume",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "type": "module",
   "scripts": {
     "ng": "ng",
@@ -10,10 +10,7 @@
     "build": "ng build --configuration production",
     "check-format": "prettier --check .",
     "formatting": "prettier --write .",
-    "lint": "ng lint",
-    "deploy": "ng build && firebase deploy --only hosting",
-    "preview": "firebase hosting:channel:deploy",
-    "serve:firebase": "firebase emulators:start --only hosting"
+    "lint": "ng lint"
   },
   "private": true,
   "packageManager": "npm@10.9.8",
