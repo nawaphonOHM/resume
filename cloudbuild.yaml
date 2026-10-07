@@ -22,10 +22,6 @@ steps:
       - '--allow-unauthenticated'
       - '--service-account=$_SERVICE_ACCOUNT'
       - '--ingress=internal-and-cloud-load-balancing'
-      - '--network=default'
-      - '--subnet=default'
-      - '--vpc-egress=all-traffic'
-      - '--startup-probe=httpGet.port=8080,httpGet.path=/health,timeoutSeconds=1,periodSeconds=10,failureThreshold=3'
 
 # Specify custom build execution service account
 serviceAccount: 'projects/$PROJECT_ID/serviceAccounts/$_SERVICE_ACCOUNT'
