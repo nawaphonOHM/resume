@@ -27,21 +27,6 @@ steps:
       - '--vpc-egress=all-traffic'
       - '--startup-probe=httpGet.port=8080,httpGet.path=/health,timeoutSeconds=1,periodSeconds=10,failureThreshold=3'
 
-  # Step 3: Deploy the container image to Cloud Run
-  - name: 'gcr.io/cloud-builders/gcloud'
-    id: 'Deploy to Cloud Run'
-    args:
-      - 'run'
-      - 'deploy'
-      - '$_SERVICE_NAME'
-      - '--image=$_LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_IMAGE_NAME:$_SHORT_SHA'
-      - '--region=$_LOCATION'
-      - '--platform=managed'
-      - '--allow-unauthenticated'
-      - '--service-account=$_SERVICE_ACCOUNT'
-      - '--ingress=internal-and-cloud-load-balancing'
-      - '--startup-probe=httpGet.port=8080,httpGet.path=/health,timeoutSeconds=1,periodSeconds=10,failureThreshold=3'
-
 # Specify custom build execution service account
 serviceAccount: 'projects/$PROJECT_ID/serviceAccounts/$_SERVICE_ACCOUNT'
 
