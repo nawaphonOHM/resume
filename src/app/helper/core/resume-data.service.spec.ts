@@ -6,6 +6,7 @@ import { ApplicationRef } from '@angular/core';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ResumeDataService } from './resume-data.service.ts';
 import { resumeApiRetryInterceptor } from '../interceptor/resume-api-retry.interceptor.ts';
 import { RESUME_API_RETRY_COUNT } from '../injection-token/resume-api-retry-count.variable.ts';
@@ -90,7 +91,13 @@ describe('ResumeDataService', () => {
     appRef = TestBed.inject(ApplicationRef);
   };
 
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
   afterEach(() => {
+    vi.restoreAllMocks();
+    vi.useRealTimers();
     httpMock.verify();
     TestBed.resetTestingModule();
   });
@@ -181,6 +188,8 @@ describe('ResumeDataService', () => {
     reqExperiences.flush(mockExperiences);
     reqEducations.flush(mockEducation);
 
+    await Promise.resolve();
+    TestBed.tick();
     await appRef.whenStable();
 
     expect(service.isLoading()).toBe(false);
@@ -228,7 +237,8 @@ describe('ResumeDataService', () => {
     // Flush 2 of 8
     reqNames.flush(mockName);
     reqTitles.flush(mockTitle);
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await Promise.resolve();
+    TestBed.tick();
 
     expect(service.progress()).toBe(25);
     expect(service.isLoading()).toBe(true);
@@ -237,7 +247,8 @@ describe('ResumeDataService', () => {
     // Flush next 2 (4 of 8)
     reqSummaries.flush(mockSummaries);
     reqDetails.flush(mockDetails);
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await Promise.resolve();
+    TestBed.tick();
 
     expect(service.progress()).toBe(50);
     expect(service.isLoading()).toBe(true);
@@ -248,6 +259,8 @@ describe('ResumeDataService', () => {
     reqSkills.flush(mockSkills);
     reqExperiences.flush(mockExperiences);
     reqEducations.flush(mockEducation);
+    await Promise.resolve();
+    TestBed.tick();
     await appRef.whenStable();
 
     expect(service.progress()).toBe(100);
@@ -276,6 +289,8 @@ describe('ResumeDataService', () => {
     reqSkills.flush(mockSkills);
     reqExperiences.flush(mockExperiences);
     reqEducations.flush(mockEducation);
+    await Promise.resolve();
+    TestBed.tick();
     await appRef.whenStable();
 
     expect(service.hasError()).toBe(true);
@@ -307,6 +322,8 @@ describe('ResumeDataService', () => {
     initialRequests[6].flush(mockExperiences);
     initialRequests[7].flush(mockEducation);
 
+    await Promise.resolve();
+    TestBed.tick();
     await appRef.whenStable();
 
     service.reloadAll();
@@ -339,6 +356,8 @@ describe('ResumeDataService', () => {
     reloadRequests[6].flush(mockExperiences);
     reloadRequests[7].flush(mockEducation);
 
+    await Promise.resolve();
+    TestBed.tick();
     await appRef.whenStable();
   });
 
@@ -385,12 +404,15 @@ describe('ResumeDataService', () => {
       reqNames.flush('Server Error', { status: 500, statusText: 'Internal Server Error' });
 
       // Delay passes (20ms)
-      await new Promise((resolve) => setTimeout(resolve, 40));
+      vi.advanceTimersByTime(20);
+      TestBed.tick();
 
       const retryNames = httpMock.expectOne('/api/v1/names?retry=1');
       expect(retryNames.request.headers.get('X-Api-Type')).toBe('resume-data');
       retryNames.flush(mockName);
 
+      await Promise.resolve();
+      TestBed.tick();
       await appRef.whenStable();
 
       expect(service.isLoading()).toBe(false);
@@ -432,15 +454,19 @@ describe('ResumeDataService', () => {
       reqTitles.flush('500', { status: 500, statusText: 'Server Error' });
 
       // Attempt 1 fails (retry 1: 20ms)
-      await new Promise((resolve) => setTimeout(resolve, 40));
+      vi.advanceTimersByTime(20);
+      TestBed.tick();
       const retry1 = httpMock.expectOne('/api/v1/titles?retry=1');
       retry1.flush('500', { status: 500, statusText: 'Server Error' });
 
       // Attempt 2 fails (retry 2: 40ms)
-      await new Promise((resolve) => setTimeout(resolve, 60));
+      vi.advanceTimersByTime(40);
+      TestBed.tick();
       const retry2 = httpMock.expectOne('/api/v1/titles?retry=2');
       retry2.flush('500', { status: 500, statusText: 'Server Error' });
 
+      await Promise.resolve();
+      TestBed.tick();
       await appRef.whenStable();
 
       expect(service.hasError()).toBe(true);
