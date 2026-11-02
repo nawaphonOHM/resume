@@ -6,6 +6,7 @@ import type { ResumeEducation } from '../interface/resume-education/resume-educa
 import type { ResumeLink } from '../interface/ressume-link/resume-link.interface.ts';
 import type { ResumeProfile } from '../interface/resume-profile/resume-profile.interface.ts';
 import { RESUME_DATA_API_BASE_URL } from '../injection-token/resume-data-api-base-url.variable.ts';
+import { unwrapApiResponse } from './api-response.helper.ts';
 
 /**
  * Fetches and aggregates individual résumé sections from REST API endpoints.
@@ -20,52 +21,76 @@ export class ResumeDataService {
   private readonly baseUrl = inject(RESUME_DATA_API_BASE_URL);
 
   /** Resource for candidate display name. */
-  readonly names = httpResource<string>(() => ({
-    url: `${this.baseUrl}/api/v1/names`,
-    headers: { 'X-Api-Type': 'resume-data' },
-  }));
+  readonly names = httpResource<string>(
+    () => ({
+      url: `${this.baseUrl}/api/v1/names`,
+      headers: { 'X-Api-Type': 'resume-data' },
+    }),
+    { parse: (raw) => unwrapApiResponse<string>(raw) },
+  );
 
   /** Resource for candidate professional headline. */
-  readonly titles = httpResource<string>(() => ({
-    url: `${this.baseUrl}/api/v1/titles`,
-    headers: { 'X-Api-Type': 'resume-data' },
-  }));
+  readonly titles = httpResource<string>(
+    () => ({
+      url: `${this.baseUrl}/api/v1/titles`,
+      headers: { 'X-Api-Type': 'resume-data' },
+    }),
+    { parse: (raw) => unwrapApiResponse<string>(raw) },
+  );
 
   /** Resource for candidate summary paragraphs. */
-  readonly summaries = httpResource<readonly string[]>(() => ({
-    url: `${this.baseUrl}/api/v1/summaries`,
-    headers: { 'X-Api-Type': 'resume-data' },
-  }));
+  readonly summaries = httpResource<readonly string[]>(
+    () => ({
+      url: `${this.baseUrl}/api/v1/summaries`,
+      headers: { 'X-Api-Type': 'resume-data' },
+    }),
+    { parse: (raw) => unwrapApiResponse<readonly string[]>(raw) },
+  );
 
   /** Resource for candidate contact and personal details. */
-  readonly details = httpResource<ResumeDetails>(() => ({
-    url: `${this.baseUrl}/api/v1/details`,
-    headers: { 'X-Api-Type': 'resume-data' },
-  }));
+  readonly details = httpResource<ResumeDetails>(
+    () => ({
+      url: `${this.baseUrl}/api/v1/details`,
+      headers: { 'X-Api-Type': 'resume-data' },
+    }),
+    { parse: (raw) => unwrapApiResponse<ResumeDetails>(raw) },
+  );
 
   /** Resource for candidate external links and brand metadata. */
-  readonly links = httpResource<readonly ResumeLink[]>(() => ({
-    url: `${this.baseUrl}/api/v1/links`,
-    headers: { 'X-Api-Type': 'resume-data' },
-  }));
+  readonly links = httpResource<readonly ResumeLink[]>(
+    () => ({
+      url: `${this.baseUrl}/api/v1/links`,
+      headers: { 'X-Api-Type': 'resume-data' },
+    }),
+    { parse: (raw) => unwrapApiResponse<readonly ResumeLink[]>(raw) },
+  );
 
   /** Resource for candidate curated skill tags. */
-  readonly skills = httpResource<readonly string[]>(() => ({
-    url: `${this.baseUrl}/api/v1/skills`,
-    headers: { 'X-Api-Type': 'resume-data' },
-  }));
+  readonly skills = httpResource<readonly string[]>(
+    () => ({
+      url: `${this.baseUrl}/api/v1/skills`,
+      headers: { 'X-Api-Type': 'resume-data' },
+    }),
+    { parse: (raw) => unwrapApiResponse<readonly string[]>(raw) },
+  );
 
   /** Resource for candidate employment experiences. */
-  readonly experiences = httpResource<readonly Experience[]>(() => ({
-    url: `${this.baseUrl}/api/v1/experiences`,
-    headers: { 'X-Api-Type': 'resume-data' },
-  }));
+  readonly experiences = httpResource<readonly Experience[]>(
+    () => ({
+      url: `${this.baseUrl}/api/v1/experiences`,
+      headers: { 'X-Api-Type': 'resume-data' },
+    }),
+    { parse: (raw) => unwrapApiResponse<readonly Experience[]>(raw) },
+  );
 
   /** Resource for candidate highest education record. */
-  readonly educations = httpResource<ResumeEducation>(() => ({
-    url: `${this.baseUrl}/api/v1/educations`,
-    headers: { 'X-Api-Type': 'resume-data' },
-  }));
+  readonly educations = httpResource<ResumeEducation>(
+    () => ({
+      url: `${this.baseUrl}/api/v1/educations`,
+      headers: { 'X-Api-Type': 'resume-data' },
+    }),
+    { parse: (raw) => unwrapApiResponse<ResumeEducation>(raw) },
+  );
 
   /** Whether any resource is currently loading. */
   readonly isLoading = computed<boolean>(

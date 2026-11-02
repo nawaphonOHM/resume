@@ -26,12 +26,16 @@ import {
 } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { Subject } from 'rxjs';
-import { vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 
 import { routes } from '../../app.routes';
 import { RESUME_THEME_STORAGE_KEY } from '../../helper/injection-token/resume-theme-storage-key.variable.ts';
 import { resumeData } from '../../helper/injection-token/resume.data.ts';
 import { ResumeDataService } from '../../helper/core/resume-data.service.ts';
+import { RESUME_DATA_API_BASE_URL } from '../../helper/injection-token/resume-data-api-base-url.variable.ts';
+import type { ApiResponse } from '../../helper/interface/api-response/api-response.interface.ts';
 import { IMAGE_ASSET_ORIGIN as IMAGE_ASSET_ORIGIN_TOKEN } from '../../helper/injection-token/image-asset-origin.variable.ts';
 import { resolveTechnologyIcon as resolveTechnologyIconToken } from '../../helper/injection-token/resolve-technology-icon.function.ts';
 import { TechnologyIconContrastService } from '../experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts';
@@ -1468,5 +1472,234 @@ describe('ResumePage', () => {
     expect(element.querySelector('.resume-page-loading')).toBeNull();
     expect(element.querySelector('app-hero-section')).not.toBeNull();
     expect(element.querySelector('footer')).not.toBeNull();
+  });
+
+  it('renders all sections and profile data when complete profile is resolved', async () => {
+    mockIsLoading.set(false);
+    mockHasError.set(false);
+    mockResumeProfile.set(RESUME);
+
+    const fixture = TestBed.createComponent(ResumePage);
+    await renderDeferredSections(fixture);
+
+    const element = fixture.nativeElement as HTMLElement;
+
+    // Verify presence of all sections
+    expect(element.querySelector('app-hero-section')).not.toBeNull();
+    expect(element.querySelector('app-summary-section')).not.toBeNull();
+    expect(element.querySelector('app-experience-timeline')).not.toBeNull();
+    expect(element.querySelector('app-education-section')).not.toBeNull();
+    expect(element.querySelector('app-profile-sidebar')).not.toBeNull();
+
+    // Verify key domain text rendered accurately
+    const textContent = element.textContent;
+    expect(textContent).toContain(RESUME.name);
+    expect(textContent).toContain(RESUME.title);
+    expect(textContent).toContain(RESUME.education.institution);
+  });
+});
+
+describe('ResumePage live HTTP envelope integration', () => {
+  let httpMock: HttpTestingController;
+  let optimize: ReturnType<typeof vi.fn<TechnologyIconContrastService['optimize']>>;
+  let download: ReturnType<typeof vi.fn<ResumePdfService['download']>>;
+  let isAvailable: WritableSignal<boolean | null>;
+  let handleError: ReturnType<typeof vi.fn<ErrorHandler['handleError']>>;
+
+  const createEnvelope = <T>(data: T, timestamp = '2026-11-02T19:44:20Z'): ApiResponse<T> => ({
+    success: true,
+    data,
+    timestamp,
+  });
+
+  beforeEach(async () => {
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: vi.fn(() => ({
+        matches: false,
+        media: '(prefers-color-scheme: dark)',
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+      })),
+    });
+
+    localStorage.clear();
+    document.documentElement.classList.remove(
+      'resume-theme-light',
+      'resume-theme-dark',
+      'resume-theme-transitioning',
+    );
+
+    optimize = vi.fn<TechnologyIconContrastService['optimize']>((icon) =>
+      Promise.resolve(optimizedPresentation(icon)),
+    );
+    download = vi.fn<ResumePdfService['download']>(() => Promise.resolve());
+    isAvailable = signal<boolean | null>(true);
+    handleError = vi.fn<ErrorHandler['handleError']>();
+
+    await TestBed.configureTestingModule({
+      deferBlockBehavior: DeferBlockBehavior.Manual,
+      imports: [ResumePage],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter(
+          routes,
+          withInMemoryScrolling({
+            anchorScrolling: 'enabled',
+            scrollPositionRestoration: 'enabled',
+          }),
+          withRouterConfig({ onSameUrlNavigation: 'reload' }),
+        ),
+        { provide: TechnologyIconContrastService, useValue: { optimize } },
+        { provide: ResumePdfService, useValue: { download, isAvailable } },
+        { provide: ErrorHandler, useValue: { handleError } },
+        { provide: RESUME_DATA_API_BASE_URL, useValue: '' },
+      ],
+    }).compileComponents();
+
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpMock.verify();
+    TestBed.inject(MatDialog).closeAll();
+    TestBed.resetTestingModule();
+    vi.restoreAllMocks();
+    localStorage.clear();
+    document.documentElement.classList.remove(
+      'resume-theme-light',
+      'resume-theme-dark',
+      'resume-theme-transitioning',
+    );
+  });
+
+  it('unwraps all backend API envelopes and renders full resume without metadata leakage', async () => {
+    const fullResume = TestBed.inject(resumeData);
+    const envelopeTimestamp = '2026-11-02T19:44:20Z';
+
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+
+    // Initially in loading state with progress bar
+    expect(element.querySelector('.resume-page-loading')).not.toBeNull();
+    expect(element.querySelector('app-hero-section')).toBeNull();
+
+    // Flush all 8 HTTP endpoint requests with wrapped ApiResponse envelopes
+    httpMock.expectOne('/api/v1/names').flush(createEnvelope(fullResume.name, envelopeTimestamp));
+    httpMock.expectOne('/api/v1/titles').flush(createEnvelope(fullResume.title, envelopeTimestamp));
+    httpMock
+      .expectOne('/api/v1/summaries')
+      .flush(createEnvelope(fullResume.summary, envelopeTimestamp));
+    httpMock
+      .expectOne('/api/v1/details')
+      .flush(createEnvelope(fullResume.details, envelopeTimestamp));
+    httpMock.expectOne('/api/v1/links').flush(createEnvelope(fullResume.links, envelopeTimestamp));
+    httpMock
+      .expectOne('/api/v1/skills')
+      .flush(createEnvelope(fullResume.skills, envelopeTimestamp));
+    httpMock
+      .expectOne('/api/v1/experiences')
+      .flush(createEnvelope(fullResume.experience, envelopeTimestamp));
+    httpMock
+      .expectOne('/api/v1/educations')
+      .flush(createEnvelope(fullResume.education, envelopeTimestamp));
+
+    await Promise.resolve();
+    fixture.detectChanges();
+
+    // Loading should be resolved, hero section should now be visible
+    expect(element.querySelector('.resume-page-loading')).toBeNull();
+    expect(element.querySelector('.resume-page-error')).toBeNull();
+    expect(element.querySelector('app-hero-section')).not.toBeNull();
+
+    // Render deferred sections
+    await renderDeferredSections(fixture);
+
+    // Verify all composed sections are rendered
+    expect(element.querySelector('app-summary-section')).not.toBeNull();
+    expect(element.querySelector('app-experience-timeline')).not.toBeNull();
+    expect(element.querySelector('app-education-section')).not.toBeNull();
+    expect(element.querySelector('app-profile-sidebar')).not.toBeNull();
+
+    // Verify rendered domain content across sections
+    const pageText = element.textContent;
+    expect(pageText).toContain(fullResume.name);
+    expect(pageText).toContain(fullResume.title);
+    expect(pageText).toContain(fullResume.summary[0]);
+    expect(pageText).toContain(fullResume.skills[0]);
+    expect(pageText).toContain(fullResume.experience[0].role);
+    expect(pageText).toContain(fullResume.experience[0].company);
+    expect(pageText).toContain(fullResume.education.degree);
+    expect(pageText).toContain(fullResume.education.institution);
+    expect(pageText).toContain(fullResume.education.gpax);
+
+    // Assert absence of envelope metadata and object serialization leaks
+    expect(pageText).not.toContain('[object Object]');
+    expect(pageText).not.toContain(envelopeTimestamp);
+    expect(pageText).not.toContain('"timestamp"');
+    expect(pageText).not.toContain('"success"');
+  });
+
+  it('handles HTTP error gracefully and recovers when user clicks retry', async () => {
+    const fullResume = TestBed.inject(resumeData);
+    const fixture = TestBed.createComponent(ResumePage);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+
+    // Simulate 500 error on names, successful envelopes on others
+    httpMock
+      .expectOne('/api/v1/names')
+      .flush({ message: 'Internal Server Error' }, { status: 500, statusText: 'Server Error' });
+    httpMock.expectOne('/api/v1/titles').flush(createEnvelope(fullResume.title));
+    httpMock.expectOne('/api/v1/summaries').flush(createEnvelope(fullResume.summary));
+    httpMock.expectOne('/api/v1/details').flush(createEnvelope(fullResume.details));
+    httpMock.expectOne('/api/v1/links').flush(createEnvelope(fullResume.links));
+    httpMock.expectOne('/api/v1/skills').flush(createEnvelope(fullResume.skills));
+    httpMock.expectOne('/api/v1/experiences').flush(createEnvelope(fullResume.experience));
+    httpMock.expectOne('/api/v1/educations').flush(createEnvelope(fullResume.education));
+
+    await Promise.resolve();
+    fixture.detectChanges();
+
+    // Expect error alert state
+    expect(element.querySelector('.resume-page-loading')).toBeNull();
+    const errorAlert = element.querySelector<HTMLElement>('.resume-page-error');
+    expect(errorAlert).not.toBeNull();
+
+    // Click retry button
+    const retryBtn = element.querySelector<HTMLButtonElement>('.resume-page-retry-button');
+    expect(retryBtn).not.toBeNull();
+    retryBtn?.click();
+
+    await Promise.resolve();
+    fixture.detectChanges();
+
+    // Reload triggers new HTTP requests for all resources
+    httpMock.expectOne('/api/v1/names').flush(createEnvelope(fullResume.name));
+    httpMock.expectOne('/api/v1/titles').flush(createEnvelope(fullResume.title));
+    httpMock.expectOne('/api/v1/summaries').flush(createEnvelope(fullResume.summary));
+    httpMock.expectOne('/api/v1/details').flush(createEnvelope(fullResume.details));
+    httpMock.expectOne('/api/v1/links').flush(createEnvelope(fullResume.links));
+    httpMock.expectOne('/api/v1/skills').flush(createEnvelope(fullResume.skills));
+    httpMock.expectOne('/api/v1/experiences').flush(createEnvelope(fullResume.experience));
+    httpMock.expectOne('/api/v1/educations').flush(createEnvelope(fullResume.education));
+
+    await Promise.resolve();
+    fixture.detectChanges();
+
+    // Now error is resolved and hero is visible
+    expect(element.querySelector('.resume-page-error')).toBeNull();
+    expect(element.querySelector('app-hero-section')).not.toBeNull();
+
+    // Render deferred sections
+    await renderDeferredSections(fixture);
+    expect(element.textContent).toContain(fullResume.name);
+    expect(element.textContent).not.toContain('[object Object]');
   });
 });
