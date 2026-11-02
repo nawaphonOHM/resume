@@ -18,6 +18,7 @@ import type { ResumeLink } from '../interface/ressume-link/resume-link.interface
 import type { Experience } from '../interface/experience/experience.interface.ts';
 import type { ResumeEducation } from '../interface/resume-education/resume-education.interface.ts';
 import type { ResumeProfile } from '../interface/resume-profile/resume-profile.interface.ts';
+import type { ApiResponse } from '../interface/api-response/api-response.interface.ts';
 
 describe('ResumeDataService', () => {
   let service: ResumeDataService;
@@ -76,6 +77,12 @@ describe('ResumeDataService', () => {
       url: 'https://github.com/janedoe/project',
     },
   };
+
+  const createEnvelope = <T>(data: T): ApiResponse<T> => ({
+    success: true,
+    data,
+    timestamp: '2026-11-02T19:44:20Z',
+  });
 
   const setupService = (baseUrl = ''): void => {
     TestBed.configureTestingModule({
@@ -137,15 +144,15 @@ describe('ResumeDataService', () => {
     expect(service.progress()).toBe(0);
     expect(service.profile()).toBeUndefined();
 
-    // Clean up open requests
-    reqNames.flush(mockName);
-    reqTitles.flush(mockTitle);
-    reqSummaries.flush(mockSummaries);
-    reqDetails.flush(mockDetails);
-    reqLinks.flush(mockLinks);
-    reqSkills.flush(mockSkills);
-    reqExperiences.flush(mockExperiences);
-    reqEducations.flush(mockEducation);
+    // Clean up open requests with valid ApiResponse envelopes
+    reqNames.flush(createEnvelope(mockName));
+    reqTitles.flush(createEnvelope(mockTitle));
+    reqSummaries.flush(createEnvelope(mockSummaries));
+    reqDetails.flush(createEnvelope(mockDetails));
+    reqLinks.flush(createEnvelope(mockLinks));
+    reqSkills.flush(createEnvelope(mockSkills));
+    reqExperiences.flush(createEnvelope(mockExperiences));
+    reqEducations.flush(createEnvelope(mockEducation));
   });
 
   it('prepends configured RESUME_DATA_API_BASE_URL to endpoint paths', () => {
@@ -155,18 +162,32 @@ describe('ResumeDataService', () => {
     const req = httpMock.expectOne('https://api.resume.example.com/api/v1/names');
     expect(req.request.method).toBe('GET');
 
-    // Flush remaining requests to satisfy verify()
-    req.flush(mockName);
-    httpMock.expectOne('https://api.resume.example.com/api/v1/titles').flush(mockTitle);
-    httpMock.expectOne('https://api.resume.example.com/api/v1/summaries').flush(mockSummaries);
-    httpMock.expectOne('https://api.resume.example.com/api/v1/details').flush(mockDetails);
-    httpMock.expectOne('https://api.resume.example.com/api/v1/links').flush(mockLinks);
-    httpMock.expectOne('https://api.resume.example.com/api/v1/skills').flush(mockSkills);
-    httpMock.expectOne('https://api.resume.example.com/api/v1/experiences').flush(mockExperiences);
-    httpMock.expectOne('https://api.resume.example.com/api/v1/educations').flush(mockEducation);
+    // Flush remaining requests with wrapped ApiResponse envelopes
+    req.flush(createEnvelope(mockName));
+    httpMock
+      .expectOne('https://api.resume.example.com/api/v1/titles')
+      .flush(createEnvelope(mockTitle));
+    httpMock
+      .expectOne('https://api.resume.example.com/api/v1/summaries')
+      .flush(createEnvelope(mockSummaries));
+    httpMock
+      .expectOne('https://api.resume.example.com/api/v1/details')
+      .flush(createEnvelope(mockDetails));
+    httpMock
+      .expectOne('https://api.resume.example.com/api/v1/links')
+      .flush(createEnvelope(mockLinks));
+    httpMock
+      .expectOne('https://api.resume.example.com/api/v1/skills')
+      .flush(createEnvelope(mockSkills));
+    httpMock
+      .expectOne('https://api.resume.example.com/api/v1/experiences')
+      .flush(createEnvelope(mockExperiences));
+    httpMock
+      .expectOne('https://api.resume.example.com/api/v1/educations')
+      .flush(createEnvelope(mockEducation));
   });
 
-  it('aggregates all resolved resources into a canonical ResumeProfile signal', async () => {
+  it('aggregates all resolved resources into a canonical ResumeProfile signal from wrapped API envelopes', async () => {
     setupService();
     TestBed.tick();
 
@@ -179,14 +200,14 @@ describe('ResumeDataService', () => {
     const reqExperiences = httpMock.expectOne('/api/v1/experiences');
     const reqEducations = httpMock.expectOne('/api/v1/educations');
 
-    reqNames.flush(mockName);
-    reqTitles.flush(mockTitle);
-    reqSummaries.flush(mockSummaries);
-    reqDetails.flush(mockDetails);
-    reqLinks.flush(mockLinks);
-    reqSkills.flush(mockSkills);
-    reqExperiences.flush(mockExperiences);
-    reqEducations.flush(mockEducation);
+    reqNames.flush(createEnvelope(mockName));
+    reqTitles.flush(createEnvelope(mockTitle));
+    reqSummaries.flush(createEnvelope(mockSummaries));
+    reqDetails.flush(createEnvelope(mockDetails));
+    reqLinks.flush(createEnvelope(mockLinks));
+    reqSkills.flush(createEnvelope(mockSkills));
+    reqExperiences.flush(createEnvelope(mockExperiences));
+    reqEducations.flush(createEnvelope(mockEducation));
 
     await Promise.resolve();
     TestBed.tick();
@@ -235,8 +256,8 @@ describe('ResumeDataService', () => {
     expect(service.progress()).toBe(0);
 
     // Flush 2 of 8
-    reqNames.flush(mockName);
-    reqTitles.flush(mockTitle);
+    reqNames.flush(createEnvelope(mockName));
+    reqTitles.flush(createEnvelope(mockTitle));
     await Promise.resolve();
     TestBed.tick();
 
@@ -245,8 +266,8 @@ describe('ResumeDataService', () => {
     expect(service.profile()).toBeUndefined();
 
     // Flush next 2 (4 of 8)
-    reqSummaries.flush(mockSummaries);
-    reqDetails.flush(mockDetails);
+    reqSummaries.flush(createEnvelope(mockSummaries));
+    reqDetails.flush(createEnvelope(mockDetails));
     await Promise.resolve();
     TestBed.tick();
 
@@ -255,10 +276,10 @@ describe('ResumeDataService', () => {
     expect(service.profile()).toBeUndefined();
 
     // Flush remaining 4
-    reqLinks.flush(mockLinks);
-    reqSkills.flush(mockSkills);
-    reqExperiences.flush(mockExperiences);
-    reqEducations.flush(mockEducation);
+    reqLinks.flush(createEnvelope(mockLinks));
+    reqSkills.flush(createEnvelope(mockSkills));
+    reqExperiences.flush(createEnvelope(mockExperiences));
+    reqEducations.flush(createEnvelope(mockEducation));
     await Promise.resolve();
     TestBed.tick();
     await appRef.whenStable();
@@ -281,14 +302,14 @@ describe('ResumeDataService', () => {
     const reqExperiences = httpMock.expectOne('/api/v1/experiences');
     const reqEducations = httpMock.expectOne('/api/v1/educations');
 
-    reqNames.flush(mockName);
+    reqNames.flush(createEnvelope(mockName));
     reqTitles.flush('Internal Server Error', { status: 500, statusText: 'Server Error' });
-    reqSummaries.flush(mockSummaries);
-    reqDetails.flush(mockDetails);
-    reqLinks.flush(mockLinks);
-    reqSkills.flush(mockSkills);
-    reqExperiences.flush(mockExperiences);
-    reqEducations.flush(mockEducation);
+    reqSummaries.flush(createEnvelope(mockSummaries));
+    reqDetails.flush(createEnvelope(mockDetails));
+    reqLinks.flush(createEnvelope(mockLinks));
+    reqSkills.flush(createEnvelope(mockSkills));
+    reqExperiences.flush(createEnvelope(mockExperiences));
+    reqEducations.flush(createEnvelope(mockEducation));
     await Promise.resolve();
     TestBed.tick();
     await appRef.whenStable();
@@ -313,14 +334,14 @@ describe('ResumeDataService', () => {
       httpMock.expectOne('/api/v1/educations'),
     ];
 
-    initialRequests[0].flush(mockName);
-    initialRequests[1].flush(mockTitle);
-    initialRequests[2].flush(mockSummaries);
-    initialRequests[3].flush(mockDetails);
-    initialRequests[4].flush(mockLinks);
-    initialRequests[5].flush(mockSkills);
-    initialRequests[6].flush(mockExperiences);
-    initialRequests[7].flush(mockEducation);
+    initialRequests[0].flush(createEnvelope(mockName));
+    initialRequests[1].flush(createEnvelope(mockTitle));
+    initialRequests[2].flush(createEnvelope(mockSummaries));
+    initialRequests[3].flush(createEnvelope(mockDetails));
+    initialRequests[4].flush(createEnvelope(mockLinks));
+    initialRequests[5].flush(createEnvelope(mockSkills));
+    initialRequests[6].flush(createEnvelope(mockExperiences));
+    initialRequests[7].flush(createEnvelope(mockEducation));
 
     await Promise.resolve();
     TestBed.tick();
@@ -347,18 +368,125 @@ describe('ResumeDataService', () => {
       expect(req.request.headers.get('X-Api-Type')).toBe('resume-data');
     }
 
-    reloadRequests[0].flush(mockName);
-    reloadRequests[1].flush(mockTitle);
-    reloadRequests[2].flush(mockSummaries);
-    reloadRequests[3].flush(mockDetails);
-    reloadRequests[4].flush(mockLinks);
-    reloadRequests[5].flush(mockSkills);
-    reloadRequests[6].flush(mockExperiences);
-    reloadRequests[7].flush(mockEducation);
+    reloadRequests[0].flush(createEnvelope(mockName));
+    reloadRequests[1].flush(createEnvelope(mockTitle));
+    reloadRequests[2].flush(createEnvelope(mockSummaries));
+    reloadRequests[3].flush(createEnvelope(mockDetails));
+    reloadRequests[4].flush(createEnvelope(mockLinks));
+    reloadRequests[5].flush(createEnvelope(mockSkills));
+    reloadRequests[6].flush(createEnvelope(mockExperiences));
+    reloadRequests[7].flush(createEnvelope(mockEducation));
 
     await Promise.resolve();
     TestBed.tick();
     await appRef.whenStable();
+  });
+
+  it('handles raw un-enveloped fallback payloads gracefully for backward compatibility', async () => {
+    setupService();
+    TestBed.tick();
+
+    const reqNames = httpMock.expectOne('/api/v1/names');
+    const reqTitles = httpMock.expectOne('/api/v1/titles');
+    const reqSummaries = httpMock.expectOne('/api/v1/summaries');
+    const reqDetails = httpMock.expectOne('/api/v1/details');
+    const reqLinks = httpMock.expectOne('/api/v1/links');
+    const reqSkills = httpMock.expectOne('/api/v1/skills');
+    const reqExperiences = httpMock.expectOne('/api/v1/experiences');
+    const reqEducations = httpMock.expectOne('/api/v1/educations');
+
+    // Flush raw data directly without ApiResponse envelope
+    reqNames.flush(mockName);
+    reqTitles.flush(mockTitle);
+    reqSummaries.flush(mockSummaries);
+    reqDetails.flush(mockDetails);
+    reqLinks.flush(mockLinks);
+    reqSkills.flush(mockSkills);
+    reqExperiences.flush(mockExperiences);
+    reqEducations.flush(mockEducation);
+
+    await Promise.resolve();
+    TestBed.tick();
+    await appRef.whenStable();
+
+    expect(service.isLoading()).toBe(false);
+    expect(service.hasError()).toBe(false);
+    expect(service.error()).toBeUndefined();
+    expect(service.progress()).toBe(100);
+
+    const expectedProfile: ResumeProfile = {
+      name: mockName,
+      title: mockTitle,
+      summary: mockSummaries,
+      details: mockDetails,
+      links: mockLinks,
+      skills: mockSkills,
+      experience: mockExperiences,
+      education: mockEducation,
+    };
+
+    expect(service.profile()).toEqual(expectedProfile);
+    expect(service.names.value()).toBe(mockName);
+    expect(service.titles.value()).toBe(mockTitle);
+    expect(service.summaries.value()).toEqual(mockSummaries);
+    expect(service.details.value()).toEqual(mockDetails);
+    expect(service.links.value()).toEqual(mockLinks);
+    expect(service.skills.value()).toEqual(mockSkills);
+    expect(service.experiences.value()).toEqual(mockExperiences);
+    expect(service.educations.value()).toEqual(mockEducation);
+  });
+
+  it('handles mixed responses where some endpoints return envelopes and others return raw payloads', async () => {
+    setupService();
+    TestBed.tick();
+
+    const reqNames = httpMock.expectOne('/api/v1/names');
+    const reqTitles = httpMock.expectOne('/api/v1/titles');
+    const reqSummaries = httpMock.expectOne('/api/v1/summaries');
+    const reqDetails = httpMock.expectOne('/api/v1/details');
+    const reqLinks = httpMock.expectOne('/api/v1/links');
+    const reqSkills = httpMock.expectOne('/api/v1/skills');
+    const reqExperiences = httpMock.expectOne('/api/v1/experiences');
+    const reqEducations = httpMock.expectOne('/api/v1/educations');
+
+    // Alternate between wrapped and raw responses
+    reqNames.flush(createEnvelope(mockName));
+    reqTitles.flush(mockTitle);
+    reqSummaries.flush(createEnvelope(mockSummaries));
+    reqDetails.flush(mockDetails);
+    reqLinks.flush(createEnvelope(mockLinks));
+    reqSkills.flush(mockSkills);
+    reqExperiences.flush(createEnvelope(mockExperiences));
+    reqEducations.flush(mockEducation);
+
+    await Promise.resolve();
+    TestBed.tick();
+    await appRef.whenStable();
+
+    expect(service.isLoading()).toBe(false);
+    expect(service.hasError()).toBe(false);
+    expect(service.progress()).toBe(100);
+
+    const expectedProfile: ResumeProfile = {
+      name: mockName,
+      title: mockTitle,
+      summary: mockSummaries,
+      details: mockDetails,
+      links: mockLinks,
+      skills: mockSkills,
+      experience: mockExperiences,
+      education: mockEducation,
+    };
+
+    expect(service.profile()).toEqual(expectedProfile);
+    expect(service.names.value()).toBe(mockName);
+    expect(service.titles.value()).toBe(mockTitle);
+    expect(service.summaries.value()).toEqual(mockSummaries);
+    expect(service.details.value()).toEqual(mockDetails);
+    expect(service.links.value()).toEqual(mockLinks);
+    expect(service.skills.value()).toEqual(mockSkills);
+    expect(service.experiences.value()).toEqual(mockExperiences);
+    expect(service.educations.value()).toEqual(mockEducation);
   });
 
   describe('integration with resumeApiRetryInterceptor', () => {
@@ -392,13 +520,13 @@ describe('ResumeDataService', () => {
       const reqExperiences = httpMock.expectOne('/api/v1/experiences');
       const reqEducations = httpMock.expectOne('/api/v1/educations');
 
-      reqTitles.flush(mockTitle);
-      reqSummaries.flush(mockSummaries);
-      reqDetails.flush(mockDetails);
-      reqLinks.flush(mockLinks);
-      reqSkills.flush(mockSkills);
-      reqExperiences.flush(mockExperiences);
-      reqEducations.flush(mockEducation);
+      reqTitles.flush(createEnvelope(mockTitle));
+      reqSummaries.flush(createEnvelope(mockSummaries));
+      reqDetails.flush(createEnvelope(mockDetails));
+      reqLinks.flush(createEnvelope(mockLinks));
+      reqSkills.flush(createEnvelope(mockSkills));
+      reqExperiences.flush(createEnvelope(mockExperiences));
+      reqEducations.flush(createEnvelope(mockEducation));
 
       // Names endpoint fails transiently with 500 error
       reqNames.flush('Server Error', { status: 500, statusText: 'Internal Server Error' });
@@ -409,7 +537,7 @@ describe('ResumeDataService', () => {
 
       const retryNames = httpMock.expectOne('/api/v1/names?retry=1');
       expect(retryNames.request.headers.get('X-Api-Type')).toBe('resume-data');
-      retryNames.flush(mockName);
+      retryNames.flush(createEnvelope(mockName));
 
       await Promise.resolve();
       TestBed.tick();
@@ -442,13 +570,13 @@ describe('ResumeDataService', () => {
       const reqExperiences = httpMock.expectOne('/api/v1/experiences');
       const reqEducations = httpMock.expectOne('/api/v1/educations');
 
-      reqNames.flush(mockName);
-      reqSummaries.flush(mockSummaries);
-      reqDetails.flush(mockDetails);
-      reqLinks.flush(mockLinks);
-      reqSkills.flush(mockSkills);
-      reqExperiences.flush(mockExperiences);
-      reqEducations.flush(mockEducation);
+      reqNames.flush(createEnvelope(mockName));
+      reqSummaries.flush(createEnvelope(mockSummaries));
+      reqDetails.flush(createEnvelope(mockDetails));
+      reqLinks.flush(createEnvelope(mockLinks));
+      reqSkills.flush(createEnvelope(mockSkills));
+      reqExperiences.flush(createEnvelope(mockExperiences));
+      reqEducations.flush(createEnvelope(mockEducation));
 
       // Attempt 0 fails
       reqTitles.flush('500', { status: 500, statusText: 'Server Error' });
