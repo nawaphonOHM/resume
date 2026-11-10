@@ -725,27 +725,65 @@ describe('HeroSection', () => {
 
   it('clears its one-second interval and animation frame when destroyed', () => {
     vi.setSystemTime(new Date('2026-01-02T01:04:05.000Z'));
-    const initialTimerCount = vi.getTimerCount();
-    const setInterval = vi.spyOn(window, 'setInterval');
+    const originalSetInterval = window.setInterval.bind(window);
+    let clockUpdateCallback: ReturnType<typeof vi.fn> | undefined;
+    const setInterval = vi.spyOn(window, 'setInterval').mockImplementation((handler, delay) => {
+      if (delay === 1_000 && typeof handler === 'function') {
+        const trackedCallback = vi.fn(handler as () => void);
+        clockUpdateCallback = trackedCallback;
+        return originalSetInterval(trackedCallback, delay);
+      }
+
+      return originalSetInterval(handler, delay);
+    });
     const clearInterval = vi.spyOn(window, 'clearInterval');
     const requestAnimationFrame = vi.spyOn(window, 'requestAnimationFrame');
     const cancelAnimationFrame = vi.spyOn(window, 'cancelAnimationFrame');
     const heroFixture = renderHero();
     const clockTimerIndex = setInterval.mock.calls.findIndex(([, delay]) => delay === 1_000);
     const clockTimerId: unknown = setInterval.mock.results[clockTimerIndex]?.value;
-    const animationFrameId: unknown = requestAnimationFrame.mock.results[0]?.value;
+    const animationFrameIndex = requestAnimationFrame.mock.calls.findIndex(([callback]) => {
+      const callbackName: unknown = Object.getOwnPropertyDescriptor(callback, 'name')?.value;
+      return callbackName === 'animateHeroVisuals';
+    });
+    const animationFrameCallback = requestAnimationFrame.mock.calls[animationFrameIndex]?.[0];
+    const initialAnimationFrameId: unknown =
+      requestAnimationFrame.mock.results[animationFrameIndex]?.value;
 
     expect(clockTimerIndex).toBeGreaterThanOrEqual(0);
     expect(clockTimerId).toBeDefined();
-    expect(animationFrameId).toBeDefined();
-    expect(vi.getTimerCount()).toBe(initialTimerCount + 2);
+    expect(clockUpdateCallback).toBeDefined();
+    expect(animationFrameIndex).toBeGreaterThanOrEqual(0);
+    expect(animationFrameCallback).toBeDefined();
+    expect(initialAnimationFrameId).toBeDefined();
+
+    vi.advanceTimersToNextFrame();
+
+    const latestAnimationFrameIndex = requestAnimationFrame.mock.calls.reduce(
+      (latestIndex, [callback], index) =>
+        callback === animationFrameCallback ? index : latestIndex,
+      -1,
+    );
+    const latestAnimationFrameId: unknown =
+      requestAnimationFrame.mock.results[latestAnimationFrameIndex]?.value;
+
+    expect(latestAnimationFrameIndex).toBeGreaterThan(animationFrameIndex);
+    expect(latestAnimationFrameId).toBeDefined();
 
     heroFixture.destroy();
     fixture = null;
 
     expect(clearInterval).toHaveBeenCalledWith(clockTimerId);
-    expect(cancelAnimationFrame).toHaveBeenCalledWith(animationFrameId);
-    expect(vi.getTimerCount()).toBe(initialTimerCount);
+    expect(cancelAnimationFrame).toHaveBeenCalledWith(latestAnimationFrameId);
+
+    const scheduledAnimationFrameCount = requestAnimationFrame.mock.calls.filter(
+      ([callback]) => callback === animationFrameCallback,
+    ).length;
+    vi.advanceTimersByTime(2_000);
+    expect(clockUpdateCallback).not.toHaveBeenCalled();
+    expect(
+      requestAnimationFrame.mock.calls.filter(([callback]) => callback === animationFrameCallback),
+    ).toHaveLength(scheduledAnimationFrameCount);
   });
 });
 
