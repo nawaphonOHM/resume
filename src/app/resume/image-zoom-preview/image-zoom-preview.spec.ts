@@ -9,6 +9,14 @@ import { IMAGE_ZOOM_PREVIEW_DATA } from '../../helper/injection-token/image-zoom
 import type { ImageZoomPreviewData } from '../../helper/interface/image-zoom-preview-data/image-zoom-preview-data.interface.ts';
 import type { BrandLogo } from '../../helper/interface/brand-logo/brand-logo.interface.ts';
 
+const findImageSizingRule = (): CSSStyleRule | undefined =>
+  Array.from(document.querySelectorAll('style'))
+    .flatMap((style) => Array.from(style.sheet?.cssRules ?? []))
+    .find(
+      (rule): rule is CSSStyleRule =>
+        rule instanceof CSSStyleRule && rule.selectorText.includes('.image-zoom-preview__image'),
+    );
+
 describe('ImageZoomPreview', () => {
   afterEach(() => TestBed.resetTestingModule());
 
@@ -53,17 +61,27 @@ describe('ImageZoomPreview', () => {
     expect(getComputedStyle(panel).backgroundColor).toBe(expectedSurface);
     expect(imageStyle.contain).toBe('size');
     expect(imageStyle.getPropertyValue('contain-intrinsic-size')).toBe(
-      'var(--image-zoom-intrinsic-width) var(--image-zoom-intrinsic-height)',
+      `${String(logo.width)}px ${String(logo.height)}px`,
     );
     expect(imageStyle.width).toBe('auto');
     expect(imageStyle.height).toBe('auto');
-    expect(imageStyle.maxWidth).toBe(
-      'var(--image-zoom-image-max-width, min(20vw, 100vw - 3.5rem))',
-    );
-    expect(imageStyle.maxHeight).toBe(
-      'var(--image-zoom-image-max-height, min(20vh, 100vh - 3.5rem))',
-    );
     expect(imageStyle.objectFit).toBe('contain');
+
+    const imageSizingRule = findImageSizingRule();
+    expect(imageSizingRule).toBeDefined();
+    expect(imageSizingRule?.style.getPropertyValue('max-width')).toMatch(
+      /^var\(--image-zoom-image-max-width,\s*min\(20vw,\s*(?:calc\()?100vw - 3\.5rem\)?\)\)$/,
+    );
+    expect(imageSizingRule?.style.getPropertyValue('max-height')).toMatch(
+      /^var\(--image-zoom-image-max-height,\s*min\(20vh,\s*(?:calc\()?100vh - 3\.5rem\)?\)\)$/,
+    );
+
+    panel.style.setProperty('--image-zoom-image-max-width', '125px');
+    panel.style.setProperty('--image-zoom-image-max-height', '80px');
+    const overriddenImageStyle = getComputedStyle(image);
+    expect(overriddenImageStyle.maxWidth).toBe('125px');
+    expect(overriddenImageStyle.maxHeight).toBe('80px');
+
     expect(image.getAttribute('src')).toBe(logo.src);
     expect(image.getAttribute('width')).toBe('640');
     expect(image.getAttribute('height')).toBe('320');
@@ -125,13 +143,19 @@ describe('ImageZoomPreview', () => {
     const panel = host.querySelector<HTMLElement>('.image-zoom-preview');
     const image = host.querySelector<HTMLImageElement>('img');
 
+    expect(image).not.toBeNull();
+    if (!image) {
+      throw new Error('Required preview image was not found');
+    }
+
     expect(host.getAttribute('aria-hidden')).toBe('true');
     expect(panel?.classList.contains('image-zoom-preview--light')).toBe(true);
     expect(panel?.getAttribute('data-image-zoom-surface')).toBe('light');
-    expect(image?.getAttribute('src')).toBe(generatedSource);
-    expect(image?.getAttribute('width')).toBe('96');
-    expect(image?.getAttribute('height')).toBe('48');
-    expect(image?.getAttribute('alt')).toBe(data.label);
-    expect(image?.getAttribute('draggable')).toBe('false');
+    expect(image.getAttribute('src')).toBe(generatedSource);
+    expect(image.getAttribute('width')).toBe('96');
+    expect(image.getAttribute('height')).toBe('48');
+    expect(image.getAttribute('alt')).toBe(data.label);
+    expect(image.getAttribute('draggable')).toBe('false');
+    expect(getComputedStyle(image).getPropertyValue('contain-intrinsic-size')).toBe('96px 48px');
   });
 });
