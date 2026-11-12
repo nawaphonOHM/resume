@@ -11,10 +11,7 @@ import { projectLogoFileNameForPath } from '../injection-token/resume.data.ts';
 import { RESUME_DATA_API_BASE_URL } from '../injection-token/resume-data-api-base-url.variable.ts';
 import { unwrapApiResponse } from './api-response.helper.ts';
 
-const PROJECT_LOGO_ORIGINS = new Set([
-  'https://resume-images.ohm-mho.space',
-  'https://ohm-mho.space',
-]);
+const PROJECT_LOGO_ORIGIN = 'https://ohm-mho.space';
 
 function projectLogoFileNameFromSource(source: unknown): string | undefined {
   if (typeof source !== 'string') {
@@ -29,7 +26,7 @@ function projectLogoFileNameFromSource(source: unknown): string | undefined {
   try {
     const url = new URL(source);
     if (
-      !PROJECT_LOGO_ORIGINS.has(url.origin) ||
+      url.origin !== PROJECT_LOGO_ORIGIN ||
       url.username !== '' ||
       url.password !== '' ||
       `${url.origin}${url.pathname}` !== source

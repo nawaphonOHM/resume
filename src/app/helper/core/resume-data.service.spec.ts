@@ -258,7 +258,7 @@ describe('ResumeDataService', () => {
       {
         label: 'GitHub',
         url: 'https://github.com/janedoe',
-        logo: logo('https://resume-images.ohm-mho.space/link-logos/github.svg'),
+        logo: logo('https://ohm-mho.space/link-logos/github.svg'),
       },
       {
         label: 'External image',
@@ -363,7 +363,7 @@ describe('ResumeDataService', () => {
     expect(service.experiences.value()).toBe(apiExperiences);
     expect(service.educations.value()).toBe(apiEducation);
     expect(service.links.value()?.[0].logo?.src).toBe(
-      'https://resume-images.ohm-mho.space/link-logos/github.svg',
+      'https://ohm-mho.space/link-logos/github.svg',
     );
     expect(service.experiences.value()?.[0].companyLogo.src).toBe(
       '/company-logos/accord-innovations.png',

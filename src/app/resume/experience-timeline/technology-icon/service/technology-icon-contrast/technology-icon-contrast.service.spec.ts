@@ -9,8 +9,8 @@ import type { TechnologyIconOpenCvLoader } from '../../../../../helper/type/tech
 import { TECHNOLOGY_ICON_OPEN_CV_LOADER } from '../../../../../helper/injection-token/technology-icon-open-cv-loader.function.ts';
 
 const OPEN_CV_CDN_URL = 'https://cdn.jsdelivr.net/npm/@techstark/opencv-js/+esm';
-const REMOTE_ICON_URL = 'https://resume-images.ohm-mho.space/technology-icons/test.svg';
-const SECOND_REMOTE_ICON_URL = 'https://resume-images.ohm-mho.space/technology-icons/second.svg';
+const REMOTE_ICON_URL = 'https://ohm-mho.space/assets/test.svg';
+const SECOND_REMOTE_ICON_URL = 'https://ohm-mho.space/assets/second.svg';
 const ICON: TechnologyIconMetadata = {
   src: REMOTE_ICON_URL,
   width: 24,
