@@ -10,9 +10,12 @@ import { PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
+import { IMAGE_ASSET_ORIGIN } from '../../../../helper/injection-token/image-asset-origin.variable.ts';
 import { RESUME_PDF_DOWNLOAD_URL } from '../../../../helper/injection-token/resume-pdf-download-url.variable.ts';
 import { RESUME_PDF_FILENAME } from '../../../../helper/injection-token/resume-pdf-filename.variable.ts';
 import { ResumePdfService } from './resume-pdf.service.ts';
+
+const DEFAULT_PDF_DOWNLOAD_URL = 'https://ohm-mho.space/assets/Nawaphon_Isarathanachaikul.pdf';
 
 function trackAnchorClicks(): HTMLAnchorElement[] {
   const anchors: HTMLAnchorElement[] = [];
@@ -98,9 +101,19 @@ describe('ResumePdfService', () => {
     const downloadUrl = TestBed.inject(RESUME_PDF_DOWNLOAD_URL);
     const filename = TestBed.inject(RESUME_PDF_FILENAME);
 
-    expect(downloadUrl).toBe('/downloadable-resume/Nawaphon_Isarathanachaikul.pdf');
+    expect(downloadUrl).toBe(DEFAULT_PDF_DOWNLOAD_URL);
     expect(filename).toBe('nawaphon-isarathanachaikul-resume-profile.pdf');
     httpMock.verify();
+  });
+
+  it('derives the default PDF URL from an overridden asset origin', () => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: IMAGE_ASSET_ORIGIN, useValue: 'https://assets.example.com/' }],
+    });
+
+    expect(TestBed.inject(RESUME_PDF_DOWNLOAD_URL)).toBe(
+      'https://assets.example.com/assets/Nawaphon_Isarathanachaikul.pdf',
+    );
   });
 
   it('initiates an HTTP HEAD check on browser startup and marks availability as true on 2xx status', async () => {
@@ -109,7 +122,7 @@ describe('ResumePdfService', () => {
 
     const headReq = httpMock.expectOne({
       method: 'HEAD',
-      url: '/downloadable-resume/Nawaphon_Isarathanachaikul.pdf',
+      url: DEFAULT_PDF_DOWNLOAD_URL,
     });
     headReq.flush(null, { status: 200, statusText: 'OK' });
 
@@ -126,7 +139,7 @@ describe('ResumePdfService', () => {
 
     const headReq = httpMock.expectOne({
       method: 'HEAD',
-      url: '/downloadable-resume/Nawaphon_Isarathanachaikul.pdf',
+      url: DEFAULT_PDF_DOWNLOAD_URL,
     });
     headReq.flush(null, { status: 200, statusText: 'OK' });
 
@@ -142,7 +155,7 @@ describe('ResumePdfService', () => {
 
     const headReq = httpMock.expectOne({
       method: 'HEAD',
-      url: '/downloadable-resume/Nawaphon_Isarathanachaikul.pdf',
+      url: DEFAULT_PDF_DOWNLOAD_URL,
     });
     headReq.flush(null, { status: 204, statusText: 'No Content' });
 
@@ -156,7 +169,7 @@ describe('ResumePdfService', () => {
     const { service, httpMock } = setupService([], { autoFlushHead: false });
     const headReq = httpMock.expectOne({
       method: 'HEAD',
-      url: '/downloadable-resume/Nawaphon_Isarathanachaikul.pdf',
+      url: DEFAULT_PDF_DOWNLOAD_URL,
     });
     headReq.flush(null, { status: 404, statusText: 'Not Found' });
 
@@ -172,7 +185,7 @@ describe('ResumePdfService', () => {
 
     const headReq = httpMock.expectOne({
       method: 'HEAD',
-      url: '/downloadable-resume/Nawaphon_Isarathanachaikul.pdf',
+      url: DEFAULT_PDF_DOWNLOAD_URL,
     });
     headReq.flush(null, { status: 500, statusText: 'Internal Server Error' });
 
@@ -188,7 +201,7 @@ describe('ResumePdfService', () => {
 
     const headReq = httpMock.expectOne({
       method: 'HEAD',
-      url: '/downloadable-resume/Nawaphon_Isarathanachaikul.pdf',
+      url: DEFAULT_PDF_DOWNLOAD_URL,
     });
     headReq.error(new ProgressEvent('error'));
 
@@ -202,13 +215,13 @@ describe('ResumePdfService', () => {
     const { service, httpMock } = setupService([{ provide: PLATFORM_ID, useValue: 'server' }]);
     expect(service.isAvailable()).toBeNull();
 
-    httpMock.expectNone('/downloadable-resume/Nawaphon_Isarathanachaikul.pdf');
+    httpMock.expectNone(DEFAULT_PDF_DOWNLOAD_URL);
 
     const result = await service.checkAvailability();
     expect(result).toBe(false);
     expect(service.isAvailable()).toBe(false);
 
-    httpMock.expectNone('/downloadable-resume/Nawaphon_Isarathanachaikul.pdf');
+    httpMock.expectNone(DEFAULT_PDF_DOWNLOAD_URL);
     httpMock.verify();
   });
 
@@ -232,7 +245,7 @@ describe('ResumePdfService', () => {
     const { service, httpMock } = setupService();
     const downloadPromise = service.download();
 
-    const req = httpMock.expectOne('/downloadable-resume/Nawaphon_Isarathanachaikul.pdf');
+    const req = httpMock.expectOne(DEFAULT_PDF_DOWNLOAD_URL);
     expect(req.request.method).toBe('GET');
     expect(req.request.reportDownloadProgress).toBe(true);
     expect(req.request.responseType).toBe('blob');
@@ -253,7 +266,7 @@ describe('ResumePdfService', () => {
 
     const downloadPromise = service.download(onProgress);
 
-    const req = httpMock.expectOne('/downloadable-resume/Nawaphon_Isarathanachaikul.pdf');
+    const req = httpMock.expectOne(DEFAULT_PDF_DOWNLOAD_URL);
 
     // Simulate Sent event (should be ignored by progress calculation)
     req.event({
@@ -301,7 +314,7 @@ describe('ResumePdfService', () => {
 
     const downloadPromise = service.download(onProgress);
 
-    const req = httpMock.expectOne('/downloadable-resume/Nawaphon_Isarathanachaikul.pdf');
+    const req = httpMock.expectOne(DEFAULT_PDF_DOWNLOAD_URL);
 
     // Missing total
     req.event({
@@ -334,7 +347,7 @@ describe('ResumePdfService', () => {
 
     const downloadPromise = service.download();
 
-    const req = httpMock.expectOne('/downloadable-resume/Nawaphon_Isarathanachaikul.pdf');
+    const req = httpMock.expectOne(DEFAULT_PDF_DOWNLOAD_URL);
 
     const mockBlob = new Blob(['%PDF-1.7 content'], { type: 'application/pdf' });
     req.flush(mockBlob);
@@ -364,7 +377,7 @@ describe('ResumePdfService', () => {
 
     const downloadPromise = service.download();
 
-    const req = httpMock.expectOne('/downloadable-resume/Nawaphon_Isarathanachaikul.pdf');
+    const req = httpMock.expectOne(DEFAULT_PDF_DOWNLOAD_URL);
 
     const mockBlob = new Blob(['%PDF-1.7'], { type: 'application/pdf' });
     req.flush(mockBlob);
@@ -381,7 +394,7 @@ describe('ResumePdfService', () => {
     const { service, httpMock } = setupService();
     const downloadPromise = service.download();
 
-    const req = httpMock.expectOne('/downloadable-resume/Nawaphon_Isarathanachaikul.pdf');
+    const req = httpMock.expectOne(DEFAULT_PDF_DOWNLOAD_URL);
 
     const errorBlob = new Blob(['Not Found'], { type: 'text/plain' });
     req.flush(errorBlob, { status: 404, statusText: 'Not Found' });
@@ -402,7 +415,7 @@ describe('ResumePdfService', () => {
 
     await downloadPromise;
 
-    httpMock.expectNone('/downloadable-resume/Nawaphon_Isarathanachaikul.pdf');
+    httpMock.expectNone(DEFAULT_PDF_DOWNLOAD_URL);
     expect(onProgress).not.toHaveBeenCalled();
     expect(createObjectUrl).not.toHaveBeenCalled();
     httpMock.verify();
@@ -438,7 +451,7 @@ describe('ResumePdfService', () => {
     const { service, httpMock } = setupService();
     const downloadPromise = service.download();
 
-    const req = httpMock.expectOne('/downloadable-resume/Nawaphon_Isarathanachaikul.pdf');
+    const req = httpMock.expectOne(DEFAULT_PDF_DOWNLOAD_URL);
 
     req.event({
       type: HttpEventType.DownloadProgress,

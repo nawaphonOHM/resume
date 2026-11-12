@@ -1,4 +1,4 @@
-/** Verifies availability status color to CDN favicon URL mapping. */
+/** Verifies availability status color to asset favicon URL mapping. */
 import { TestBed } from '@angular/core/testing';
 
 import { statusFaviconForStatusColor } from './status-favicon-for-status-color.function.ts';
@@ -10,27 +10,37 @@ describe('statusFaviconForStatusColor', () => {
     TestBed.resetTestingModule();
   });
 
-  it('maps standard status colors to their respective CDN favicon SVG URLs', () => {
+  it('maps standard status colors to their encoded favicon query URLs', () => {
     TestBed.configureTestingModule({});
     const resolveFavicon = TestBed.inject(statusFaviconForStatusColor);
 
-    expect(resolveFavicon('#92C353')).toBe('/favicons/available/favicon.svg');
-    expect(resolveFavicon('#F7A600')).toBe('/favicons/limited/favicon.svg');
-    expect(resolveFavicon('#D1D1D1')).toBe('/favicons/unavailable/favicon.svg');
+    expect(resolveFavicon('#92C353')).toBe(
+      'https://ohm-mho.space/assets/favicon.svg?%7B%22status%22%3A%22available%22%7D',
+    );
+    expect(resolveFavicon('#F7A600')).toBe(
+      'https://ohm-mho.space/assets/favicon.svg?%7B%22status%22%3A%22limited%22%7D',
+    );
+    expect(resolveFavicon('#D1D1D1')).toBe(
+      'https://ohm-mho.space/assets/favicon.svg?%7B%22status%22%3A%22unavailable%22%7D',
+    );
   });
 
   it('falls back to the unavailable favicon URL for unrecognized status colors', () => {
     TestBed.configureTestingModule({});
     const resolveFavicon = TestBed.inject(statusFaviconForStatusColor);
 
-    expect(resolveFavicon('#000000')).toBe('/favicons/unavailable/favicon.svg');
-    expect(resolveFavicon('')).toBe('/favicons/unavailable/favicon.svg');
+    expect(resolveFavicon('#000000')).toBe(
+      'https://ohm-mho.space/assets/favicon.svg?%7B%22status%22%3A%22unavailable%22%7D',
+    );
+    expect(resolveFavicon('')).toBe(
+      'https://ohm-mho.space/assets/favicon.svg?%7B%22status%22%3A%22unavailable%22%7D',
+    );
   });
 
   it('honors overridden IMAGE_ASSET_ORIGIN and statusColor tokens', () => {
     TestBed.configureTestingModule({
       providers: [
-        { provide: IMAGE_ASSET_ORIGIN, useValue: 'https://custom-cdn.example.com' },
+        { provide: IMAGE_ASSET_ORIGIN, useValue: 'https://custom-cdn.example.com/' },
         {
           provide: statusColor,
           useValue: {
@@ -45,13 +55,13 @@ describe('statusFaviconForStatusColor', () => {
     const resolveFavicon = TestBed.inject(statusFaviconForStatusColor);
 
     expect(resolveFavicon('#111111')).toBe(
-      'https://custom-cdn.example.com/favicons/available/favicon.svg',
+      'https://custom-cdn.example.com/assets/favicon.svg?%7B%22status%22%3A%22available%22%7D',
     );
     expect(resolveFavicon('#222222')).toBe(
-      'https://custom-cdn.example.com/favicons/limited/favicon.svg',
+      'https://custom-cdn.example.com/assets/favicon.svg?%7B%22status%22%3A%22limited%22%7D',
     );
     expect(resolveFavicon('#333333')).toBe(
-      'https://custom-cdn.example.com/favicons/unavailable/favicon.svg',
+      'https://custom-cdn.example.com/assets/favicon.svg?%7B%22status%22%3A%22unavailable%22%7D',
     );
   });
 });

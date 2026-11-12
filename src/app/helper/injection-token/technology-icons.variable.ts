@@ -1,6 +1,6 @@
 import { inject, InjectionToken } from '@angular/core';
 import type { TechnologyIconMetadata } from '../interface/brand-logo/technology-icon-meta-data/technology-icon-meta-data.interface.ts';
-import { imageAssetUrl } from './image-asset-url.function.ts';
+import { assetUrlBuilder } from './asset-url-builder.function.ts';
 import { SPRING_ICON } from './spring-icon.variable.ts';
 
 /**
@@ -13,145 +13,145 @@ export const TECHNOLOGY_ICONS = new InjectionToken<
 >('TECHNOLOGY_ICONS', {
   providedIn: 'root',
   factory: () => {
-    const imageAssetUrlToken = inject(imageAssetUrl);
+    const urlBuilder = inject(assetUrlBuilder);
 
     return {
       Codex: {
-        src: imageAssetUrlToken + '/technology-icons/openai.svg',
+        src: urlBuilder.file('openai.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       'Claude Code': {
-        src: imageAssetUrlToken + '/technology-icons/claude-code.svg',
+        src: urlBuilder.file('claude-code.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       MySQL: {
-        src: imageAssetUrlToken + '/technology-icons/mysql.svg',
+        src: urlBuilder.file('mysql.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       PostgreSQL: {
-        src: imageAssetUrlToken + '/technology-icons/postgresql.svg',
+        src: urlBuilder.file('postgresql.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       Elasticsearch: {
-        src: imageAssetUrlToken + '/technology-icons/elasticsearch.svg',
+        src: urlBuilder.file('elasticsearch.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       Kubernetes: {
-        src: imageAssetUrlToken + '/technology-icons/kubernetes.svg',
+        src: urlBuilder.file('kubernetes.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       Kafka: {
-        src: imageAssetUrlToken + '/technology-icons/apache-kafka.svg',
+        src: urlBuilder.file('apache-kafka.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       Redis: {
-        src: imageAssetUrlToken + '/technology-icons/redis.svg',
+        src: urlBuilder.file('redis.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       Bash: {
-        src: imageAssetUrlToken + '/technology-icons/bash.svg',
+        src: urlBuilder.file('bash.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       Confluence: {
-        src: imageAssetUrlToken + '/technology-icons/confluence.svg',
+        src: urlBuilder.file('confluence.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       React: {
-        src: imageAssetUrlToken + '/technology-icons/react.svg',
+        src: urlBuilder.file('react.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       Go: {
-        src: imageAssetUrlToken + '/technology-icons/go.svg',
+        src: urlBuilder.file('go.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       Gin: {
-        src: imageAssetUrlToken + '/technology-icons/gin.webp',
+        src: urlBuilder.file('gin.webp'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       Oracle: {
-        src: imageAssetUrlToken + '/technology-icons/oracle.svg',
+        src: urlBuilder.file('oracle.svg'),
         width: 64,
         height: 64,
         surface: 'light',
       },
       'Node.js': {
-        src: imageAssetUrlToken + '/technology-icons/nodejs.svg',
+        src: urlBuilder.file('nodejs.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       'MongoDB via internal API': {
-        src: imageAssetUrlToken + '/technology-icons/mongodb.svg',
+        src: urlBuilder.file('mongodb.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       Scala: {
-        src: imageAssetUrlToken + '/technology-icons/scala.svg',
+        src: urlBuilder.file('scala.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       'Apache Spark': {
-        src: imageAssetUrlToken + '/technology-icons/apache-spark.svg',
+        src: urlBuilder.file('apache-spark.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       AWS: {
-        src: imageAssetUrlToken + '/technology-icons/aws.svg',
+        src: urlBuilder.file('aws.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       'Spring Boot 2.7.x': inject(SPRING_ICON),
       gRPC: {
-        src: imageAssetUrlToken + '/technology-icons/grpc.svg',
+        src: urlBuilder.file('grpc.svg'),
         width: 128,
         height: 128,
         surface: 'light',
       },
       GraphQL: {
-        src: imageAssetUrlToken + '/technology-icons/graphql.svg',
+        src: urlBuilder.file('graphql.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       'Angular 7.x': {
-        src: imageAssetUrlToken + '/technology-icons/angular.svg',
+        src: urlBuilder.file('angular.svg'),
         width: 24,
         height: 24,
         surface: 'light',
       },
       'Spring Batch': inject(SPRING_ICON),
       'IBM Db2': {
-        src: imageAssetUrlToken + '/technology-icons/ibm-db2.svg',
+        src: urlBuilder.file('ibm-db2.svg'),
         width: 32,
         height: 32,
         surface: 'light',

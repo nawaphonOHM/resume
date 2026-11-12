@@ -1,12 +1,44 @@
 import { httpResource } from '@angular/common/http';
 import { computed, inject, Service } from '@angular/core';
+import type { BrandLogo } from '../interface/brand-logo/brand-logo.interface.ts';
 import type { Experience } from '../interface/experience/experience.interface.ts';
 import type { ResumeDetails } from '../interface/resume-details/resume-details.interface.ts';
 import type { ResumeEducation } from '../interface/resume-education/resume-education.interface.ts';
 import type { ResumeLink } from '../interface/ressume-link/resume-link.interface.ts';
 import type { ResumeProfile } from '../interface/resume-profile/resume-profile.interface.ts';
+import { assetUrlBuilder } from '../injection-token/asset-url-builder.function.ts';
+import { projectLogoFileNameForPath } from '../injection-token/resume.data.ts';
 import { RESUME_DATA_API_BASE_URL } from '../injection-token/resume-data-api-base-url.variable.ts';
 import { unwrapApiResponse } from './api-response.helper.ts';
+
+const PROJECT_LOGO_ORIGIN = 'https://ohm-mho.space';
+
+function projectLogoFileNameFromSource(source: unknown): string | undefined {
+  if (typeof source !== 'string') {
+    return undefined;
+  }
+
+  const rootRelativeFileName = projectLogoFileNameForPath(source);
+  if (rootRelativeFileName) {
+    return rootRelativeFileName;
+  }
+
+  try {
+    const url = new URL(source);
+    if (
+      url.origin !== PROJECT_LOGO_ORIGIN ||
+      url.username !== '' ||
+      url.password !== '' ||
+      `${url.origin}${url.pathname}` !== source
+    ) {
+      return undefined;
+    }
+
+    return projectLogoFileNameForPath(url.pathname);
+  } catch {
+    return undefined;
+  }
+}
 
 /**
  * Fetches and aggregates individual résumé sections from REST API endpoints.
@@ -19,6 +51,7 @@ import { unwrapApiResponse } from './api-response.helper.ts';
 @Service()
 export class ResumeDataService {
   private readonly baseUrl = inject(RESUME_DATA_API_BASE_URL);
+  private readonly urlBuilder = inject(assetUrlBuilder);
 
   /** Resource for candidate display name. */
   readonly names = httpResource<string>(
@@ -164,17 +197,59 @@ export class ResumeDataService {
       return undefined;
     }
 
+    const links = this.links.value().map((link) => {
+      if (!link.logo || typeof link.logo !== 'object') {
+        return link;
+      }
+
+      const logo = this.normalizeProjectLogo(link.logo);
+      return logo === link.logo ? link : { ...link, logo };
+    });
+    const experience = this.experiences.value().map((record) => {
+      const companyLogo = record.companyLogo;
+      const normalizedCompanyLogo = this.normalizeProjectLogo(companyLogo);
+      const client = record.client;
+      const clientLogo = client?.logo;
+      let normalizedClient = client;
+      if (client && clientLogo) {
+        const normalizedClientLogo = this.normalizeProjectLogo(clientLogo);
+        if (clientLogo !== normalizedClientLogo) {
+          normalizedClient = { ...client, logo: normalizedClientLogo };
+        }
+      }
+
+      if (companyLogo === normalizedCompanyLogo && client === normalizedClient) {
+        return record;
+      }
+
+      return {
+        ...record,
+        companyLogo: normalizedCompanyLogo,
+        ...(normalizedClient ? { client: normalizedClient } : {}),
+      };
+    });
+    const education = this.educations.value();
+    const institutionLogo = this.normalizeProjectLogo(education.institutionLogo);
+
     return {
       name: this.names.value(),
       title: this.titles.value(),
       summary: this.summaries.value(),
       details: this.details.value(),
-      links: this.links.value(),
+      links,
       skills: this.skills.value(),
-      experience: this.experiences.value(),
-      education: this.educations.value(),
+      experience,
+      education:
+        institutionLogo === education.institutionLogo
+          ? education
+          : { ...education, institutionLogo },
     };
   });
+
+  private normalizeProjectLogo<T extends BrandLogo>(logo: T): T {
+    const fileName = projectLogoFileNameFromSource(logo.src);
+    return fileName ? { ...logo, src: this.urlBuilder.file(fileName) } : logo;
+  }
 
   /**
    * Triggers a reload on all 8 underlying HTTP resources.
