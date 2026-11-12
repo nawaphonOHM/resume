@@ -1,12 +1,6 @@
 import { inject, InjectionToken } from '@angular/core';
 import { IMAGE_ASSET_ORIGIN } from './image-asset-origin.variable.ts';
-
-export type AssetStatus = 'available' | 'limited' | 'unavailable';
-
-export interface AssetUrlBuilder {
-  file(fileName: string): string;
-  favicon(status: AssetStatus): string;
-}
+import type { AssetUrlBuilder } from '../interface/asset-url-builder/asset-url-builder.interface.ts';
 
 export function createAssetUrlBuilder(origin: string): AssetUrlBuilder {
   const assetPath = `${origin.replace(/\/+$/, '')}/assets`;
