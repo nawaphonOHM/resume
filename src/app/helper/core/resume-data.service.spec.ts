@@ -240,6 +240,139 @@ describe('ResumeDataService', () => {
     expect(service.educations.value()).toEqual(mockEducation);
   });
 
+  it('normalizes only recognized project logos in the profile and preserves raw API resources', async () => {
+    setupService();
+    TestBed.tick();
+
+    const reqNames = httpMock.expectOne('/api/v1/names');
+    const reqTitles = httpMock.expectOne('/api/v1/titles');
+    const reqSummaries = httpMock.expectOne('/api/v1/summaries');
+    const reqDetails = httpMock.expectOne('/api/v1/details');
+    const reqLinks = httpMock.expectOne('/api/v1/links');
+    const reqSkills = httpMock.expectOne('/api/v1/skills');
+    const reqExperiences = httpMock.expectOne('/api/v1/experiences');
+    const reqEducations = httpMock.expectOne('/api/v1/educations');
+    const logo = (src: string) => ({ src, width: 100, height: 100, surface: 'light' as const });
+    const malformedLogo = logo(42 as unknown as string);
+    const apiLinks: readonly ResumeLink[] = [
+      {
+        label: 'GitHub',
+        url: 'https://github.com/janedoe',
+        logo: logo('https://resume-images.ohm-mho.space/link-logos/github.svg'),
+      },
+      {
+        label: 'External image',
+        url: 'https://example.com',
+        logo: logo('https://third-party.example.com/link-logos/github.svg'),
+      },
+      {
+        label: 'Query string',
+        url: 'https://example.com/query',
+        logo: logo('/link-logos/github.svg?version=1'),
+      },
+      {
+        label: 'Fragment',
+        url: 'https://example.com/fragment',
+        logo: logo('https://ohm-mho.space/link-logos/github.svg#mark'),
+      },
+      {
+        label: 'Unknown path',
+        url: 'https://example.com/unknown',
+        logo: logo('/link-logos/unknown.svg'),
+      },
+      {
+        label: 'Already migrated',
+        url: 'https://example.com/migrated',
+        logo: logo('https://ohm-mho.space/assets/github.svg'),
+      },
+      {
+        label: 'Malformed URL',
+        url: 'https://example.com/malformed',
+        logo: logo('https://[invalid'),
+      },
+      {
+        label: 'Malformed source value',
+        url: 'https://example.com/malformed-source',
+        logo: malformedLogo,
+      },
+    ];
+    const apiExperiences: readonly Experience[] = [
+      {
+        ...mockExperiences[0],
+        companyLogo: logo('/company-logos/accord-innovations.png'),
+        client: {
+          name: 'InnovestX',
+          logo: logo('https://ohm-mho.space/company-logos/innovestx.png'),
+        },
+      },
+      {
+        ...mockExperiences[0],
+        company: 'Third-party logo',
+        companyLogo: logo('https://third-party.example.com/company-logos/saitech-solution.png'),
+        client: { name: 'Client without logo' } as unknown as NonNullable<Experience['client']>,
+      },
+      {
+        ...mockExperiences[0],
+        company: 'Unexpected query',
+        companyLogo: logo('https://ohm-mho.space/company-logos/krungsri.png?size=large'),
+      },
+    ];
+    const apiEducation: ResumeEducation = {
+      ...mockEducation,
+      institutionLogo: logo('/university-logos/prince-of-songkla-university.webp'),
+    };
+
+    reqNames.flush(createEnvelope(mockName));
+    reqTitles.flush(createEnvelope(mockTitle));
+    reqSummaries.flush(createEnvelope(mockSummaries));
+    reqDetails.flush(createEnvelope(mockDetails));
+    reqLinks.flush(createEnvelope(apiLinks));
+    reqSkills.flush(createEnvelope(mockSkills));
+    reqExperiences.flush(createEnvelope(apiExperiences));
+    reqEducations.flush(createEnvelope(apiEducation));
+
+    await Promise.resolve();
+    TestBed.tick();
+    await appRef.whenStable();
+
+    const profile = service.profile();
+    expect(profile?.links.map(({ logo }) => logo?.src)).toEqual([
+      'https://ohm-mho.space/assets/github.svg',
+      'https://third-party.example.com/link-logos/github.svg',
+      '/link-logos/github.svg?version=1',
+      'https://ohm-mho.space/link-logos/github.svg#mark',
+      '/link-logos/unknown.svg',
+      'https://ohm-mho.space/assets/github.svg',
+      'https://[invalid',
+      42,
+    ]);
+    expect(profile?.experience.map(({ companyLogo }) => companyLogo.src)).toEqual([
+      'https://ohm-mho.space/assets/accord-innovations.png',
+      'https://third-party.example.com/company-logos/saitech-solution.png',
+      'https://ohm-mho.space/company-logos/krungsri.png?size=large',
+    ]);
+    expect(profile?.experience[0].client?.logo.src).toBe(
+      'https://ohm-mho.space/assets/innovestx.png',
+    );
+    expect(profile?.experience[1].client?.name).toBe('Client without logo');
+    expect(profile?.education.institutionLogo.src).toBe(
+      'https://ohm-mho.space/assets/prince-of-songkla-university.webp',
+    );
+
+    expect(service.links.value()).toBe(apiLinks);
+    expect(service.experiences.value()).toBe(apiExperiences);
+    expect(service.educations.value()).toBe(apiEducation);
+    expect(service.links.value()?.[0].logo?.src).toBe(
+      'https://resume-images.ohm-mho.space/link-logos/github.svg',
+    );
+    expect(service.experiences.value()?.[0].companyLogo.src).toBe(
+      '/company-logos/accord-innovations.png',
+    );
+    expect(service.educations.value()?.institutionLogo.src).toBe(
+      '/university-logos/prince-of-songkla-university.webp',
+    );
+  });
+
   it('updates progress incrementally and keeps profile undefined until all resources resolve', async () => {
     setupService();
     TestBed.tick();

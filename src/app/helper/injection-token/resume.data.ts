@@ -1,11 +1,44 @@
 import { inject, InjectionToken } from '@angular/core';
 import type { ResumeProfile } from '../interface/resume-profile/resume-profile.interface.ts';
-import { imageAssetUrl } from './image-asset-url.function.ts';
+import { assetUrlBuilder } from './asset-url-builder.function.ts';
+
+export const PROJECT_LOGO_ASSETS = {
+  github: { path: '/link-logos/github.svg', fileName: 'github.svg' },
+  accordInnovations: {
+    path: '/company-logos/accord-innovations.png',
+    fileName: 'accord-innovations.png',
+  },
+  innovestX: { path: '/company-logos/innovestx.png', fileName: 'innovestx.png' },
+  saitechSolution: {
+    path: '/company-logos/saitech-solution.png',
+    fileName: 'saitech-solution.png',
+  },
+  krungsri: { path: '/company-logos/krungsri.png', fileName: 'krungsri.png' },
+  nityoInfotech: { path: '/company-logos/nityo-infotech.svg', fileName: 'nityo-infotech.svg' },
+  tisco: { path: '/company-logos/tisco.svg', fileName: 'tisco.svg' },
+  lineManWongnai: {
+    path: '/company-logos/line-man-wongnai.webp',
+    fileName: 'line-man-wongnai.webp',
+  },
+  wiseSoft: { path: '/company-logos/wisesoft.png', fileName: 'wisesoft.png' },
+  princeOfSongklaUniversity: {
+    path: '/university-logos/prince-of-songkla-university.webp',
+    fileName: 'prince-of-songkla-university.webp',
+  },
+} as const;
+
+const projectLogoFileNamesByPath = new Map<string, string>(
+  Object.values(PROJECT_LOGO_ASSETS).map(({ path, fileName }) => [path, fileName] as const),
+);
+
+export function projectLogoFileNameForPath(path: string): string | undefined {
+  return projectLogoFileNamesByPath.get(path);
+}
 
 export const resumeData = new InjectionToken<ResumeProfile>('resumeData', {
   providedIn: 'root',
   factory: () => {
-    const imageAssetUrlToken = inject(imageAssetUrl);
+    const urlBuilder = inject(assetUrlBuilder);
 
     return {
       name: 'Nawaphon Isarathanachaikul',
@@ -28,7 +61,7 @@ export const resumeData = new InjectionToken<ResumeProfile>('resumeData', {
           label: 'GitHub',
           url: 'https://github.com/nawaphonOHM',
           logo: {
-            src: imageAssetUrlToken + '/link-logos/github.svg',
+            src: urlBuilder.file(PROJECT_LOGO_ASSETS.github.fileName),
             width: 98,
             height: 96,
             surface: 'light',
@@ -45,7 +78,7 @@ export const resumeData = new InjectionToken<ResumeProfile>('resumeData', {
           role: 'Back End Developer',
           company: 'Accord Innovations',
           companyLogo: {
-            src: imageAssetUrlToken + '/company-logos/accord-innovations.png',
+            src: urlBuilder.file(PROJECT_LOGO_ASSETS.accordInnovations.fileName),
             width: 250,
             height: 100,
             surface: 'dark',
@@ -53,7 +86,7 @@ export const resumeData = new InjectionToken<ResumeProfile>('resumeData', {
           client: {
             name: 'InnovestX',
             logo: {
-              src: imageAssetUrlToken + '/company-logos/innovestx.png',
+              src: urlBuilder.file(PROJECT_LOGO_ASSETS.innovestX.fileName),
               width: 142,
               height: 27,
               surface: 'light',
@@ -93,7 +126,7 @@ export const resumeData = new InjectionToken<ResumeProfile>('resumeData', {
           role: 'Software Engineer',
           company: 'Saitech Solution',
           companyLogo: {
-            src: imageAssetUrlToken + '/company-logos/saitech-solution.png',
+            src: urlBuilder.file(PROJECT_LOGO_ASSETS.saitechSolution.fileName),
             width: 200,
             height: 200,
             surface: 'light',
@@ -101,7 +134,7 @@ export const resumeData = new InjectionToken<ResumeProfile>('resumeData', {
           client: {
             name: 'Ayudhya Capital Services (AYCAP)',
             logo: {
-              src: imageAssetUrlToken + '/company-logos/krungsri.png',
+              src: urlBuilder.file(PROJECT_LOGO_ASSETS.krungsri.fileName),
               width: 200,
               height: 200,
               surface: 'dark',
@@ -122,7 +155,7 @@ export const resumeData = new InjectionToken<ResumeProfile>('resumeData', {
           role: 'Software Engineer',
           company: 'Nityo Infotech',
           companyLogo: {
-            src: imageAssetUrlToken + '/company-logos/nityo-infotech.svg',
+            src: urlBuilder.file(PROJECT_LOGO_ASSETS.nityoInfotech.fileName),
             width: 4096,
             height: 1973,
             surface: 'light',
@@ -130,7 +163,7 @@ export const resumeData = new InjectionToken<ResumeProfile>('resumeData', {
           client: {
             name: 'TISCO Bank',
             logo: {
-              src: imageAssetUrlToken + '/company-logos/tisco.svg',
+              src: urlBuilder.file(PROJECT_LOGO_ASSETS.tisco.fileName),
               width: 297,
               height: 119,
               surface: 'light',
@@ -149,7 +182,7 @@ export const resumeData = new InjectionToken<ResumeProfile>('resumeData', {
           role: 'Software Engineer Backend',
           company: 'LINE MAN Wongnai',
           companyLogo: {
-            src: imageAssetUrlToken + '/company-logos/line-man-wongnai.webp',
+            src: urlBuilder.file(PROJECT_LOGO_ASSETS.lineManWongnai.fileName),
             width: 555,
             height: 83,
             surface: 'light',
@@ -166,7 +199,7 @@ export const resumeData = new InjectionToken<ResumeProfile>('resumeData', {
           role: 'Full-Stack Software Developer',
           company: 'WiseSoft',
           companyLogo: {
-            src: imageAssetUrlToken + '/company-logos/wisesoft.png',
+            src: urlBuilder.file(PROJECT_LOGO_ASSETS.wiseSoft.fileName),
             width: 203,
             height: 203,
             surface: 'light',
@@ -184,7 +217,7 @@ export const resumeData = new InjectionToken<ResumeProfile>('resumeData', {
         degree: 'Bachelor of Engineering (Computer Engineering)',
         institution: 'Prince of Songkla University',
         institutionLogo: {
-          src: imageAssetUrlToken + '/university-logos/prince-of-songkla-university.webp',
+          src: urlBuilder.file(PROJECT_LOGO_ASSETS.princeOfSongklaUniversity.fileName),
           width: 600,
           height: 160,
           surface: 'light',

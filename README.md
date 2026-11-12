@@ -10,7 +10,7 @@
 
 - **Angular 22 Signals Architecture**: Standalone component model with default `OnPush` change detection, fine-grained Signal state (`signal`, `computed`, `effect`, `linkedSignal`, `resource`), Signal inputs/outputs (`input.required`, `output`), and native control flow (`@if`, `@for`, `@switch`, `@defer`).
 - **Inverted Dependency Injection**: Strict decoupling of data tokens, utility functions, physical constants, and UI components via 60+ granular `InjectionToken` definitions in `src/app/helper/injection-token/`.
-- **Live UTC+7 Bangkok Clock & Dynamic Status Favicon**: Real-time availability engine that tracks working hours in Asia/Bangkok time, drives status dot harmonic luminance oscillation ($f = 0.5\text{ Hz}$), and dynamically updates the browser favicon from CDN endpoints (`/favicons/{available|limited|unavailable}/favicon.svg`).
+- **Live UTC+7 Bangkok Clock & Dynamic Status Favicon**: Real-time availability engine that tracks working hours in Asia/Bangkok time, drives status dot harmonic luminance oscillation ($f = 0.5\text{ Hz}$), and dynamically selects an asset-hosted favicon using an encoded status JSON query.
 - **Physics-Driven Orbital Badges**: Hero section code badge kinematics computed in 60fps frame loops via time-dependent parametric trigonometry with zero default phase offsets ($x = r \cos(\omega t)$, $y = r \sin(\omega t)$) and injectable phase tokens, with starter positions seeded by current Unix epoch time in seconds (`Date.now() / 1000`), continuous animation time integration ($t = t_{\text{unixStart}} + t_{\text{elapsed}}$), and deterministic frequency derived from the calendar day of the month ($f = \text{dayOfMonth} / 3600\text{ Hz}$).
 - **Client-Side OpenCV.js CLAHE Image Enhancement**: Real-time contrast optimization for dark technology icons using WebAssembly CLAHE in CIE $L^{\ast}a^{\ast}b^{\ast}$ color space with cooperative idle scheduling (`requestIdleCallback`) and explicit C++ memory management.
 - **Smart Image Zoom Previews**: Image preview overlay powered by Angular CDK Overlay with `ResizeObserver`-driven downscale detection and automatic viewport collision containment.
@@ -115,13 +115,13 @@ graph TD
     end
 
     subgraph External["External Assets & CDN Runtimes"]
-        PDF_SERVICE -.->|HEAD check & GET stream| PDF_ASSET["DigitalOcean Spaces CDN<br/>Hosted PDF Asset"]
+        PDF_SERVICE -.->|HEAD check & GET stream| PROJECT_ASSETS["https://ohm-mho.space/assets<br/>Configurable project asset host"]
         CONTRAST_SERVICE -.->|lazy ESM import| OPENCV_CDN["jsDelivr CDN<br/>@techstark/opencv-js 4.13.0"]
-        EXPERIENCE -.->|remote images| DO_SPACES["DigitalOcean Spaces CDN<br/>image assets"]
-        EDUCATION -.->|remote images| DO_SPACES
-        PROFILE -.->|remote images| DO_SPACES
-        TECHNOLOGY_ICON -.->|remote icons| DO_SPACES
-        HERO -.->|dynamic favicon link| FAVICON_CDN["DigitalOcean Spaces CDN<br/>/favicons/{status}/favicon.svg"]
+        EXPERIENCE -.->|remote images| PROJECT_ASSETS
+        EDUCATION -.->|remote images| PROJECT_ASSETS
+        PROFILE -.->|remote images| PROJECT_ASSETS
+        TECHNOLOGY_ICON -.->|remote icons| PROJECT_ASSETS
+        HERO -.->|dynamic favicon with encoded status JSON| PROJECT_ASSETS
     end
 ```
 
@@ -157,7 +157,7 @@ The application fully embraces modern Angular 22 standalone architecture, fine-g
 
 ### 2. Inverted Dependency Injection Architecture
 
-Rather than relying on large monolithic service classes with hardcoded configuration constants, the application adheres to strict **Inverted Dependency Injection (Inverted DI)**. Over 60 fine-grained `InjectionToken` definitions reside in `src/app/helper/injection-token/`, decoupling parameters, math formulas, timing constants, pure transformation functions, and CDN URLs:
+Rather than relying on large monolithic service classes with hardcoded configuration constants, the application adheres to strict **Inverted Dependency Injection (Inverted DI)**. Over 60 fine-grained `InjectionToken` definitions reside in `src/app/helper/injection-token/`, decoupling parameters, math formulas, timing constants, pure transformation functions, and external asset/CDN URLs:
 
 - **Kinematics & Orbital Badges**: `HERO_CODE_R_LEFT`, `HERO_CODE_R_RIGHT`, `HERO_CODE_PHI_LEFT`, `HERO_CODE_PHI_RIGHT`, `HERO_CODE_F`, `HERO_CODE_OMEGA`, `calculateHeroCodePosition`.
 - **Availability Scheduling & Photometry**: `UTC_PLUS_SEVEN_OFFSET_MS`, `CLOCK_UPDATE_INTERVAL_MS`, `STATUS_LUMINANCE_A`, `STATUS_LUMINANCE_F`, `STATUS_LUMINANCE_OMEGA`, `STATUS_LUMINANCE_PHI`, `calculateStatusLuminance`, `statusColor`, `statusColorForUtcPlusSeven`, `statusFaviconForStatusColor`.
@@ -217,7 +217,7 @@ flowchart TD
 | **Weekends (Sat–Sun)** | `06:00 – 22:00`     | `limited`     | `#F7A600` (Amber) | Weekend flexible availability |
 |                        | `22:00 – 06:00`     | `unavailable` | `#D1D1D1` (Gray)  | Rest & offline                |
 
-- **Reactive Favicon Synchronization**: An Angular `effect()` listens to the dynamic status color and invokes `FaviconService.setFavicon()`, updating the `<link rel="icon">` element in `document.head` to point to the corresponding remote SVG endpoint on DigitalOcean Spaces.
+- **Reactive Favicon Synchronization**: An Angular `effect()` listens to the dynamic status color and invokes `FaviconService.setFavicon()`, updating the `<link rel="icon">` element in `document.head` to the corresponding status URL on the configured asset host.
 
 #### B. Continuous 60/120 Hz Orbital Kinematics & Photometric Pulsation
 
@@ -368,7 +368,7 @@ Located at `src/app/resume/resume-page/service/resume-pdf/resume-pdf.service.ts`
 - **Single-Flight Request Locking**:
   `ResumePage.downloadResume()` manages the `downloadPending` boolean signal. Concurrent download attempts while a stream is in-flight are rejected immediately to prevent network saturation, while `ResumePdfService` remains responsible for the HTTP stream itself.
 - **HTTP Event Streaming & Progress Observation**:
-  Streams the remote résumé PDF (`https://resume-images.ohm-mho.space/downloadable-resume/Nawaphon_Isarathanachaikul.pdf`) via Angular `HttpClient` using `{ reportDownloadProgress: true, observe: 'events', responseType: 'blob' }`.
+  Streams the résumé PDF from the configured asset host (default: `https://ohm-mho.space/assets/Nawaphon_Isarathanachaikul.pdf`) via Angular `HttpClient` using `{ reportDownloadProgress: true, observe: 'events', responseType: 'blob' }`.
 - **Live Percentage Calculation**:
   Observes `HttpEventType.DownloadProgress` events, calculating real-time download percentage as:
   $$\text{percentage} = \min\left(100, \max\left(0, \mathrm{round}\left(\frac{\text{loaded}}{\text{total}} \times 100\right)\right)\right)$$
@@ -667,20 +667,16 @@ resume/
 
 ---
 
-## Static Assets & CDN Ecosystem
+## Static Assets & External Hosting
 
-All static images, company logos, university emblems, dynamic status favicons, and the downloadable résumé PDF are distributed via DigitalOcean Spaces CDN:
+Project-owned images, recognized project logos returned by the résumé API, status favicons, and the downloadable résumé PDF use the shared asset URL builder. Its default origin is `https://ohm-mho.space`, and files are requested as flattened paths such as `https://ohm-mho.space/assets/mysql.svg` and `https://ohm-mho.space/assets/Nawaphon_Isarathanachaikul.pdf`.
 
-- **CDN Origin**: `https://resume-images.ohm-mho.space`
-- **Asset Directory Layout**:
-  - `/company-logos/*`: Employer and client company brand logos.
-  - `/technology-icons/*`: SVG technology brand marks (Java, Kotlin, TypeScript, Go, PostgreSQL, etc.).
-  - `/university-logos/*`: University and academic institution emblems.
-  - `/link-logos/*`: GitHub, LinkedIn, and email iconography.
-  - `/favicons/{available|limited|unavailable}/favicon.svg`: Dynamic UTC+7 availability status favicons.
-  - `/downloadable-resume/Nawaphon_Isarathanachaikul.pdf`: Canonical downloadable curriculum vitae PDF.
-- **CORS Requirements**: The CDN bucket serves `Access-Control-Allow-Origin: *` headers, enabling unauthenticated browser `GET` requests, offscreen Canvas pixel extraction for CLAHE processing, and binary `HttpClient` progress streaming.
-- **External WebAssembly Runtime**: OpenCV.js 4.13.0 is dynamically imported on demand from `https://cdn.jsdelivr.net/npm/@techstark/opencv-js/+esm` (jsDelivr CDN) and initialized as `OpenCvRuntime`.
+- **Origin configuration**: `IMAGE_ASSET_ORIGIN` defaults to `https://ohm-mho.space`. Override this Angular injection token with the asset service's origin, for example `{ provide: IMAGE_ASSET_ORIGIN, useValue: 'https://assets.example.com' }`; the builder removes trailing slashes and appends `/assets/`. It does not configure or deploy the external asset service.
+- **Filename paths**: Asset filenames are encoded as a single path segment, without their former category directories. Recognized legacy logo paths are converted only when they are known project logos from `resume.data.ts` and come from a root-relative path, `https://resume-images.ohm-mho.space`, or `https://ohm-mho.space`. Unknown paths, query/fragment variants, already migrated URLs, and unrelated third-party URLs remain unchanged.
+- **Status favicons**: All statuses use `https://ohm-mho.space/assets/favicon.svg?%7B%22status%22%3A%22{status}%22%7D`, where `{status}` is `available`, `limited`, or `unavailable`. The compact JSON object is percent-encoded as the entire query string; an unknown status color falls back to `unavailable`.
+- **Résumé PDF**: `RESUME_PDF_DOWNLOAD_URL` defaults to the PDF filename under the configured asset origin and can be overridden independently. The external host must support the application's `HEAD` availability check and `GET` download.
+- **External hosting and CORS**: The asset service is deployed separately and must provide the referenced files with suitable content types and cross-origin permissions. Cross-origin `GET`/`HEAD` access must be allowed for the deployed application origin; image responses used by Canvas-based contrast processing must also include CORS headers that permit pixel access. A smoke check on 2026-11-12 found the technology SVG and encoded favicon returned `200 image/svg+xml` without `Access-Control-Allow-Origin`; the PDF `HEAD` returned `405` (`Allow: GET`) and its `GET` returned `403`. The external service must address these failures before Canvas processing or PDF availability/downloads can work.
+- **External WebAssembly Runtime**: OpenCV.js 4.13.0 remains dynamically imported on demand from `https://cdn.jsdelivr.net/npm/@techstark/opencv-js/+esm` (jsDelivr CDN) and initialized as `OpenCvRuntime`.
 
 ---
 
@@ -777,7 +773,7 @@ The test suite contains **18 test suites** and **230+ unit tests** validating ke
 | `src/app/helper/core/theme.service.spec.ts`                                                                                    | Theme resolution hierarchy (localStorage $\to$ media query $\to$ light default), transition classes, and persistence.                                                                                                                                             |
 | `src/app/helper/directive/image-zome/image-zoom.directive.spec.ts`                                                             | Image downscale threshold detection ($< 1 - \text{tolerance}$), mouse hover triggers, and touch tap interactions.                                                                                                                                                 |
 | `src/app/helper/injection-token/hero-code-position.function.spec.ts`                                                           | Cartesian orbit coordinates in percentage units, dynamic calendar frequency scaling, and parametric circular trajectory calculations.                                                                                                                             |
-| `src/app/helper/injection-token/status-favicon-for-status-color.function.spec.ts`                                              | Availability status color (`available`, `limited`, `unavailable`) to CDN favicon SVG URL mappings.                                                                                                                                                                |
+| `src/app/helper/injection-token/status-favicon-for-status-color.function.spec.ts`                                              | Availability status colors to encoded asset favicon URLs, including unavailable fallback behavior.                                                                                                                                                                |
 | `src/app/resume/experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.spec.ts` | OpenCV.js lazy loader, LAB color conversion, CLAHE tile sizing, WCAG relative luminance scoring, and WASM memory cleanup.                                                                                                                                         |
 | `src/app/resume/experience-timeline/technology-icon/technology-icon.spec.ts`                                                   | Technology icon component rendering, reactive surface contrast score binding, and fallback image states.                                                                                                                                                          |
 | `src/app/resume/experience-timeline/technology-icon/technology-icons.spec.ts`                                                  | SVG icon mappings and contrast evaluation across light and dark candidate surfaces.                                                                                                                                                                               |

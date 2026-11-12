@@ -31,9 +31,12 @@ const AVAILABLE_COLOR = '#92C353';
 const LIMITED_COLOR = '#F7A600';
 const UNAVAILABLE_COLOR = '#D1D1D1';
 
-const AVAILABLE_FAVICON = '/favicons/available/favicon.svg';
-const LIMITED_FAVICON = '/favicons/limited/favicon.svg';
-const UNAVAILABLE_FAVICON = '/favicons/unavailable/favicon.svg';
+const AVAILABLE_FAVICON =
+  'https://ohm-mho.space/assets/favicon.svg?%7B%22status%22%3A%22available%22%7D';
+const LIMITED_FAVICON =
+  'https://ohm-mho.space/assets/favicon.svg?%7B%22status%22%3A%22limited%22%7D';
+const UNAVAILABLE_FAVICON =
+  'https://ohm-mho.space/assets/favicon.svg?%7B%22status%22%3A%22unavailable%22%7D';
 
 const COLOR_TO_FAVICON: Record<string, string> = {
   [AVAILABLE_COLOR]: AVAILABLE_FAVICON,

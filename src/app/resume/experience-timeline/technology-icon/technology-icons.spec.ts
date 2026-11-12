@@ -21,31 +21,31 @@ describe('technology icons', () => {
 
   /** Independent label-to-asset contract for every branded technology. */
   const expectedIconPaths = {
-    Codex: '/technology-icons/openai.svg',
-    'Claude Code': '/technology-icons/claude-code.svg',
-    MySQL: '/technology-icons/mysql.svg',
-    PostgreSQL: '/technology-icons/postgresql.svg',
-    Elasticsearch: '/technology-icons/elasticsearch.svg',
-    Kubernetes: '/technology-icons/kubernetes.svg',
-    Kafka: '/technology-icons/apache-kafka.svg',
-    Redis: '/technology-icons/redis.svg',
-    Bash: '/technology-icons/bash.svg',
-    Confluence: '/technology-icons/confluence.svg',
-    React: '/technology-icons/react.svg',
-    Go: '/technology-icons/go.svg',
-    Gin: '/technology-icons/gin.webp',
-    Oracle: '/technology-icons/oracle.svg',
-    'Node.js': '/technology-icons/nodejs.svg',
-    'MongoDB via internal API': '/technology-icons/mongodb.svg',
-    Scala: '/technology-icons/scala.svg',
-    'Apache Spark': '/technology-icons/apache-spark.svg',
-    AWS: '/technology-icons/aws.svg',
-    'Spring Boot 2.7.x': '/technology-icons/spring.svg',
-    gRPC: '/technology-icons/grpc.svg',
-    GraphQL: '/technology-icons/graphql.svg',
-    'Angular 7.x': '/technology-icons/angular.svg',
-    'Spring Batch': '/technology-icons/spring.svg',
-    'IBM Db2': '/technology-icons/ibm-db2.svg',
+    Codex: 'https://ohm-mho.space/assets/openai.svg',
+    'Claude Code': 'https://ohm-mho.space/assets/claude-code.svg',
+    MySQL: 'https://ohm-mho.space/assets/mysql.svg',
+    PostgreSQL: 'https://ohm-mho.space/assets/postgresql.svg',
+    Elasticsearch: 'https://ohm-mho.space/assets/elasticsearch.svg',
+    Kubernetes: 'https://ohm-mho.space/assets/kubernetes.svg',
+    Kafka: 'https://ohm-mho.space/assets/apache-kafka.svg',
+    Redis: 'https://ohm-mho.space/assets/redis.svg',
+    Bash: 'https://ohm-mho.space/assets/bash.svg',
+    Confluence: 'https://ohm-mho.space/assets/confluence.svg',
+    React: 'https://ohm-mho.space/assets/react.svg',
+    Go: 'https://ohm-mho.space/assets/go.svg',
+    Gin: 'https://ohm-mho.space/assets/gin.webp',
+    Oracle: 'https://ohm-mho.space/assets/oracle.svg',
+    'Node.js': 'https://ohm-mho.space/assets/nodejs.svg',
+    'MongoDB via internal API': 'https://ohm-mho.space/assets/mongodb.svg',
+    Scala: 'https://ohm-mho.space/assets/scala.svg',
+    'Apache Spark': 'https://ohm-mho.space/assets/apache-spark.svg',
+    AWS: 'https://ohm-mho.space/assets/aws.svg',
+    'Spring Boot 2.7.x': 'https://ohm-mho.space/assets/spring.svg',
+    gRPC: 'https://ohm-mho.space/assets/grpc.svg',
+    GraphQL: 'https://ohm-mho.space/assets/graphql.svg',
+    'Angular 7.x': 'https://ohm-mho.space/assets/angular.svg',
+    'Spring Batch': 'https://ohm-mho.space/assets/spring.svg',
+    'IBM Db2': 'https://ohm-mho.space/assets/ibm-db2.svg',
   } as const;
 
   it('maps every branded résumé technology to validated remote metadata', () => {
@@ -54,7 +54,7 @@ describe('technology icons', () => {
     ).toEqual(expectedIconPaths);
 
     for (const icon of Object.values(technologyIcons)) {
-      expect(icon.src).toMatch(/^\/technology-icons\/[a-z0-9-]+\.(?:svg|webp)$/);
+      expect(icon.src).toMatch(/^https:\/\/ohm-mho\.space\/assets\/[a-z0-9-]+\.(?:svg|webp)$/);
       expect(Number.isInteger(icon.width)).toBe(true);
       expect(Number.isInteger(icon.height)).toBe(true);
       expect(icon.width).toBeGreaterThan(0);
