@@ -13,9 +13,8 @@ import type { DownloadProgressCallback } from '../../../../helper/type/download-
  * @remarks
  * ### Download Pipeline Architecture
  * Coordinates remote PDF asset delivery through a 3-stage lifecycle:
- * 1. **Availability Verification**: Asynchronously executes an HTTP `OPTIONS` request to check that the
- *    hosted asset endpoint returns an HTTP 2xx status. This is a best-effort signal and does not prove that the
- *    PDF exists or that a subsequent `GET` download will succeed.
+ * 1. **Availability Verification**: Asynchronously executes an HTTP `HEAD` request to verify that the
+ *    hosted PDF asset is reachable and returns an HTTP 2xx status.
  * 2. **Event-Driven Progress Streaming**: Downloads the asset via `HttpClient.get` with `reportDownloadProgress: true`
  *    and `observe: 'events'`, calculating percentage completion from transfer bytes.
  * 3. **Blob Lifecycle & Trigger**: Converts the received `Blob` into a temporary Object URL, triggers a native
@@ -43,14 +42,13 @@ export class ResumePdfService {
   }
 
   /**
-   * Executes an OPTIONS request to check whether the download endpoint returns a 2xx response.
+   * Executes HEAD request to check whether the download asset returns a 2xx response.
    *
    * @returns A promise resolving to `true` if the remote asset returns HTTP 2xx, or `false` otherwise.
    *
    * @remarks
-   * Issues an `OPTIONS` request and observes its response as text because the body is ignored. A 2xx response is
-   * only a best-effort indication that the endpoint responded; it does not prove the PDF exists or that a later
-   * `GET` download will succeed. Sets `_isAvailable` to `true` for a 2xx response, `false` for errors, or `false` on SSR.
+   * Issues a lightweight `HEAD` request to avoid downloading binary content during pre-flight checks.
+   * Sets `_isAvailable` signal to `true` (available), `false` (missing or network error), or `false` on SSR.
    */
   async checkAvailability(): Promise<boolean> {
     if (!isPlatformBrowser(this.platformId)) {
@@ -60,10 +58,7 @@ export class ResumePdfService {
 
     try {
       const response = await firstValueFrom(
-        this.http.request('OPTIONS', this.downloadUrl, {
-          observe: 'response',
-          responseType: 'text',
-        }),
+        this.http.request('HEAD', this.downloadUrl, { observe: 'response' }),
       );
       const isAvailable = response.status >= 200 && response.status < 300;
       this._isAvailable.set(isAvailable);

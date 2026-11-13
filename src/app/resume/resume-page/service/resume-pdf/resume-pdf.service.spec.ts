@@ -65,7 +65,7 @@ describe('ResumePdfService', () => {
 
   function setupService(
     providers: unknown[] = [],
-    options: { autoFlushOptions?: boolean; optionsStatus?: number } = {},
+    options: { autoFlushHead?: boolean; headStatus?: number } = {},
   ): {
     service: ResumePdfService;
     httpMock: HttpTestingController;
@@ -78,11 +78,11 @@ describe('ResumePdfService', () => {
     const service = TestBed.inject(ResumePdfService);
     const httpMock = TestBed.inject(HttpTestingController);
 
-    if (isBrowser && options.autoFlushOptions !== false) {
+    if (isBrowser && options.autoFlushHead !== false) {
       const downloadUrl = TestBed.inject(RESUME_PDF_DOWNLOAD_URL);
-      const optionsReq = httpMock.expectOne({ method: 'OPTIONS', url: downloadUrl });
-      const status = options.optionsStatus ?? 200;
-      optionsReq.flush(null, {
+      const headReq = httpMock.expectOne({ method: 'HEAD', url: downloadUrl });
+      const status = options.headStatus ?? 200;
+      headReq.flush(null, {
         status,
         statusText: status >= 200 && status < 300 ? 'OK' : 'Error',
       });
@@ -116,16 +116,15 @@ describe('ResumePdfService', () => {
     );
   });
 
-  it('initiates an HTTP OPTIONS check on browser startup and marks availability as true on 2xx status', async () => {
-    const { service, httpMock } = setupService([], { autoFlushOptions: false });
+  it('initiates an HTTP HEAD check on browser startup and marks availability as true on 2xx status', async () => {
+    const { service, httpMock } = setupService([], { autoFlushHead: false });
     expect(service.isAvailable()).toBeNull();
 
-    const optionsReq = httpMock.expectOne({
-      method: 'OPTIONS',
+    const headReq = httpMock.expectOne({
+      method: 'HEAD',
       url: DEFAULT_PDF_DOWNLOAD_URL,
     });
-    expect(optionsReq.request.responseType).toBe('text');
-    optionsReq.flush('PDF host reachable', { status: 200, statusText: 'OK' });
+    headReq.flush(null, { status: 200, statusText: 'OK' });
 
     // Allow promise resolution inside service
     await Promise.resolve();
@@ -135,15 +134,14 @@ describe('ResumePdfService', () => {
   });
 
   it('marks availability as true when checkAvailability is invoked directly and returns 200 OK', async () => {
-    const { service, httpMock } = setupService();
+    const { service, httpMock } = setupService([], { autoFlushHead: true });
     const checkPromise = service.checkAvailability();
 
-    const optionsReq = httpMock.expectOne({
-      method: 'OPTIONS',
+    const headReq = httpMock.expectOne({
+      method: 'HEAD',
       url: DEFAULT_PDF_DOWNLOAD_URL,
     });
-    expect(optionsReq.request.responseType).toBe('text');
-    optionsReq.flush('Available', { status: 200, statusText: 'OK' });
+    headReq.flush(null, { status: 200, statusText: 'OK' });
 
     const result = await checkPromise;
     expect(result).toBe(true);
@@ -152,14 +150,14 @@ describe('ResumePdfService', () => {
   });
 
   it('marks availability as true for non-200 2xx status (e.g. 204 No Content)', async () => {
-    const { service, httpMock } = setupService();
+    const { service, httpMock } = setupService([], { autoFlushHead: true });
     const checkPromise = service.checkAvailability();
 
-    const optionsReq = httpMock.expectOne({
-      method: 'OPTIONS',
+    const headReq = httpMock.expectOne({
+      method: 'HEAD',
       url: DEFAULT_PDF_DOWNLOAD_URL,
     });
-    optionsReq.flush(null, { status: 204, statusText: 'No Content' });
+    headReq.flush(null, { status: 204, statusText: 'No Content' });
 
     const result = await checkPromise;
     expect(result).toBe(true);
@@ -167,13 +165,13 @@ describe('ResumePdfService', () => {
     httpMock.verify();
   });
 
-  it('marks availability as false when OPTIONS request returns a 4xx error (e.g. 404 Not Found)', async () => {
-    const { service, httpMock } = setupService([], { autoFlushOptions: false });
-    const optionsReq = httpMock.expectOne({
-      method: 'OPTIONS',
+  it('marks availability as false when HEAD request returns a 4xx error (e.g. 404 Not Found)', async () => {
+    const { service, httpMock } = setupService([], { autoFlushHead: false });
+    const headReq = httpMock.expectOne({
+      method: 'HEAD',
       url: DEFAULT_PDF_DOWNLOAD_URL,
     });
-    optionsReq.flush(null, { status: 404, statusText: 'Not Found' });
+    headReq.flush(null, { status: 404, statusText: 'Not Found' });
 
     await Promise.resolve();
 
@@ -182,14 +180,14 @@ describe('ResumePdfService', () => {
   });
 
   it('marks availability as false and does not throw when checkAvailability receives 500 error', async () => {
-    const { service, httpMock } = setupService();
+    const { service, httpMock } = setupService([], { autoFlushHead: true });
     const checkPromise = service.checkAvailability();
 
-    const optionsReq = httpMock.expectOne({
-      method: 'OPTIONS',
+    const headReq = httpMock.expectOne({
+      method: 'HEAD',
       url: DEFAULT_PDF_DOWNLOAD_URL,
     });
-    optionsReq.flush(null, { status: 500, statusText: 'Internal Server Error' });
+    headReq.flush(null, { status: 500, statusText: 'Internal Server Error' });
 
     const result = await checkPromise;
     expect(result).toBe(false);
@@ -197,15 +195,15 @@ describe('ResumePdfService', () => {
     httpMock.verify();
   });
 
-  it('marks availability as false when OPTIONS request encounters a network error', async () => {
-    const { service, httpMock } = setupService();
+  it('marks availability as false when HEAD request encounters a network error', async () => {
+    const { service, httpMock } = setupService([], { autoFlushHead: true });
     const checkPromise = service.checkAvailability();
 
-    const optionsReq = httpMock.expectOne({
-      method: 'OPTIONS',
+    const headReq = httpMock.expectOne({
+      method: 'HEAD',
       url: DEFAULT_PDF_DOWNLOAD_URL,
     });
-    optionsReq.error(new ProgressEvent('error'));
+    headReq.error(new ProgressEvent('error'));
 
     const result = await checkPromise;
     expect(result).toBe(false);
@@ -213,7 +211,7 @@ describe('ResumePdfService', () => {
     httpMock.verify();
   });
 
-  it('does not dispatch OPTIONS request on server platform and returns false from checkAvailability', async () => {
+  it('does not dispatch HEAD request on server platform and returns false from checkAvailability', async () => {
     const { service, httpMock } = setupService([{ provide: PLATFORM_ID, useValue: 'server' }]);
     expect(service.isAvailable()).toBeNull();
 
@@ -227,15 +225,15 @@ describe('ResumePdfService', () => {
     httpMock.verify();
   });
 
-  it('dispatches OPTIONS request to overridden custom download URL token', async () => {
+  it('dispatches HEAD request to overridden custom download URL token', async () => {
     const customUrl = 'https://custom-domain.com/custom-resume.pdf';
     const { service, httpMock } = setupService(
       [{ provide: RESUME_PDF_DOWNLOAD_URL, useValue: customUrl }],
-      { autoFlushOptions: false },
+      { autoFlushHead: false },
     );
 
-    const optionsReq = httpMock.expectOne({ method: 'OPTIONS', url: customUrl });
-    optionsReq.flush(null, { status: 200, statusText: 'OK' });
+    const headReq = httpMock.expectOne({ method: 'HEAD', url: customUrl });
+    headReq.flush(null, { status: 200, statusText: 'OK' });
 
     await Promise.resolve();
 
