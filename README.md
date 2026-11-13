@@ -14,7 +14,7 @@
 - **Physics-Driven Orbital Badges**: Hero section code badge kinematics computed in 60fps frame loops via time-dependent parametric trigonometry with zero default phase offsets ($x = r \cos(\omega t)$, $y = r \sin(\omega t)$) and injectable phase tokens, with starter positions seeded by current Unix epoch time in seconds (`Date.now() / 1000`), continuous animation time integration ($t = t_{\text{unixStart}} + t_{\text{elapsed}}$), and deterministic frequency derived from the calendar day of the month ($f = \text{dayOfMonth} / 3600\text{ Hz}$).
 - **Client-Side OpenCV.js CLAHE Image Enhancement**: Real-time contrast optimization for dark technology icons using WebAssembly CLAHE in CIE $L^{\ast}a^{\ast}b^{\ast}$ color space with cooperative idle scheduling (`requestIdleCallback`) and explicit C++ memory management.
 - **Smart Image Zoom Previews**: Image preview overlay powered by Angular CDK Overlay with `ResizeObserver`-driven downscale detection and automatic viewport collision containment.
-- **Resilient Streaming PDF Download & Pre-Flight Verification**: User-triggered résumé PDF download featuring pre-flight remote asset availability verification (`HEAD` request), reactive availability status signaling (`isAvailable`), accessible confirmation alert dialog (`ResumePdfConfirmDialog`) for proceeding with unverified or unavailable assets, Angular `HttpClient` event streaming with real-time percentage progress tracking, and automatic object URL cleanup.
+- **Resilient Streaming PDF Download & Pre-Flight Verification**: User-triggered résumé PDF download featuring a best-effort remote asset availability check (`OPTIONS` request), reactive availability status signaling (`isAvailable`), accessible confirmation alert dialog (`ResumePdfConfirmDialog`) for proceeding with unverified or unavailable assets, Angular `HttpClient` event streaming with real-time percentage progress tracking, and automatic object URL cleanup.
 - **Material 3 Theme System & Print Foundation**: CSS `@property` color token interpolation supporting Light, Dark, and System modes with dedicated A4 print layout stylesheets and WCAG AA accessibility compliance.
 
 ## Technology Stack
@@ -97,7 +97,7 @@ graph TD
         ZOOM_DIRECTIVE --> ZOOM_SERVICE["ImageZoomService"]
         ZOOM_SERVICE -->|CDK Overlay| ZOOM_PREVIEW["ImageZoomPreview"]
         RESUME_PAGE --> THEME_SERVICE["ThemeService"]
-        RESUME_PAGE --> PDF_SERVICE["ResumePdfService<br/>HEAD pre-flight & GET stream"]
+        RESUME_PAGE --> PDF_SERVICE["ResumePdfService<br/>OPTIONS check & GET stream"]
         TECHNOLOGY_ICON --> CONTRAST_SERVICE["TechnologyIconContrastService"]
         RESUME_PAGE --> CDK_SCROLL["CDK ScrollDispatcher & ViewportRuler<br/>Scanline Collision Scroll-Spy"]
     end
@@ -115,7 +115,7 @@ graph TD
     end
 
     subgraph External["External Assets & CDN Runtimes"]
-        PDF_SERVICE -.->|HEAD check & GET stream| PROJECT_ASSETS["https://ohm-mho.space/assets<br/>Configurable project asset host"]
+        PDF_SERVICE -.->|OPTIONS check & GET stream| PROJECT_ASSETS["https://ohm-mho.space/assets<br/>Configurable project asset host"]
         CONTRAST_SERVICE -.->|lazy ESM import| OPENCV_CDN["jsDelivr CDN<br/>@techstark/opencv-js 4.13.0"]
         EXPERIENCE -.->|remote images| PROJECT_ASSETS
         EDUCATION -.->|remote images| PROJECT_ASSETS
@@ -351,11 +351,11 @@ Located at `src/app/helper/directive/image-zome/image-zoom.directive.ts` and `sr
 Located at `src/app/resume/resume-page/service/resume-pdf/resume-pdf.service.ts` and `src/app/resume/resume-page/dialog/resume-pdf-confirm-dialog/`:
 
 - **Pre-Flight Remote Asset Availability Verification (`checkAvailability`)**:
-  When running in a browser environment (`isPlatformBrowser(this.platformId)`), `ResumePdfService` automatically initiates an asynchronous `HEAD` request to `RESUME_PDF_DOWNLOAD_URL` to verify whether the hosted asset returns an active `2xx` HTTP response status. The state is published via a reactive read-only signal:
+  When running in a browser environment (`isPlatformBrowser(this.platformId)`), `ResumePdfService` automatically initiates an asynchronous `OPTIONS` request to `RESUME_PDF_DOWNLOAD_URL` and observes the response as text. A `2xx` response is only a best-effort indication that the endpoint responded; it does not prove that the PDF exists or that the later `GET` download will succeed. The state is published via a reactive read-only signal:
   ```typescript
   readonly isAvailable: Signal<boolean | null> = this._isAvailable.asReadonly();
   ```
-  where `null` represents verification in progress, `true` confirms asset availability, and `false` handles network errors, non-2xx status codes, or non-browser (SSR) execution.
+  where `null` represents verification in progress, `true` means the `OPTIONS` request returned `2xx`, and `false` handles network errors, non-2xx status codes, or non-browser (SSR) execution.
 - **Visual Warning & Responsive Navigation States**:
   `ResumeNavigation` receives the `downloadAvailable` input signal to dynamically adjust its action indicators:
   - When unavailable (`downloadAvailable() === false`), the download trigger displays a `file_download_off` Material icon with a tooltip (_"Resume PDF might be unavailable. Click to confirm download anyway."_) and an accessibility label (_"Download résumé as PDF (file may be unavailable)"_).
@@ -674,8 +674,8 @@ Project-owned images, recognized project logos returned by the résumé API, sta
 - **Origin configuration**: `IMAGE_ASSET_ORIGIN` defaults to `https://ohm-mho.space`. Override this Angular injection token with the asset service's origin, for example `{ provide: IMAGE_ASSET_ORIGIN, useValue: 'https://assets.example.com' }`; the builder removes trailing slashes and appends `/assets/`. It does not configure or deploy the external asset service.
 - **Filename paths**: Asset filenames are encoded as a single path segment, without their former category directories. Recognized legacy logo paths are converted only when they are known project logos from `resume.data.ts` and come from a root-relative path or `https://ohm-mho.space`. Unknown paths, query/fragment variants, already migrated URLs, and unrelated third-party URLs remain unchanged.
 - **Status favicons**: All statuses use `https://ohm-mho.space/assets/favicon.svg?%7B%22status%22%3A%22{status}%22%7D`, where `{status}` is `available`, `limited`, or `unavailable`. The compact JSON object is percent-encoded as the entire query string; an unknown status color falls back to `unavailable`.
-- **Résumé PDF**: `RESUME_PDF_DOWNLOAD_URL` defaults to the PDF filename under the configured asset origin and can be overridden independently. The external host must support the application's `HEAD` availability check and `GET` download.
-- **External hosting and CORS**: The asset service is deployed separately and must provide the referenced files with suitable content types and cross-origin permissions. Cross-origin `GET`/`HEAD` access must be allowed for the deployed application origin; image responses used by Canvas-based contrast processing must also include CORS headers that permit pixel access. A smoke check on 2026-11-12 found the technology SVG and encoded favicon returned `200 image/svg+xml` without `Access-Control-Allow-Origin`; the PDF `HEAD` returned `405` (`Allow: GET`) and its `GET` returned `403`. The external service must address these failures before Canvas processing or PDF availability/downloads can work.
+- **Résumé PDF**: `RESUME_PDF_DOWNLOAD_URL` defaults to the PDF filename under the configured asset origin and can be overridden independently. The external host must support the application's `OPTIONS` availability request and `GET` download. An `OPTIONS` success is only a best-effort endpoint response and does not guarantee that the PDF exists or that `GET` will succeed.
+- **External hosting and CORS**: The asset service is deployed separately and must provide the referenced files with suitable content types and cross-origin permissions. For a cross-origin `OPTIONS` request, browsers first send a CORS preflight with `Access-Control-Request-Method: OPTIONS`; the host must authorize the deployed application origin and `OPTIONS` method, then return appropriate CORS headers (including `Access-Control-Allow-Origin`) on the actual `OPTIONS` response. The host must also permit cross-origin `GET` and return suitable CORS headers on the download response. Image responses used by Canvas-based contrast processing must include CORS headers that permit pixel access. A smoke check on 2026-11-12 found the technology SVG and encoded favicon returned `200 image/svg+xml` without `Access-Control-Allow-Origin`, and the PDF `GET` returned `403`. A 2026-11-13 check found both direct `OPTIONS` and the simulated `OPTIONS` CORS preflight returned `405` (`Allow: GET`). These separately deployed host failures must be addressed before Canvas processing or PDF availability/downloads can work.
 - **External WebAssembly Runtime**: OpenCV.js 4.13.0 remains dynamically imported on demand from `https://cdn.jsdelivr.net/npm/@techstark/opencv-js/+esm` (jsDelivr CDN) and initialized as `OpenCvRuntime`.
 
 ---
