@@ -6,7 +6,7 @@ import type { TechnologyIconMetadata } from '../../../helper/interface/brand-log
 import type { ResumeProfile } from '../../../helper/interface/resume-profile/resume-profile.interface.ts';
 import { resumeProfileFixture } from '../../../../../test/fixtures/resume-profile.ts';
 
-const TECHNOLOGY_ICON_FALLBACK_LABELS = ['REST APIs', 'Caffeine'] as const;
+const TECHNOLOGY_ICON_FALLBACK_LABELS = ['Example API', 'Example Utility'] as const;
 
 describe('technology icons', () => {
   let resume: ResumeProfile;
@@ -63,12 +63,14 @@ describe('technology icons', () => {
     }
   });
 
-  it('categorizes every exact résumé label without changing its string data', () => {
+  it('categorizes branded and fallback labels used by the synthetic fixture', () => {
     const technologies = resume.experience.flatMap(({ technologies }) => technologies);
     const uniqueTechnologies = [...new Set(technologies)];
 
     expect(technologies.every((technology) => typeof technology === 'string')).toBe(true);
-    expect(uniqueTechnologies).toHaveLength(27);
+    expect(uniqueTechnologies).toEqual(
+      expect.arrayContaining(['Angular 7.x', 'PostgreSQL', ...TECHNOLOGY_ICON_FALLBACK_LABELS]),
+    );
     expect(
       uniqueTechnologies.filter(
         (technology) =>
@@ -81,9 +83,9 @@ describe('technology icons', () => {
   });
 
   it('uses intentional fallbacks for labels without suitable brand marks', () => {
-    expect(TECHNOLOGY_ICON_FALLBACK_LABELS).toEqual(['REST APIs', 'Caffeine']);
-    expect(resolveIcon('REST APIs')).toBeUndefined();
-    expect(resolveIcon('Caffeine')).toBeUndefined();
+    expect(TECHNOLOGY_ICON_FALLBACK_LABELS).toEqual(['Example API', 'Example Utility']);
+    expect(resolveIcon('Example API')).toBeUndefined();
+    expect(resolveIcon('Example Utility')).toBeUndefined();
     expect(resolveIcon('Unknown technology')).toBeUndefined();
     expect(resolveIcon('toString')).toBeUndefined();
   });

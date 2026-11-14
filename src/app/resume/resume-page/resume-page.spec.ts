@@ -51,7 +51,8 @@ import { ResumePdfConfirmDialog } from './dialog/resume-pdf-confirm-dialog/resum
 import { ResumePdfService } from './service/resume-pdf/resume-pdf.service.ts';
 import { resumeProfileFixture } from '../../../../test/fixtures/resume-profile.ts';
 
-const TECHNOLOGY_ICON_FALLBACK_LABELS = ['REST APIs', 'Caffeine'] as const;
+const FIXTURE_ASSET_ORIGIN = 'https://assets.example.com';
+const TECHNOLOGY_ICON_FALLBACK_LABELS = ['Example API', 'Example Utility'] as const;
 
 const OPTIMIZED_ICON_SOURCE = 'data:image/png;base64,b3B0aW1pemVk';
 const OPTIMIZED_ICON_BACKGROUND = '#0d1b2d';
@@ -477,7 +478,7 @@ describe('ResumePage', () => {
     expect(projectLink?.getAttribute('target')).toBe('_blank');
     expect(projectLink?.getAttribute('rel')).toBe('noopener noreferrer');
     expect(element.querySelectorAll('.skills-panel mat-chip')).toHaveLength(RESUME.skills.length);
-    expect(element.textContent).toContain('Available on request');
+    expect(element.textContent).toContain(RESUME.details.phoneLabel);
     expect(element.querySelector('a[href^="tel:"]')).toBeNull();
     expect(element.querySelector(`a[href="mailto:${RESUME.details.email}"]`)).not.toBeNull();
     expect(externalLinks).toHaveLength(3);
@@ -843,7 +844,9 @@ describe('ResumePage', () => {
     );
     expect(logos.every((logo) => logo.getAttribute('alt') === '')).toBe(true);
     expect(
-      logos.every((logo) => logo.getAttribute('src')?.startsWith(`${IMAGE_ASSET_ORIGIN}/assets/`)),
+      logos.every((logo) =>
+        logo.getAttribute('src')?.startsWith(`${FIXTURE_ASSET_ORIGIN}/assets/`),
+      ),
     ).toBe(true);
     expect(
       clientIdentities.map((identity) =>
