@@ -1,6 +1,6 @@
 /** Verifies root activation and the application's Router-managed scrolling contract. */
 import { PlatformLocation, ViewportScroller } from '@angular/common';
-import { APP_BOOTSTRAP_LISTENER, ApplicationRef, inject, signal } from '@angular/core';
+import { APP_BOOTSTRAP_LISTENER, ApplicationRef, signal } from '@angular/core';
 import { DeferBlockBehavior, TestBed } from '@angular/core/testing';
 import { NavigationEnd, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -9,7 +9,7 @@ import { vi } from 'vitest';
 import { appConfig } from './app.config';
 import { routes } from './app.routes';
 import { ResumeDataService } from './helper/core/resume-data.service.ts';
-import { resumeData } from './helper/injection-token/resume.data.ts';
+import { resumeProfileFixture } from '../../test/fixtures/resume-profile.ts';
 import { TechnologyIconContrastService } from './resume/experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts';
 import ResumePage from './resume/resume-page/resume-page.ts';
 
@@ -53,14 +53,11 @@ describe('application routes', () => {
         },
         {
           provide: ResumeDataService,
-          useFactory: () => {
-            const data = inject(resumeData);
-            return {
-              profile: signal(data),
-              isLoading: signal(false),
-              hasError: signal(false),
-              reloadAll: vi.fn(),
-            };
+          useValue: {
+            profile: signal(resumeProfileFixture),
+            isLoading: signal(false),
+            hasError: signal(false),
+            reloadAll: vi.fn(),
           },
         },
       ],

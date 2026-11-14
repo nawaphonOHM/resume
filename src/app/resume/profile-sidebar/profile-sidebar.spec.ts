@@ -6,11 +6,11 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import { ProfileSidebar } from './profile-sidebar';
-import { resumeData } from '../../helper/injection-token/resume.data.ts';
+import { resumeProfileFixture } from '../../../../test/fixtures/resume-profile.ts';
 
 describe('ProfileSidebar', () => {
   it('renders skill chips matching the profile skills array', () => {
-    const fullData = TestBed.inject(resumeData);
+    const fullData = resumeProfileFixture;
     const fixture = TestBed.createComponent(ProfileSidebar);
     fixture.componentRef.setInput('profile', fullData);
     fixture.detectChanges();
@@ -23,7 +23,7 @@ describe('ProfileSidebar', () => {
   });
 
   it('renders public profile details in definition list', () => {
-    const fullData = TestBed.inject(resumeData);
+    const fullData = resumeProfileFixture;
     const fixture = TestBed.createComponent(ProfileSidebar);
     fixture.componentRef.setInput('profile', fullData);
     fixture.detectChanges();
@@ -49,7 +49,7 @@ describe('ProfileSidebar', () => {
   });
 
   it('renders external links with target="_blank" and noopener rel', () => {
-    const fullData = TestBed.inject(resumeData);
+    const fullData = resumeProfileFixture;
     const fixture = TestBed.createComponent(ProfileSidebar);
     fixture.componentRef.setInput('profile', fullData);
     fixture.detectChanges();
@@ -72,7 +72,7 @@ describe('ProfileSidebar', () => {
   });
 
   it('preserves section landmark and ARIA label associations', () => {
-    const fullData = TestBed.inject(resumeData);
+    const fullData = resumeProfileFixture;
     const fixture = TestBed.createComponent(ProfileSidebar);
     fixture.componentRef.setInput('profile', fullData);
     fixture.detectChanges();

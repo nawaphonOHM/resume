@@ -1,12 +1,12 @@
 /** Verifies exact technology-label coverage, remote assets, and fallback policy. */
 import { TestBed } from '@angular/core/testing';
 import { resolveTechnologyIcon } from '../../../helper/injection-token/resolve-technology-icon.function.ts';
-import { resumeData } from '../../../helper/injection-token/resume.data.ts';
 import { TECHNOLOGY_ICONS } from '../../../helper/injection-token/technology-icons.variable.ts';
 import type { TechnologyIconMetadata } from '../../../helper/interface/brand-logo/technology-icon-meta-data/technology-icon-meta-data.interface.ts';
 import type { ResumeProfile } from '../../../helper/interface/resume-profile/resume-profile.interface.ts';
+import { resumeProfileFixture } from '../../../../../test/fixtures/resume-profile.ts';
 
-const TECHNOLOGY_ICON_FALLBACK_LABELS = ['REST APIs', 'Caffeine'] as const;
+const TECHNOLOGY_ICON_FALLBACK_LABELS = ['Example API', 'Example Utility'] as const;
 
 describe('technology icons', () => {
   let resume: ResumeProfile;
@@ -14,7 +14,7 @@ describe('technology icons', () => {
   let resolveIcon: (label: string) => TechnologyIconMetadata | undefined;
 
   beforeEach(() => {
-    resume = TestBed.inject(resumeData);
+    resume = resumeProfileFixture;
     technologyIcons = TestBed.inject(TECHNOLOGY_ICONS);
     resolveIcon = TestBed.inject(resolveTechnologyIcon);
   });
@@ -63,12 +63,14 @@ describe('technology icons', () => {
     }
   });
 
-  it('categorizes every exact résumé label without changing its string data', () => {
+  it('categorizes branded and fallback labels used by the synthetic fixture', () => {
     const technologies = resume.experience.flatMap(({ technologies }) => technologies);
     const uniqueTechnologies = [...new Set(technologies)];
 
     expect(technologies.every((technology) => typeof technology === 'string')).toBe(true);
-    expect(uniqueTechnologies).toHaveLength(27);
+    expect(uniqueTechnologies).toEqual(
+      expect.arrayContaining(['Angular 7.x', 'PostgreSQL', ...TECHNOLOGY_ICON_FALLBACK_LABELS]),
+    );
     expect(
       uniqueTechnologies.filter(
         (technology) =>
@@ -81,9 +83,9 @@ describe('technology icons', () => {
   });
 
   it('uses intentional fallbacks for labels without suitable brand marks', () => {
-    expect(TECHNOLOGY_ICON_FALLBACK_LABELS).toEqual(['REST APIs', 'Caffeine']);
-    expect(resolveIcon('REST APIs')).toBeUndefined();
-    expect(resolveIcon('Caffeine')).toBeUndefined();
+    expect(TECHNOLOGY_ICON_FALLBACK_LABELS).toEqual(['Example API', 'Example Utility']);
+    expect(resolveIcon('Example API')).toBeUndefined();
+    expect(resolveIcon('Example Utility')).toBeUndefined();
     expect(resolveIcon('Unknown technology')).toBeUndefined();
     expect(resolveIcon('toString')).toBeUndefined();
   });

@@ -13,6 +13,7 @@ import { RESUME_API_RETRY_COUNT } from '../injection-token/resume-api-retry-coun
 import { RESUME_API_RETRY_DELAY_MS } from '../injection-token/resume-api-retry-delay-ms.variable.ts';
 import { RESUME_API_RETRY_DELAY_MULTIPLIER } from '../injection-token/resume-api-retry-delay-multiplier.variable.ts';
 import { RESUME_DATA_API_BASE_URL } from '../injection-token/resume-data-api-base-url.variable.ts';
+import { IMAGE_ASSET_ORIGIN } from '../injection-token/image-asset-origin.variable.ts';
 import type { ResumeDetails } from '../interface/resume-details/resume-details.interface.ts';
 import type { ResumeLink } from '../interface/ressume-link/resume-link.interface.ts';
 import type { Experience } from '../interface/experience/experience.interface.ts';
@@ -84,12 +85,13 @@ describe('ResumeDataService', () => {
     timestamp: '2026-11-02T19:44:20Z',
   });
 
-  const setupService = (baseUrl = ''): void => {
+  const setupService = (baseUrl = '', assetOrigin = 'https://ohm-mho.space'): void => {
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: RESUME_DATA_API_BASE_URL, useValue: baseUrl },
+        { provide: IMAGE_ASSET_ORIGIN, useValue: assetOrigin },
       ],
     });
 
@@ -241,7 +243,7 @@ describe('ResumeDataService', () => {
   });
 
   it('normalizes only recognized project logos in the profile and preserves raw API resources', async () => {
-    setupService();
+    setupService('', 'https://assets.example.com/');
     TestBed.tick();
 
     const reqNames = httpMock.expectOne('/api/v1/names');
@@ -254,46 +256,72 @@ describe('ResumeDataService', () => {
     const reqEducations = httpMock.expectOne('/api/v1/educations');
     const logo = (src: string) => ({ src, width: 100, height: 100, surface: 'light' as const });
     const malformedLogo = logo(42 as unknown as string);
-    const apiLinks: readonly ResumeLink[] = [
+    const recognizedLogoMappings = [
       {
-        label: 'GitHub',
-        url: 'https://github.com/janedoe',
-        logo: logo('https://ohm-mho.space/link-logos/github.svg'),
+        source: 'https://ohm-mho.space/link-logos/github.svg',
+        fileName: 'github.svg',
       },
       {
+        source: '/company-logos/accord-innovations.png',
+        fileName: 'accord-innovations.png',
+      },
+      { source: '/company-logos/innovestx.png', fileName: 'innovestx.png' },
+      { source: '/company-logos/saitech-solution.png', fileName: 'saitech-solution.png' },
+      { source: '/company-logos/krungsri.png', fileName: 'krungsri.png' },
+      { source: '/company-logos/nityo-infotech.svg', fileName: 'nityo-infotech.svg' },
+      { source: '/company-logos/tisco.svg', fileName: 'tisco.svg' },
+      { source: '/company-logos/line-man-wongnai.webp', fileName: 'line-man-wongnai.webp' },
+      { source: '/company-logos/wisesoft.png', fileName: 'wisesoft.png' },
+      {
+        source: '/university-logos/prince-of-songkla-university.webp',
+        fileName: 'prince-of-songkla-university.webp',
+      },
+    ] as const;
+    const apiLinks: readonly ResumeLink[] = [
+      ...recognizedLogoMappings.map(({ source, fileName }) => ({
+        label: fileName,
+        url: `https://example.com/${fileName}` as const,
+        logo: logo(source),
+      })),
+      {
         label: 'External image',
-        url: 'https://example.com',
+        url: 'https://example.com' as const,
         logo: logo('https://third-party.example.com/link-logos/github.svg'),
       },
       {
         label: 'Query string',
-        url: 'https://example.com/query',
+        url: 'https://example.com/query' as const,
         logo: logo('/link-logos/github.svg?version=1'),
       },
       {
         label: 'Fragment',
-        url: 'https://example.com/fragment',
+        url: 'https://example.com/fragment' as const,
         logo: logo('https://ohm-mho.space/link-logos/github.svg#mark'),
       },
       {
         label: 'Unknown path',
-        url: 'https://example.com/unknown',
+        url: 'https://example.com/unknown' as const,
         logo: logo('/link-logos/unknown.svg'),
       },
       {
         label: 'Already migrated',
-        url: 'https://example.com/migrated',
+        url: 'https://example.com/migrated' as const,
         logo: logo('https://ohm-mho.space/assets/github.svg'),
       },
       {
         label: 'Malformed URL',
-        url: 'https://example.com/malformed',
+        url: 'https://example.com/malformed' as const,
         logo: logo('https://[invalid'),
       },
       {
         label: 'Malformed source value',
-        url: 'https://example.com/malformed-source',
+        url: 'https://example.com/malformed-source' as const,
         logo: malformedLogo,
+      },
+      {
+        label: 'Credentialed URL',
+        url: 'https://example.com/credentialed' as const,
+        logo: logo('https://user:password@ohm-mho.space/link-logos/github.svg'),
       },
     ];
     const apiExperiences: readonly Experience[] = [
@@ -337,7 +365,9 @@ describe('ResumeDataService', () => {
 
     const profile = service.profile();
     expect(profile?.links.map(({ logo }) => logo?.src)).toEqual([
-      'https://ohm-mho.space/assets/github.svg',
+      ...recognizedLogoMappings.map(
+        ({ fileName }) => `https://assets.example.com/assets/${fileName}`,
+      ),
       'https://third-party.example.com/link-logos/github.svg',
       '/link-logos/github.svg?version=1',
       'https://ohm-mho.space/link-logos/github.svg#mark',
@@ -345,18 +375,19 @@ describe('ResumeDataService', () => {
       'https://ohm-mho.space/assets/github.svg',
       'https://[invalid',
       42,
+      'https://user:password@ohm-mho.space/link-logos/github.svg',
     ]);
     expect(profile?.experience.map(({ companyLogo }) => companyLogo.src)).toEqual([
-      'https://ohm-mho.space/assets/accord-innovations.png',
+      'https://assets.example.com/assets/accord-innovations.png',
       'https://third-party.example.com/company-logos/saitech-solution.png',
       'https://ohm-mho.space/company-logos/krungsri.png?size=large',
     ]);
     expect(profile?.experience[0].client?.logo.src).toBe(
-      'https://ohm-mho.space/assets/innovestx.png',
+      'https://assets.example.com/assets/innovestx.png',
     );
     expect(profile?.experience[1].client?.name).toBe('Client without logo');
     expect(profile?.education.institutionLogo.src).toBe(
-      'https://ohm-mho.space/assets/prince-of-songkla-university.webp',
+      'https://assets.example.com/assets/prince-of-songkla-university.webp',
     );
 
     expect(service.links.value()).toBe(apiLinks);
