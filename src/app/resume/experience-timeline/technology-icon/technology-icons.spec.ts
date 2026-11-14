@@ -1,10 +1,10 @@
 /** Verifies exact technology-label coverage, remote assets, and fallback policy. */
 import { TestBed } from '@angular/core/testing';
 import { resolveTechnologyIcon } from '../../../helper/injection-token/resolve-technology-icon.function.ts';
-import { resumeData } from '../../../helper/injection-token/resume.data.ts';
 import { TECHNOLOGY_ICONS } from '../../../helper/injection-token/technology-icons.variable.ts';
 import type { TechnologyIconMetadata } from '../../../helper/interface/brand-logo/technology-icon-meta-data/technology-icon-meta-data.interface.ts';
 import type { ResumeProfile } from '../../../helper/interface/resume-profile/resume-profile.interface.ts';
+import { resumeProfileFixture } from '../../../../../test/fixtures/resume-profile.ts';
 
 const TECHNOLOGY_ICON_FALLBACK_LABELS = ['REST APIs', 'Caffeine'] as const;
 
@@ -14,7 +14,7 @@ describe('technology icons', () => {
   let resolveIcon: (label: string) => TechnologyIconMetadata | undefined;
 
   beforeEach(() => {
-    resume = TestBed.inject(resumeData);
+    resume = resumeProfileFixture;
     technologyIcons = TestBed.inject(TECHNOLOGY_ICONS);
     resolveIcon = TestBed.inject(resolveTechnologyIcon);
   });

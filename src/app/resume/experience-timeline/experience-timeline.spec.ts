@@ -6,11 +6,11 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import { ExperienceTimeline } from './experience-timeline';
-import { resumeData } from '../../helper/injection-token/resume.data.ts';
+import { resumeProfileFixture } from '../../../../test/fixtures/resume-profile.ts';
 
 describe('ExperienceTimeline', () => {
   it('renders all experience records with correct roles, companies, periods, and locations', () => {
-    const fullData = TestBed.inject(resumeData);
+    const fullData = resumeProfileFixture;
     const fixture = TestBed.createComponent(ExperienceTimeline);
     fixture.componentRef.setInput('experience', fullData.experience);
     fixture.detectChanges();
@@ -34,7 +34,7 @@ describe('ExperienceTimeline', () => {
   });
 
   it('renders employment types and client company information when present', () => {
-    const fullData = TestBed.inject(resumeData);
+    const fullData = resumeProfileFixture;
     const fixture = TestBed.createComponent(ExperienceTimeline);
     fixture.componentRef.setInput('experience', fullData.experience);
     fixture.detectChanges();
@@ -59,7 +59,7 @@ describe('ExperienceTimeline', () => {
   });
 
   it('renders highlights and technology chips for each role', () => {
-    const fullData = TestBed.inject(resumeData);
+    const fullData = resumeProfileFixture;
     const fixture = TestBed.createComponent(ExperienceTimeline);
     fixture.componentRef.setInput('experience', fullData.experience);
     fixture.detectChanges();
@@ -80,7 +80,7 @@ describe('ExperienceTimeline', () => {
   });
 
   it('preserves section landmark and ARIA heading associations', () => {
-    const fullData = TestBed.inject(resumeData);
+    const fullData = resumeProfileFixture;
     const fixture = TestBed.createComponent(ExperienceTimeline);
     fixture.componentRef.setInput('experience', fullData.experience);
     fixture.detectChanges();

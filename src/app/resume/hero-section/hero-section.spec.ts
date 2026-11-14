@@ -4,7 +4,6 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { vi } from 'vitest';
 
-import { resumeData } from '../../helper/injection-token/resume.data.ts';
 import { HERO_CLOCK_TRANSITIONS } from '../../helper/injection-token/hero-clock-transitions.variable.ts';
 import { heroClockTransitionPicker } from '../../helper/injection-token/hero-clock-transition-picker.variable.ts';
 import { STATUS_LUMINANCE_PHI } from '../../helper/injection-token/status-luminance-parameters.phi.variable.ts';
@@ -20,6 +19,7 @@ import { HERO_CODE_R_RIGHT } from '../../helper/injection-token/hero-code-parame
 import { calculateHeroCodePosition } from '../../helper/injection-token/hero-code-position.function.ts';
 import { HERO_CODE_PHI_LEFT } from '../../helper/injection-token/hero-code-parameters.phi-left.variable.ts';
 import { HERO_CODE_PHI_RIGHT } from '../../helper/injection-token/hero-code-parameters.phi-right.variable.ts';
+import { resumeProfileFixture } from '../../../../test/fixtures/resume-profile.ts';
 
 const ALL_CLOCK_TRANSITIONS: readonly HeroClockTransition[] = [
   'slide-fade',
@@ -193,7 +193,7 @@ describe('HeroSection', () => {
   });
 
   function renderHero(): ComponentFixture<HeroSection> {
-    const profile = TestBed.inject(resumeData);
+    const profile = resumeProfileFixture;
     fixture = TestBed.createComponent(HeroSection);
     fixture.componentRef.setInput('profile', profile);
     fixture.detectChanges();
@@ -209,7 +209,7 @@ describe('HeroSection', () => {
 
     expect(kickerCopies).toHaveLength(2);
     expect(normalizedText(kickerCopies.item(0))).toBe(
-      'Backend Software Engineer · Bangkok, Thailand',
+      `${resumeProfileFixture.title} · ${resumeProfileFixture.details.location}`,
     );
     expect(normalizedText(kickerCopies.item(1))).toBe('UTC+7 · 2026-01-02 08:04:05');
     expect(normalizedText(clockElement)).toBe('2026-01-02 08:04:05');

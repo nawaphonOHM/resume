@@ -6,7 +6,7 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import { SummarySection } from './summary-section';
-import { resumeData } from '../../helper/injection-token/resume.data.ts';
+import { resumeProfileFixture } from '../../../../test/fixtures/resume-profile.ts';
 
 describe('SummarySection', () => {
   const sampleSummaries: readonly string[] = [
@@ -54,8 +54,8 @@ describe('SummarySection', () => {
     expect(heading?.textContent.trim()).toBe('From interface to infrastructure');
   });
 
-  it('renders correctly with canonical fixture resumeData summaries', () => {
-    const fullData = TestBed.inject(resumeData);
+  it('renders correctly with fixture summaries', () => {
+    const fullData = resumeProfileFixture;
     const fixture = TestBed.createComponent(SummarySection);
     fixture.componentRef.setInput('summary', fullData.summary);
     fixture.detectChanges();

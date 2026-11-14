@@ -6,11 +6,11 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import { EducationSection } from './education-section';
-import { resumeData } from '../../helper/injection-token/resume.data.ts';
+import { resumeProfileFixture } from '../../../../test/fixtures/resume-profile.ts';
 
 describe('EducationSection', () => {
   it('renders degree, institution, period, and GPAX correctly', () => {
-    const fullData = TestBed.inject(resumeData);
+    const fullData = resumeProfileFixture;
     const fixture = TestBed.createComponent(EducationSection);
     fixture.componentRef.setInput('education', fullData.education);
     fixture.detectChanges();
@@ -26,7 +26,7 @@ describe('EducationSection', () => {
   });
 
   it('renders senior project name and external repository link', () => {
-    const fullData = TestBed.inject(resumeData);
+    const fullData = resumeProfileFixture;
     const fixture = TestBed.createComponent(EducationSection);
     fixture.componentRef.setInput('education', fullData.education);
     fixture.detectChanges();
@@ -46,7 +46,7 @@ describe('EducationSection', () => {
   });
 
   it('preserves section landmark and ARIA heading associations', () => {
-    const fullData = TestBed.inject(resumeData);
+    const fullData = resumeProfileFixture;
     const fixture = TestBed.createComponent(EducationSection);
     fixture.componentRef.setInput('education', fullData.education);
     fixture.detectChanges();

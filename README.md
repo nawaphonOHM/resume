@@ -102,8 +102,10 @@ graph TD
         RESUME_PAGE --> CDK_SCROLL["CDK ScrollDispatcher & ViewportRuler<br/>Scanline Collision Scroll-Spy"]
     end
 
-    subgraph DataTokens["Canonical Data & Fine-Grained Injection Tokens"]
-        RESUME_DATA["resumeData<br/>resume.data.ts"] --> RESUME_PAGE
+    subgraph DataTokens["API-Backed Résumé Data & Fine-Grained Injection Tokens"]
+        RESUME_DATA_SERVICE["ResumeDataService<br/>aggregates ResumeProfile"] -->|8 concurrent GET requests| RESUME_API["Résumé API<br/>/api/v1/names, titles, summaries, details,<br/>links, skills, experiences, educations"]
+        RESUME_DATA_SERVICE --> RESUME_PAGE
+        API_BASE_URL["RESUME_DATA_API_BASE_URL<br/>default: current origin"] --> RESUME_DATA_SERVICE
         PDF_URL["RESUME_PDF_DOWNLOAD_URL"] --> PDF_SERVICE
         PDF_NAME["RESUME_PDF_FILENAME"] --> PDF_SERVICE
         SECTIONS_TOKEN["RESUME_SECTIONS"] --> RESUME_PAGE
@@ -164,7 +166,8 @@ Rather than relying on large monolithic service classes with hardcoded configura
 - **Computer Vision & CLAHE**: `OPEN_CV_CDN_URL`, `TECHNOLOGY_ICON_OPEN_CV_LOADER`, `CLAHE_CLIP_LIMIT`, `CLAHE_TILE_PIXEL_TARGET`, `MIN_CLAHE_TILES`, `MAX_CLAHE_TILES`, `IDLE_TIMEOUT_MS`, `OPEN_CV_RETRY_COUNT`, `OPEN_CV_RETRY_DELAY_MS`, `OPEN_CV_RETRY_DELAY_MULTIPLIER`, `OPEN_CV_RETRY_JITTER_MS`, `dispose`, `normalizeOpenCvExport`, `linearizeChannel`, `relativeLuminance`.
 - **Overlay & Geometry**: `VIEWPORT_MARGIN`, `IMAGE_MAX_VIEWPORT_RATIO`, `ORIGIN_GAP`, `PANEL_CHROME_PX`, `IMAGE_ZOOM_POSITIONS`, `IMAGE_ZOOM_PREVIEW_DATA`, `DOWNSCALE_TOLERANCE`, `INITIAL_IMAGE_STATE`.
 - **Theme & Storage**: `RESUME_THEME_STORAGE_KEY`, `THEME_CLASSES`, `THEME_TRANSITION_CLASS`, `THEME_TRANSITION_DURATION_MS`.
-- **PDF & Navigation**: `RESUME_PDF_DOWNLOAD_URL`, `RESUME_PDF_FILENAME`, `RESUME_SECTIONS`, `SECTION_ACTIVATION_RATIO`, `VIEWPORT_EVENT_THROTTLE_MS`, `resumeData`.
+- **PDF & Navigation**: `RESUME_PDF_DOWNLOAD_URL`, `RESUME_PDF_FILENAME`, `RESUME_SECTIONS`, `SECTION_ACTIVATION_RATIO`, `VIEWPORT_EVENT_THROTTLE_MS`.
+- **Résumé API**: `RESUME_DATA_API_BASE_URL` configures the API base URL consumed by `ResumeDataService`; its empty default uses the current origin.
 
 **Architectural Benefits:**
 
@@ -539,9 +542,11 @@ resume/
 ├── src/
 │   ├── app/
 │   │   ├── helper/               # Fine-grained DI tokens, services, directives, types, and pure functions
-│   │   │   ├── core/             # Global singleton services
+│   │   │   ├── core/             # Global singleton services and API-backed résumé data
 │   │   │   │   ├── favicon.service.ts         # Dynamic browser tab favicon management
 │   │   │   │   ├── favicon.service.spec.ts
+│   │   │   │   ├── resume-data.service.ts     # Aggregates the eight résumé API resources
+│   │   │   │   ├── resume-data.service.spec.ts
 │   │   │   │   ├── theme.service.ts           # Light/Dark/System theme management & persistence
 │   │   │   │   └── theme.service.spec.ts
 │   │   │   ├── directive/        # Custom Angular directives
@@ -562,7 +567,7 @@ resume/
 │   │   │   │   ├── status-luminance.function.ts
 │   │   │   │   ├── status-color-for-utc-plus-seven.function.ts
 │   │   │   │   ├── status-favicon-for-status-color.function.ts
-│   │   │   │   ├── resume.data.ts         # Canonical résumé content & career data
+│   │   │   │   ├── resume-data-api-base-url.variable.ts # Configurable résumé API base URL
 │   │   │   │   └── ...
 │   │   │   ├── interface/        # Strongly-typed data structures & models
 │   │   │   │   ├── brand-logo/            # Company and technology logo interfaces
@@ -651,6 +656,9 @@ resume/
 │   ├── main.ts                   # Angular application bootstrap entry point
 │   ├── material-theme.scss       # Angular Material 3 global theme & typography
 │   └── styles.scss               # Global design tokens, Tailwind v4, A4 print, a11y
+├── test/
+│   └── fixtures/
+│       └── resume-profile.ts       # Synthetic typed profile shared by specs
 ├── .editorconfig
 ├── .firebaserc                   # Firebase project target configuration
 ├── .postcssrc.json
@@ -672,7 +680,7 @@ resume/
 Project-owned images, recognized project logos returned by the résumé API, status favicons, and the downloadable résumé PDF use the shared asset URL builder. Its default origin is `https://ohm-mho.space`, and files are requested as flattened paths such as `https://ohm-mho.space/assets/mysql.svg` and `https://ohm-mho.space/assets/Nawaphon_Isarathanachaikul.pdf`.
 
 - **Origin configuration**: `IMAGE_ASSET_ORIGIN` defaults to `https://ohm-mho.space`. Override this Angular injection token with the asset service's origin, for example `{ provide: IMAGE_ASSET_ORIGIN, useValue: 'https://assets.example.com' }`; the builder removes trailing slashes and appends `/assets/`. It does not configure or deploy the external asset service.
-- **Filename paths**: Asset filenames are encoded as a single path segment, without their former category directories. Recognized legacy logo paths are converted only when they are known project logos from `resume.data.ts` and come from a root-relative path or `https://ohm-mho.space`. Unknown paths, query/fragment variants, already migrated URLs, and unrelated third-party URLs remain unchanged.
+- **Filename paths**: Asset filenames are encoded as a single path segment, without their former category directories. `ResumeDataService` normalizes only the ten known legacy project-logo paths from root-relative URLs or the trusted `https://ohm-mho.space` origin. Unknown, third-party, malformed, credentialed, query/fragment, and already migrated URLs remain unchanged.
 - **Status favicons**: All statuses use `https://ohm-mho.space/assets/favicon.svg?%7B%22status%22%3A%22{status}%22%7D`, where `{status}` is `available`, `limited`, or `unavailable`. The compact JSON object is percent-encoded as the entire query string; an unknown status color falls back to `unavailable`.
 - **Résumé PDF**: `RESUME_PDF_DOWNLOAD_URL` defaults to the PDF filename under the configured asset origin and can be overridden independently. The external host must support the application's `HEAD` availability check and `GET` download.
 - **External hosting and CORS**: The asset service is deployed separately and must provide the referenced files with suitable content types and cross-origin permissions. Cross-origin `GET`/`HEAD` access must be allowed for the deployed application origin; image responses used by Canvas-based contrast processing must also include CORS headers that permit pixel access. A smoke check on 2026-11-12 found the technology SVG and encoded favicon returned `200 image/svg+xml` without `Access-Control-Allow-Origin`; the PDF `HEAD` returned `405` (`Allow: GET`) and its `GET` returned `403`. The external service must address these failures before Canvas processing or PDF availability/downloads can work.
@@ -682,7 +690,9 @@ Project-owned images, recognized project logos returned by the résumé API, sta
 
 ## Editing Résumé Content
 
-All publishable résumé facts live in `src/app/helper/injection-token/resume.data.ts` and strictly adhere to TypeScript interfaces in `src/app/helper/interface/resume-profile/resume-profile.interface.ts`. Update that central data source rather than duplicating content in component templates.
+The application does not bundle a static résumé profile. `ResumeDataService` aggregates the API responses for `GET /api/v1/names`, `/api/v1/titles`, `/api/v1/summaries`, `/api/v1/details`, `/api/v1/links`, `/api/v1/skills`, `/api/v1/experiences`, and `/api/v1/educations` into the typed `ResumeProfile` described by `src/app/helper/interface/resume-profile/resume-profile.interface.ts`. Update résumé content in the backend API resources rather than duplicating it in component templates.
+
+`RESUME_DATA_API_BASE_URL` defaults to an empty string, so those relative API paths use the current origin. Override the token when the API is hosted elsewhere, for example `{ provide: RESUME_DATA_API_BASE_URL, useValue: 'https://api.example.com' }`. The synthetic profile in `test/fixtures/resume-profile.ts` is test-only and is not a production content source.
 
 > **Privacy Notice**: The candidate phone value must remain `"Available on request"`. Do not add a private phone number, a `tel:` link, or unredacted personal contact information anywhere in the codebase.
 

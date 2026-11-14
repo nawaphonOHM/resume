@@ -7,11 +7,26 @@ import type { ResumeEducation } from '../interface/resume-education/resume-educa
 import type { ResumeLink } from '../interface/ressume-link/resume-link.interface.ts';
 import type { ResumeProfile } from '../interface/resume-profile/resume-profile.interface.ts';
 import { assetUrlBuilder } from '../injection-token/asset-url-builder.function.ts';
-import { projectLogoFileNameForPath } from '../injection-token/resume.data.ts';
 import { RESUME_DATA_API_BASE_URL } from '../injection-token/resume-data-api-base-url.variable.ts';
 import { unwrapApiResponse } from './api-response.helper.ts';
 
 const PROJECT_LOGO_ORIGIN = 'https://ohm-mho.space';
+const projectLogoFileNamesByPath = new Map<string, string>([
+  ['/link-logos/github.svg', 'github.svg'],
+  ['/company-logos/accord-innovations.png', 'accord-innovations.png'],
+  ['/company-logos/innovestx.png', 'innovestx.png'],
+  ['/company-logos/saitech-solution.png', 'saitech-solution.png'],
+  ['/company-logos/krungsri.png', 'krungsri.png'],
+  ['/company-logos/nityo-infotech.svg', 'nityo-infotech.svg'],
+  ['/company-logos/tisco.svg', 'tisco.svg'],
+  ['/company-logos/line-man-wongnai.webp', 'line-man-wongnai.webp'],
+  ['/company-logos/wisesoft.png', 'wisesoft.png'],
+  ['/university-logos/prince-of-songkla-university.webp', 'prince-of-songkla-university.webp'],
+]);
+
+function projectLogoFileNameForPath(path: string): string | undefined {
+  return projectLogoFileNamesByPath.get(path);
+}
 
 function projectLogoFileNameFromSource(source: unknown): string | undefined {
   if (typeof source !== 'string') {

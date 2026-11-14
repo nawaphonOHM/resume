@@ -32,7 +32,6 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 
 import { routes } from '../../app.routes';
 import { RESUME_THEME_STORAGE_KEY } from '../../helper/injection-token/resume-theme-storage-key.variable.ts';
-import { resumeData } from '../../helper/injection-token/resume.data.ts';
 import { ResumeDataService } from '../../helper/core/resume-data.service.ts';
 import { RESUME_DATA_API_BASE_URL } from '../../helper/injection-token/resume-data-api-base-url.variable.ts';
 import type { ApiResponse } from '../../helper/interface/api-response/api-response.interface.ts';
@@ -50,6 +49,7 @@ import type { TechnologyIconPresentation } from '../../helper/interface/technolo
 import type { BrandLogo } from '../../helper/interface/brand-logo/brand-logo.interface.ts';
 import { ResumePdfConfirmDialog } from './dialog/resume-pdf-confirm-dialog/resume-pdf-confirm-dialog.ts';
 import { ResumePdfService } from './service/resume-pdf/resume-pdf.service.ts';
+import { resumeProfileFixture } from '../../../../test/fixtures/resume-profile.ts';
 
 const TECHNOLOGY_ICON_FALLBACK_LABELS = ['REST APIs', 'Caffeine'] as const;
 
@@ -242,7 +242,7 @@ describe('ResumePage', () => {
       ],
     }).compileComponents();
 
-    RESUME = TestBed.inject(resumeData);
+    RESUME = resumeProfileFixture;
     mockResumeProfile.set(RESUME);
     IMAGE_ASSET_ORIGIN = TestBed.inject(IMAGE_ASSET_ORIGIN_TOKEN);
     resolveTechnologyIcon = TestBed.inject(resolveTechnologyIconToken);
@@ -459,8 +459,8 @@ describe('ResumePage', () => {
     }
     expect(element.querySelector('a.skip-link')?.getAttribute('href')).toBe('/#main-content');
     expect(element.querySelector('main#main-content')?.getAttribute('tabindex')).toBe('-1');
-    expect(element.querySelector('h1')?.textContent).toContain('Nawaphon Isarathanachaikul');
-    expect(element.querySelectorAll('.experience-card')).toHaveLength(5);
+    expect(element.querySelector('h1')?.textContent).toContain(RESUME.name);
+    expect(element.querySelectorAll('.experience-card')).toHaveLength(RESUME.experience.length);
     expect(educationSection?.getAttribute('aria-labelledby')).toBe('education-title');
     expect(educationSection?.querySelector('#education-title')?.textContent.trim()).toBe(
       'Education',
@@ -476,10 +476,10 @@ describe('ResumePage', () => {
     );
     expect(projectLink?.getAttribute('target')).toBe('_blank');
     expect(projectLink?.getAttribute('rel')).toBe('noopener noreferrer');
-    expect(element.querySelectorAll('.skills-panel mat-chip')).toHaveLength(6);
+    expect(element.querySelectorAll('.skills-panel mat-chip')).toHaveLength(RESUME.skills.length);
     expect(element.textContent).toContain('Available on request');
     expect(element.querySelector('a[href^="tel:"]')).toBeNull();
-    expect(element.querySelector('a[href="mailto:nawaphon2539@gmail.com"]')).not.toBeNull();
+    expect(element.querySelector(`a[href="mailto:${RESUME.details.email}"]`)).not.toBeNull();
     expect(externalLinks).toHaveLength(3);
     expect(externalLinks.every((link) => link.getAttribute('rel') === 'noopener noreferrer')).toBe(
       true,
@@ -658,18 +658,14 @@ describe('ResumePage', () => {
     await renderDeferredSections(fixture);
     const element = fixture.nativeElement as HTMLElement;
     const cards = Array.from(element.querySelectorAll<HTMLElement>('.experience-card'));
-    const expectedLabels = [
-      'Contract',
-      'Contract',
-      'Contract',
-      'Permanent',
-      'Internship → Permanent',
-    ];
+    const expectedLabels = RESUME.experience.map(({ employmentTypes }) =>
+      employmentTypes.join(' → '),
+    );
     const markersByCard = cards.map((card) =>
       Array.from(card.querySelectorAll<HTMLElement>('.employment-type')),
     );
 
-    expect(cards).toHaveLength(5);
+    expect(cards).toHaveLength(RESUME.experience.length);
     expect(markersByCard.every((markers) => markers.length === 1)).toBe(true);
     expect(markersByCard.map(([marker]) => marker.textContent.trim())).toEqual(expectedLabels);
     expect(markersByCard.map(([marker]) => marker.getAttribute('aria-label'))).toEqual(
@@ -841,7 +837,10 @@ describe('ResumePage', () => {
       element.querySelectorAll<HTMLElement>('.company-identity--client'),
     );
 
-    expect(logos).toHaveLength(8);
+    expect(logos).toHaveLength(
+      RESUME.experience.length +
+        RESUME.experience.filter(({ client }) => client !== undefined).length,
+    );
     expect(logos.every((logo) => logo.getAttribute('alt') === '')).toBe(true);
     expect(
       logos.every((logo) => logo.getAttribute('src')?.startsWith(`${IMAGE_ASSET_ORIGIN}/assets/`)),
@@ -850,22 +849,22 @@ describe('ResumePage', () => {
       clientIdentities.map((identity) =>
         identity.querySelector('.company-name')?.textContent.trim(),
       ),
-    ).toEqual(['InnovestX', 'Ayudhya Capital Services (AYCAP)', 'TISCO Bank']);
+    ).toEqual(RESUME.experience.flatMap(({ client }) => (client ? [client.name] : [])));
     expect(
       clientIdentities.map((identity) =>
         identity.querySelector<HTMLImageElement>('.company-logo')?.getAttribute('src'),
       ),
-    ).toEqual([
-      `${IMAGE_ASSET_ORIGIN}/assets/innovestx.png`,
-      `${IMAGE_ASSET_ORIGIN}/assets/krungsri.png`,
-      `${IMAGE_ASSET_ORIGIN}/assets/tisco.svg`,
-    ]);
-    expect(element.querySelectorAll('.company-identity--client .company-label')).toHaveLength(3);
-    expect(element.querySelectorAll('.company-relationship-arrow')).toHaveLength(3);
+    ).toEqual(RESUME.experience.flatMap(({ client }) => (client ? [client.logo.src] : [])));
+    expect(element.querySelectorAll('.company-identity--client .company-label')).toHaveLength(
+      clientIdentities.length,
+    );
+    expect(element.querySelectorAll('.company-relationship-arrow')).toHaveLength(
+      clientIdentities.length,
+    );
     expect(element.querySelectorAll('.company-identities a')).toHaveLength(0);
   });
 
-  it('renders the backend-first profile and four summary cards', async () => {
+  it('renders the profile and summary cards', async () => {
     const fixture = TestBed.createComponent(ResumePage);
     await renderDeferredSections(fixture);
     const element = fixture.nativeElement as HTMLElement;
@@ -889,7 +888,7 @@ describe('ResumePage', () => {
       'Building reliable APIs, data integrations, event-driven workflows, and responsive interfaces for financial and business systems.',
     );
     expect(summaries).toEqual(RESUME.summary);
-    expect(summaries).toHaveLength(4);
+    expect(summaries).toHaveLength(RESUME.summary.length);
     expect(text('footer p')).toBe(`${RESUME.name} · ${RESUME.title}`);
   });
 
@@ -1577,7 +1576,7 @@ describe('ResumePage live HTTP envelope integration', () => {
   });
 
   it('unwraps all backend API envelopes and renders full resume without metadata leakage', async () => {
-    const fullResume = TestBed.inject(resumeData);
+    const fullResume = resumeProfileFixture;
     const envelopeTimestamp = '2026-11-02T19:44:20Z';
 
     const fixture = TestBed.createComponent(ResumePage);
@@ -1646,7 +1645,7 @@ describe('ResumePage live HTTP envelope integration', () => {
   });
 
   it('handles HTTP error gracefully and recovers when user clicks retry', async () => {
-    const fullResume = TestBed.inject(resumeData);
+    const fullResume = resumeProfileFixture;
     const fixture = TestBed.createComponent(ResumePage);
     fixture.detectChanges();
 
