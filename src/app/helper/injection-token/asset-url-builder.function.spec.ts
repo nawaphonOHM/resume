@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { assetUrlBuilder, createAssetUrlBuilder } from './asset-url-builder.function.ts';
+import { assetUrlBuilder } from './asset-url-builder.function.ts';
 import { IMAGE_ASSET_ORIGIN } from './image-asset-origin.variable.ts';
 
 describe('assetUrlBuilder', () => {
@@ -16,7 +16,10 @@ describe('assetUrlBuilder', () => {
   });
 
   it('encodes filenames as a single URL path segment', () => {
-    const builder = createAssetUrlBuilder('https://assets.example.com/');
+    TestBed.configureTestingModule({
+      providers: [{ provide: IMAGE_ASSET_ORIGIN, useValue: 'https://assets.example.com/' }],
+    });
+    const builder = TestBed.inject(assetUrlBuilder);
 
     expect(builder.file('resume file.pdf')).toBe(
       'https://assets.example.com/assets/resume%20file.pdf',
@@ -24,7 +27,10 @@ describe('assetUrlBuilder', () => {
   });
 
   it('encodes the compact status JSON as the complete favicon query string', () => {
-    const builder = createAssetUrlBuilder('https://assets.example.com///');
+    TestBed.configureTestingModule({
+      providers: [{ provide: IMAGE_ASSET_ORIGIN, useValue: 'https://assets.example.com///' }],
+    });
+    const builder = TestBed.inject(assetUrlBuilder);
 
     expect(builder.favicon('available')).toBe(
       'https://assets.example.com/assets/favicon.svg?%7B%22status%22%3A%22available%22%7D',
