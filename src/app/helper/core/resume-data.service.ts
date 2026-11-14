@@ -9,51 +9,7 @@ import type { ResumeProfile } from '../interface/resume-profile/resume-profile.i
 import { assetUrlBuilder } from '../injection-token/asset-url-builder.function.ts';
 import { RESUME_DATA_API_BASE_URL } from '../injection-token/resume-data-api-base-url.variable.ts';
 import { unwrapApiResponse } from './api-response.helper.ts';
-
-const PROJECT_LOGO_ORIGIN = 'https://ohm-mho.space';
-const projectLogoFileNamesByPath = new Map<string, string>([
-  ['/link-logos/github.svg', 'github.svg'],
-  ['/company-logos/accord-innovations.png', 'accord-innovations.png'],
-  ['/company-logos/innovestx.png', 'innovestx.png'],
-  ['/company-logos/saitech-solution.png', 'saitech-solution.png'],
-  ['/company-logos/krungsri.png', 'krungsri.png'],
-  ['/company-logos/nityo-infotech.svg', 'nityo-infotech.svg'],
-  ['/company-logos/tisco.svg', 'tisco.svg'],
-  ['/company-logos/line-man-wongnai.webp', 'line-man-wongnai.webp'],
-  ['/company-logos/wisesoft.png', 'wisesoft.png'],
-  ['/university-logos/prince-of-songkla-university.webp', 'prince-of-songkla-university.webp'],
-]);
-
-function projectLogoFileNameForPath(path: string): string | undefined {
-  return projectLogoFileNamesByPath.get(path);
-}
-
-function projectLogoFileNameFromSource(source: unknown): string | undefined {
-  if (typeof source !== 'string') {
-    return undefined;
-  }
-
-  const rootRelativeFileName = projectLogoFileNameForPath(source);
-  if (rootRelativeFileName) {
-    return rootRelativeFileName;
-  }
-
-  try {
-    const url = new URL(source);
-    if (
-      url.origin !== PROJECT_LOGO_ORIGIN ||
-      url.username !== '' ||
-      url.password !== '' ||
-      `${url.origin}${url.pathname}` !== source
-    ) {
-      return undefined;
-    }
-
-    return projectLogoFileNameForPath(url.pathname);
-  } catch {
-    return undefined;
-  }
-}
+import { PROJECT_LOGO_FILE_NAME_FROM_SOURCE } from '../injection-token/project_logo_file_name_from_source.function.ts';
 
 /**
  * Fetches and aggregates individual résumé sections from REST API endpoints.
@@ -67,6 +23,7 @@ function projectLogoFileNameFromSource(source: unknown): string | undefined {
 export class ResumeDataService {
   private readonly baseUrl = inject(RESUME_DATA_API_BASE_URL);
   private readonly urlBuilder = inject(assetUrlBuilder);
+  private readonly projectLogoFileNameFromSource = inject(PROJECT_LOGO_FILE_NAME_FROM_SOURCE);
 
   /** Resource for candidate display name. */
   readonly names = httpResource<string>(
@@ -262,7 +219,7 @@ export class ResumeDataService {
   });
 
   private normalizeProjectLogo<T extends BrandLogo>(logo: T): T {
-    const fileName = projectLogoFileNameFromSource(logo.src);
+    const fileName = this.projectLogoFileNameFromSource(logo.src);
     return fileName ? { ...logo, src: this.urlBuilder.file(fileName) } : logo;
   }
 
