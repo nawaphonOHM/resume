@@ -95,9 +95,10 @@ describe('ProfileSidebar', () => {
       'https://portfolio.example.com/taylor',
       'https://blog.example.com/taylor',
     ]);
-    expect(
-      links.map((link) => link.querySelector('.link-label')?.textContent.trim()),
-    ).toEqual(['Portfolio', 'Blog']);
+    expect(links.map((link) => link.querySelector('.link-label')?.textContent.trim())).toEqual([
+      'Portfolio',
+      'Blog',
+    ]);
     expect(profile.links).toBe(githubLinks);
     expect(profile.links).toEqual(githubLinks);
     for (const link of links) {
@@ -218,9 +219,7 @@ describe('ProfileSidebar', () => {
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    const link = element.querySelector<HTMLAnchorElement>(
-      '.links-list a[mat-stroked-button]',
-    );
+    const link = element.querySelector<HTMLAnchorElement>('.links-list a[mat-stroked-button]');
 
     expect(link?.getAttribute('href')).toBe(profile.links[0].url);
     expect(link?.textContent).toContain(profile.links[0].label);
