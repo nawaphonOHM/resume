@@ -1,5 +1,5 @@
 import { NgOptimizedImage } from '@angular/common';
-import { Component, input } from '@angular/core';
+import { Component, computed, input, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -27,9 +27,21 @@ import { ImageZoomDirective } from '../../helper/directive/image-zome/image-zoom
 export class ProfileSidebar {
   /** Complete profile supplying both sidebar sections and their link metadata. */
   readonly profile = input.required<ResumeProfile>();
+  /** Links displayed separately from the fixed GitRanks feature. */
+  readonly displayedLinks = computed(() =>
+    this.profile().links.filter((link) => link.label.trim().toLowerCase() !== 'github'),
+  );
+  readonly gitRanksBadgeUrl =
+    'https://gitranks.com/badge/user/nawaphonOHM/profile-card.svg?scheme=violet';
+  readonly gitRanksBadgeFailed = signal(false);
 
   /** @returns A direct email URI for the profile's public address. */
   private emailHref(): string {
     return `mailto:${this.profile().details.email}`;
+  }
+
+  /** Replaces an unavailable badge with a text link label. */
+  onGitRanksBadgeError(): void {
+    this.gitRanksBadgeFailed.set(true);
   }
 }

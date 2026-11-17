@@ -5,8 +5,7 @@
 /// encapsulated components; responsive and print layouts preserve contrast and readable metadata.
 ////
 
-:host,
-aside {
+:host {
   display: block;
 }
 
@@ -92,10 +91,6 @@ h2 {
   color: var(--resume-text);
 }
 
-.profile-card mat-card-header {
-  padding: clamp(1.35rem, 3vw, 2rem);
-}
-
 .profile-card mat-icon[mat-card-avatar] {
   display: grid;
   place-items: center;
@@ -116,6 +111,7 @@ mat-divider {
   --mat-divider-color: var(--resume-border);
 }
 
+.profile-card mat-card-header,
 .profile-card mat-card-content {
   padding: clamp(1.35rem, 3vw, 2rem);
 }
@@ -177,6 +173,10 @@ dd a {
 
 .link-logo-frame--dark {
   background: #071a2e;
+}
+
+.gitranks-print-label {
+  display: none;
 }
 
 @media (min-width: 48rem) {
@@ -301,5 +301,36 @@ dd a {
 
   .links-list mat-icon {
     display: none;
+  }
+
+  .gitranks-feature {
+    display: block;
+    margin-bottom: 0;
+  }
+
+  .gitranks-label,
+  .gitranks-feature img,
+  .gitranks-fallback,
+  .gitranks-screen-icon {
+    display: none !important;
+  }
+
+  .gitranks-link {
+    display: inline !important;
+    width: auto !important;
+    max-width: 100%;
+    min-height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: #16263d !important;
+    font-size: 7.5pt;
+    line-height: 1.2;
+    text-decoration: underline;
+  }
+
+  .gitranks-print-label {
+    display: inline;
   }
 }

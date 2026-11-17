@@ -82,8 +82,38 @@
         </mat-card-header>
         <mat-divider></mat-divider>
         <mat-card-content>
+          <div class="gitranks-feature grid gap-[0.55rem] mb-[1.2rem]">
+            <p class="gitranks-label m-0 text-muted text-xs font-bold tracking-[0.08em] uppercase">
+              Featured profile
+            </p>
+            <a
+              class="gitranks-link flex w-full max-w-[27.5rem] min-w-0 min-h-[3.25rem] items-center gap-3 rounded-2xl border border-solid border-[color-mix(in_srgb,#7c3aed_38%,var(--resume-border))] bg-surface px-3 py-[0.65rem] text-ink no-underline hover:border-[#7c3aed] hover:bg-[color-mix(in_srgb,#7c3aed_10%,var(--resume-surface))] focus-visible:outline-[3px] focus-visible:outline-[#7c3aed] focus-visible:outline-offset-[3px]"
+              href="https://gitranks.com/profile/nawaphonOHM"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="View nawaphonOHM's GitRanks profile (opens in a new tab)"
+            >
+              @if (gitRanksBadgeFailed()) {
+                <span class="gitranks-fallback min-w-0 flex-1 font-bold [overflow-wrap:anywhere]">
+                  View nawaphonOHM on GitRanks
+                </span>
+              } @else {
+                <img
+                  class="w-full max-w-[25rem] min-w-0 flex-1 h-auto aspect-[20/7] object-contain"
+                  [ngSrc]="gitRanksBadgeUrl"
+                  width="400"
+                  height="140"
+                  alt=""
+                  (error)="onGitRanksBadgeError()"
+                />
+              }
+              <mat-icon class="gitranks-screen-icon shrink-0" aria-hidden="true">open_in_new</mat-icon>
+              <span class="gitranks-print-label">GitRanks profile: nawaphonOHM</span>
+            </a>
+          </div>
+
           <div class="links-list grid gap-[0.8rem]">
-            @for (link of profile().links; track link.url) {
+            @for (link of displayedLinks(); track link.url) {
               <a
                 mat-stroked-button
                 class="min-w-0 gap-3"

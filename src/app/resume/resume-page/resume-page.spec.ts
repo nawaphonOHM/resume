@@ -481,13 +481,15 @@ describe('ResumePage', () => {
     expect(element.textContent).toContain(RESUME.details.phoneLabel);
     expect(element.querySelector('a[href^="tel:"]')).toBeNull();
     expect(element.querySelector(`a[href="mailto:${RESUME.details.email}"]`)).not.toBeNull();
-    expect(externalLinks).toHaveLength(3);
+    expect(externalLinks).toHaveLength(
+      RESUME.links.filter((link) => link.label.trim().toLowerCase() !== 'github').length + 2,
+    );
     expect(externalLinks.every((link) => link.getAttribute('rel') === 'noopener noreferrer')).toBe(
       true,
     );
   });
 
-  it('renders the GitHub logo before its label and keeps the personal website text-only', async () => {
+  it('shows GitRanks instead of GitHub and keeps the personal website link', async () => {
     const fixture = TestBed.createComponent(ResumePage);
     await renderDeferredSections(fixture);
     const element = fixture.nativeElement as HTMLElement;
@@ -497,36 +499,15 @@ describe('ResumePage', () => {
     const personalWebsiteLink = linksCard?.querySelector<HTMLAnchorElement>(
       `a[href="${personalWebsite.url}"]`,
     );
-    const githubIdentity = githubLink?.querySelector<HTMLElement>('.link-identity');
-    const githubLogoFrame = githubIdentity?.querySelector<HTMLElement>('.link-logo-frame');
-    const githubLogo = githubLogoFrame?.querySelector<HTMLImageElement>('.link-logo');
-    const githubLabel = githubIdentity?.querySelector<HTMLElement>('.link-label');
-    const githubExternalIcon = githubLink?.querySelector<HTMLElement>('mat-icon');
+    const gitRanksLink = linksCard?.querySelector<HTMLAnchorElement>('.gitranks-link');
 
-    expect(githubLabel?.textContent.trim()).toBe(github.label);
-    const githubLogoConfig = github.logo;
-    expect(githubLogoConfig).toBeDefined();
-    if (githubLogoConfig && githubLogoFrame) {
-      expect(githubLogo?.getAttribute('src')).toBe(githubLogoConfig.src);
-      expect(githubLogo?.getAttribute('width')).toBe(String(githubLogoConfig.width));
-      expect(githubLogo?.getAttribute('height')).toBe(String(githubLogoConfig.height));
-      expect(githubLogo?.getAttribute('alt')).toBe('');
-      expect(githubLogo?.getAttribute('loading')).toBe('lazy');
-      expect(
-        githubLogoFrame.classList.contains(`link-logo-frame--${githubLogoConfig.surface}`),
-      ).toBe(true);
-      expect(getComputedStyle(githubLogoFrame).backgroundColor).toBe('rgb(255, 255, 255)');
-      document.documentElement.classList.add('resume-theme-dark');
-      expect(getComputedStyle(githubLogoFrame).backgroundColor).toBe('rgb(255, 255, 255)');
-    }
-    expect(githubIdentity?.firstElementChild).toBe(githubLogoFrame);
-    expect(githubLogoFrame?.nextElementSibling).toBe(githubLabel);
-    expect(
-      githubIdentity && githubExternalIcon
-        ? githubIdentity.compareDocumentPosition(githubExternalIcon) &
-            Node.DOCUMENT_POSITION_FOLLOWING
-        : 0,
-    ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(githubLink).toBeNull();
+    expect(gitRanksLink?.getAttribute('href')).toBe('https://gitranks.com/profile/nawaphonOHM');
+    expect(gitRanksLink?.getAttribute('aria-label')).toBe(
+      "View nawaphonOHM's GitRanks profile (opens in a new tab)",
+    );
+    expect(gitRanksLink?.getAttribute('target')).toBe('_blank');
+    expect(gitRanksLink?.getAttribute('rel')).toBe('noopener noreferrer');
 
     expect(personalWebsiteLink?.querySelector('.link-label')?.textContent.trim()).toBe(
       personalWebsite.label,
@@ -534,26 +515,25 @@ describe('ResumePage', () => {
     expect(personalWebsiteLink?.querySelector('.link-logo-frame')).toBeNull();
     expect(personalWebsiteLink?.querySelector('img')).toBeNull();
 
-    [
-      { element: githubLink, url: github.url },
-      { element: personalWebsiteLink, url: personalWebsite.url },
-    ].forEach(({ element: link, url }) => {
-      const externalIcon = link?.querySelector<HTMLElement>('mat-icon');
-
-      expect(link?.getAttribute('href')).toBe(url);
-      expect(link?.getAttribute('target')).toBe('_blank');
-      expect(link?.getAttribute('rel')).toBe('noopener noreferrer');
-      expect(externalIcon?.textContent.trim()).toBe('open_in_new');
-      expect(externalIcon?.hasAttribute('iconPositionEnd')).toBe(true);
-      expect(externalIcon?.getAttribute('aria-hidden')).toBe('true');
-    });
+    const personalWebsiteIcon = personalWebsiteLink?.querySelector<HTMLElement>('mat-icon');
+    expect(personalWebsiteLink?.getAttribute('href')).toBe(personalWebsite.url);
+    expect(personalWebsiteLink?.getAttribute('target')).toBe('_blank');
+    expect(personalWebsiteLink?.getAttribute('rel')).toBe('noopener noreferrer');
+    expect(personalWebsiteIcon?.textContent.trim()).toBe('open_in_new');
+    expect(personalWebsiteIcon?.hasAttribute('iconPositionEnd')).toBe(true);
+    expect(personalWebsiteIcon?.getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('wires every rendered image for zoom with GitHub as the only touch exception', async () => {
+  it('wires résumé images for zoom without the removed GitHub logo or badge zoom binding', async () => {
     const fixture = TestBed.createComponent(ResumePage);
     await renderDeferredSections(fixture);
     await fixture.whenStable();
     const renderedImages = fixture.debugElement.queryAll(By.css('img'));
+    const element = fixture.nativeElement as HTMLElement;
+    const gitRanksBadge = element.querySelector<HTMLImageElement>('.gitranks-feature img');
+    const zoomableImages = renderedImages.filter(({ nativeElement }) =>
+      gitRanksBadge ? nativeElement !== gitRanksBadge : true,
+    );
     const zoomImages = fixture.debugElement.queryAll(By.directive(ImageZoomDirective));
     const expectedBindings: {
       readonly logo: BrandLogo;
@@ -591,11 +571,11 @@ describe('ResumePage', () => {
     });
 
     for (const link of RESUME.links) {
-      if ('logo' in link && link.logo) {
+      if ('logo' in link && link.logo && link.label.trim().toLowerCase() !== 'github') {
         expectedBindings.push({
           logo: link.logo,
           label: link.label,
-          touch: link.label !== 'GitHub',
+          touch: true,
         });
       }
     }
@@ -612,16 +592,12 @@ describe('ResumePage', () => {
       };
     });
 
+    expect(gitRanksBadge).not.toBeNull();
     expect(zoomImages.map(({ nativeElement }) => nativeElement as HTMLElement)).toEqual(
-      renderedImages.map(({ nativeElement }) => nativeElement as HTMLElement),
+      zoomableImages.map(({ nativeElement }) => nativeElement as HTMLElement),
     );
     expect(actualBindings).toEqual(expectedBindings);
-    const githubLinkConfig = RESUME.links[0];
-    if (githubLinkConfig.logo) {
-      expect(actualBindings.filter(({ touch }) => !touch)).toEqual([
-        { logo: githubLinkConfig.logo, label: 'GitHub', touch: false },
-      ]);
-    }
+    expect(actualBindings.some(({ label }) => label.trim().toLowerCase() === 'github')).toBe(false);
   });
 
   it('renders the official university logo beside the accessible institution identity', async () => {
