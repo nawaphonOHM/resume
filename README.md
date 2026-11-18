@@ -712,9 +712,6 @@ All primary development workflows, validation tasks, and build commands are mana
 | `npm run check-format`         | `prettier --check .`                               | Verify repository code formatting compliance against Prettier rules.                     |
 | `npm run formatting`           | `prettier --write .`                               | Automatically format all TypeScript, HTML, SCSS, JSON, and Markdown files.               |
 | `npm run lint`                 | `ng lint`                                          | Lint all TypeScript and HTML template files via `angular-eslint` and `eslint`.           |
-| `npm run deploy`               | `ng build && firebase deploy --only hosting`       | Build production bundle and deploy to live Firebase Hosting channel.                     |
-| `npm run preview`              | `firebase hosting:channel:deploy`                  | Deploy a preview channel build to Firebase Hosting.                                      |
-| `npm run serve:firebase`       | `firebase emulators:start --only hosting`          | Serve local static build via Firebase Hosting emulator.                                  |
 | `npm run ng -- <args>`         | `ng <args>`                                        | Execute raw Angular CLI commands directly.                                               |
 | `node scripts/test-runner.mjs` | `scripts/test-runner.mjs`                          | Run unit tests with process timeout enforcement and structured failure diagnostics.      |
 
@@ -903,42 +900,10 @@ Inline comments explicitly mark privacy constraints (such as redacting candidate
 
 ## Production Build & Static Deployment
 
-The project is configured for seamless deployment to **Firebase Hosting**, leveraging automated GitHub Actions workflows for both live production updates and ephemeral preview channels for pull requests.
+`npm run build` creates the static browser application in `dist/resume/browser/`. The résumé remains at `/`, including its fragment navigation, and every unmatched path renders the video fallback without changing the requested URL.
 
-### 1. Firebase Hosting Configuration (`firebase.json`)
+### Client-Side Routes and Deep Links
 
-The `firebase.json` configuration ensures that the Single Page Application (SPA) correctly handles client-side routing by rewriting all requests to `index.html`:
+The Angular router handles unmatched paths after the application has loaded. Configure the production static host to serve `index.html` for direct requests and reloads of application paths so those URLs can reach the client-side router. This repository does not include a host-specific rewrite configuration; add the equivalent rule for the hosting provider you use.
 
-```json
-{
-  "hosting": {
-    "public": "dist/resume/browser",
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  }
-}
-```
-
-### 2. Local Emulator
-
-To preview the production build locally exactly as it will appear in production, use the Firebase Hosting emulator:
-
-```bash
-npm run serve:firebase
-```
-
-### 3. Deployment Workflow
-
-- **Live Deployment**: `npm run deploy` builds the application (`production` configuration) and deploys to the default Firebase project hosting channel.
-- **Preview Deployment**: `npm run preview` deploys the current build state to an ephemeral Firebase Hosting preview URL, facilitating pull request reviews.
-
-### 4. Continuous Integration (CI/CD)
-
-The repository automatically handles deployment via GitHub Actions:
-
-- **`firebase-hosting-merge.yml`**: Triggers on merges to `master`, running CI validation before deploying to the live site.
-- **`firebase-hosting-pull-request.yml`**: Triggers on pull requests, deploying to an ephemeral preview channel to visualize changes without affecting production.
+Keep API and static-asset requests routed to their intended handlers when applying the SPA fallback. Verify deployment by requesting a nested unmatched URL directly and confirming that the app shell loads, while API endpoints and existing assets remain unaffected.
