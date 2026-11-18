@@ -26,6 +26,13 @@ describe('App', () => {
   let routerEvents$: Subject<RouterEvent>;
 
   beforeEach(async () => {
+    localStorage.clear();
+    document.documentElement.classList.remove(
+      'resume-theme-light',
+      'resume-theme-dark',
+      'resume-theme-transitioning',
+    );
+
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [provideRouter(routes)],
@@ -39,6 +46,12 @@ describe('App', () => {
 
   afterEach(() => {
     fixture.destroy();
+    localStorage.clear();
+    document.documentElement.classList.remove(
+      'resume-theme-light',
+      'resume-theme-dark',
+      'resume-theme-transitioning',
+    );
   });
 
   it('creates the root component', () => {
@@ -56,6 +69,14 @@ describe('App', () => {
     expect(outlet.injector.get(RouterOutlet).name).toBe('primary');
   });
 
+  it('initializes the shared theme before rendering routed content', () => {
+    const root = document.documentElement;
+
+    expect(
+      root.classList.contains('resume-theme-light') || root.classList.contains('resume-theme-dark'),
+    ).toBe(true);
+  });
+
   describe('loading overlay & accessibility', () => {
     it('initializes in loading state and renders the progress spinner container with proper accessibility attributes', async () => {
       expect(component.isRouteLoading()).toBe(true);
@@ -66,7 +87,7 @@ describe('App', () => {
       expect(container).not.toBeNull();
       expect(container?.getAttribute('role')).toBe('status');
       expect(container?.getAttribute('aria-live')).toBe('polite');
-      expect(container?.getAttribute('aria-label')).toBe('Loading résumé');
+      expect(container?.getAttribute('aria-label')).toBe('Loading page');
     });
 
     it('renders the indeterminate Material progress spinner with required dimensions', async () => {

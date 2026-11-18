@@ -1,10 +1,14 @@
 import type { Routes } from '@angular/router';
 
-/** The résumé remains an eager, root-only page in the initial application bundle. */
+/** Keep the résumé at the root and lazily render the video page for unmatched paths. */
 export const routes: Routes = [
   {
     path: '',
     loadComponent: () => import('./resume/resume-page/resume-page'),
     pathMatch: 'full',
+  },
+  {
+    path: '**',
+    loadComponent: () => import('./video-page/video-page'),
   },
 ];

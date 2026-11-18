@@ -9,9 +9,11 @@ import { vi } from 'vitest';
 import { appConfig } from './app.config';
 import { routes } from './app.routes';
 import { ResumeDataService } from './helper/core/resume-data.service.ts';
+import { ThemeService } from './helper/core/theme.service.ts';
 import { resumeProfileFixture } from '../../test/fixtures/resume-profile.ts';
 import { TechnologyIconContrastService } from './resume/experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts';
 import ResumePage from './resume/resume-page/resume-page.ts';
+import VideoPage from './video-page/video-page';
 
 describe('application routes', () => {
   let router: Router;
@@ -68,7 +70,7 @@ describe('application routes', () => {
 
   afterEach(() => {
     document.documentElement.style.removeProperty('scroll-padding-top');
-    history.replaceState(null, '', location.pathname);
+    history.replaceState(null, '', '/');
     vi.restoreAllMocks();
   });
 
@@ -107,19 +109,28 @@ describe('application routes', () => {
     return harness;
   }
 
-  it('defines only the lazy root résumé route', async () => {
+  it('defines the lazy root résumé route before the lazy video fallback', async () => {
     expect(routes).toEqual([
       {
         path: '',
         loadComponent: expect.any(Function) as unknown,
         pathMatch: 'full',
       },
+      {
+        path: '**',
+        loadComponent: expect.any(Function) as unknown,
+      },
     ]);
 
-    const loadComponent = routes[0].loadComponent;
-    expect(loadComponent).toBeDefined();
-    const loadedComponent = await (loadComponent as () => Promise<unknown>)();
-    expect(loadedComponent).toMatchObject({ default: ResumePage });
+    const loadResumePage = routes[0].loadComponent;
+    expect(loadResumePage).toBeDefined();
+    const loadedResumePage = await (loadResumePage as () => Promise<unknown>)();
+    expect(loadedResumePage).toMatchObject({ default: ResumePage });
+
+    const loadVideoPage = routes[1].loadComponent;
+    expect(loadVideoPage).toBeDefined();
+    const loadedVideoPage = await (loadVideoPage as () => Promise<unknown>)();
+    expect(loadedVideoPage).toMatchObject({ default: VideoPage });
   });
 
   it('activates ResumePage at the root URL and enables history position restoration', async () => {
@@ -200,5 +211,43 @@ describe('application routes', () => {
 
     expect(router.url).toBe('/#about');
     expect(scrollToPosition).toHaveBeenCalledWith([0, 420], { behavior: 'instant' });
+  });
+
+  it('activates the video fallback on a nested direct URL and preserves query and fragment', async () => {
+    const requestedUrl = '/portfolio/unknown/path?source=resume#player';
+    const harness = await bootstrapHarnessAt(requestedUrl);
+
+    expect(harness.routeDebugElement?.componentInstance).toBeInstanceOf(VideoPage);
+    const main = harness.routeNativeElement?.querySelector('main#video-page-main');
+
+    expect(main).not.toBeNull();
+    expect(document.activeElement).toBe(main);
+    expect(router.url).toBe(requestedUrl);
+  });
+
+  it('returns to the résumé through the fallback page link', async () => {
+    const harness = await bootstrapHarnessAt('/portfolio/unknown/path');
+    const returnLink = harness.routeNativeElement?.querySelector<HTMLAnchorElement>(
+      '.video-page__resume-link',
+    );
+
+    expect(returnLink).not.toBeNull();
+    returnLink?.click();
+    await harness.fixture.whenStable();
+
+    expect(router.url).toBe('/');
+    expect(harness.routeDebugElement?.componentInstance).toBeInstanceOf(ResumePage);
+  });
+
+  it('applies theme changes after navigating to the video fallback', async () => {
+    const harness = await bootstrapHarnessAt('/');
+    const themeService = TestBed.inject(ThemeService);
+
+    await harness.navigateByUrl('/portfolio/unknown/path', VideoPage);
+    themeService.setTheme('dark');
+
+    expect(themeService.theme()).toBe('dark');
+    expect(document.documentElement.classList.contains('resume-theme-dark')).toBe(true);
+    expect(document.documentElement.classList.contains('resume-theme-light')).toBe(false);
   });
 });

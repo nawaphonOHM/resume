@@ -11,6 +11,8 @@ import {
   RouterOutlet,
 } from '@angular/router';
 
+import { ThemeService } from './helper/core/theme.service.ts';
+
 /** Root application shell that hosts the routed single-page résumé and initial loading indicator. */
 @Component({
   selector: 'app-root',
@@ -26,6 +28,8 @@ export class App {
   readonly isRouteLoading = signal(true);
 
   constructor() {
+    inject(ThemeService);
+
     this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
       if (event instanceof NavigationStart || event instanceof RouteConfigLoadStart) {
         this.isRouteLoading.set(true);
