@@ -10,12 +10,12 @@ export const routes: Routes = [
       {
         path: '',
         loadComponent: () => import('./resume/resume-page/resume-page'),
-          pathMatch: 'full',
-        },
-        {
-          path: '**',
-          loadComponent: () => import('./video-page/video-page'),
-        },
-      ],
-    },
+        pathMatch: 'full',
+      },
+      {
+        path: '**',
+        loadComponent: () => import('./video-page/video-page'),
+      },
+    ],
+  },
 ];

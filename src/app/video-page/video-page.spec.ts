@@ -55,7 +55,6 @@ describe('VideoPage', () => {
         ]),
       ],
     }).compileComponents();
-
   });
 
   afterEach(() => {
