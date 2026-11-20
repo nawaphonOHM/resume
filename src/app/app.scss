@@ -16,10 +16,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #07111f;
-  color: #7cb8ff;
+  background-color: var(--resume-page);
+  color: var(--resume-text);
 
-  --mat-progress-spinner-active-indicator-color: #7cb8ff;
+  --mat-progress-spinner-active-indicator-color: var(--resume-focus);
 }
 
 .route-loading-leave {

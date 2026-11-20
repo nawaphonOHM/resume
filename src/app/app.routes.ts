@@ -1,7 +1,7 @@
 import type { Routes } from '@angular/router';
 import { ThemeService } from './helper/core/theme.service.ts';
 
-/** The empty-path parent provides ThemeService to its lazy résumé-page child. */
+/** Shares the route-scoped theme service between the résumé and fallback pages. */
 export const routes: Routes = [
   {
     path: '',
@@ -11,6 +11,10 @@ export const routes: Routes = [
         path: '',
         loadComponent: () => import('./resume/resume-page/resume-page'),
         pathMatch: 'full',
+      },
+      {
+        path: '**',
+        loadComponent: () => import('./video-page/video-page'),
       },
     ],
   },

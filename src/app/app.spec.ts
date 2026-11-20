@@ -1,4 +1,5 @@
 /** Verifies the routed root shell's bootstrap contract, loading states, and accessibility. */
+import { Injector } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { By } from '@angular/platform-browser';
@@ -18,6 +19,7 @@ import { Subject } from 'rxjs';
 
 import { App } from './app';
 import { routes } from './app.routes';
+import { ThemeService } from './helper/core/theme.service.ts';
 
 describe('App', () => {
   let fixture: ComponentFixture<App>;
@@ -26,6 +28,13 @@ describe('App', () => {
   let routerEvents$: Subject<RouterEvent>;
 
   beforeEach(async () => {
+    localStorage.clear();
+    document.documentElement.classList.remove(
+      'resume-theme-light',
+      'resume-theme-dark',
+      'resume-theme-transitioning',
+    );
+
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [provideRouter(routes)],
@@ -39,6 +48,12 @@ describe('App', () => {
 
   afterEach(() => {
     fixture.destroy();
+    localStorage.clear();
+    document.documentElement.classList.remove(
+      'resume-theme-light',
+      'resume-theme-dark',
+      'resume-theme-transitioning',
+    );
   });
 
   it('creates the root component', () => {
@@ -56,6 +71,10 @@ describe('App', () => {
     expect(outlet.injector.get(RouterOutlet).name).toBe('primary');
   });
 
+  it('leaves theme initialization to the active route injector', () => {
+    expect(TestBed.inject(Injector).get(ThemeService, null)).toBeNull();
+  });
+
   describe('loading overlay & accessibility', () => {
     it('initializes in loading state and renders the progress spinner container with proper accessibility attributes', async () => {
       expect(component.isRouteLoading()).toBe(true);
@@ -66,7 +85,7 @@ describe('App', () => {
       expect(container).not.toBeNull();
       expect(container?.getAttribute('role')).toBe('status');
       expect(container?.getAttribute('aria-live')).toBe('polite');
-      expect(container?.getAttribute('aria-label')).toBe('Loading résumé');
+      expect(container?.getAttribute('aria-label')).toBe('Loading page');
     });
 
     it('renders the indeterminate Material progress spinner with required dimensions', async () => {
