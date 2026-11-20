@@ -147,7 +147,8 @@ The application fully embraces modern Angular 22 standalone architecture, fine-g
   - **Reactive Side Effects (`effect`)**: `HeroSection` uses `effect()` to synchronize the dynamic availability status color with `document.head` favicon links via `FaviconService`, and `ImageZoomDirective` uses `effect()` to cleanly tear down CDK overlay preview state on cleanup.
 - **Signal-Based Inputs & Outputs**: All components consume props via `input.required<T>()` and `input<T>()`, and emit events using `output<T>()`, eliminating legacy `@Input` and `@Output` decorators.
 - **Modern `@Service()` Decorators & Functional Injection**:
-  - Singleton root services (such as `ThemeService` and `FaviconService`) leverage the modern Angular v22 `@Service()` decorator, standardizing clean dependency injection over legacy `@Injectable({ providedIn: 'root' })`.
+  - Root-provided services such as `FaviconService` use the modern Angular v22 `@Service()` decorator instead of legacy `@Injectable({ providedIn: 'root' })`.
+  - `ThemeService` opts out of automatic provisioning with `@Service({ autoProvided: false })` and is provided by the empty-path parent route that contains the lazy résumé page.
   - Dependencies are injected cleanly at the declaration site via `inject()` rather than constructor injection parameters.
 - **Component Host Properties**: Component and directive host classes, style bindings, accessibility attributes, and window event listeners (such as `'(window:beforeprint)': 'prepareForNativePrint()'`) are declared directly in the `host` metadata object of the `@Component` and `@Directive` decorators instead of deprecated `@HostBinding` or `@HostListener` decorators.
 - **Native Control Flow & Progressive Deferral (`@defer`)**:
@@ -542,12 +543,12 @@ resume/
 ├── src/
 │   ├── app/
 │   │   ├── helper/               # Fine-grained DI tokens, services, directives, types, and pure functions
-│   │   │   ├── core/             # Global singleton services and API-backed résumé data
+│   │   │   ├── core/             # Core services and API-backed résumé data
 │   │   │   │   ├── favicon.service.ts         # Dynamic browser tab favicon management
 │   │   │   │   ├── favicon.service.spec.ts
 │   │   │   │   ├── resume-data.service.ts     # Aggregates the eight résumé API resources
 │   │   │   │   ├── resume-data.service.spec.ts
-│   │   │   │   ├── theme.service.ts           # Light/Dark/System theme management & persistence
+│   │   │   │   ├── theme.service.ts           # Route-scoped Light/Dark/System theme management & persistence
 │   │   │   │   └── theme.service.spec.ts
 │   │   │   ├── directive/        # Custom Angular directives
 │   │   │   │   └── image-zome/   # Image zoom hover & touch directive
@@ -778,7 +779,7 @@ The test suite contains **18 test suites** and **230+ unit tests** validating ke
 | :----------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/test-setup.spec.ts`                                                                                                       | Verifies CI environment detection via `isCiEnvironment()` and headless `MockIntersectionObserver` DOM mock lifecycle.                                                                                                                                             |
 | `src/app/app.spec.ts`                                                                                                          | Root component instantiation, document title setting, and splash screen lifecycle.                                                                                                                                                                                |
-| `src/app/app.routes.spec.ts`                                                                                                   | Route table configuration, lazy-loading resolution for `ResumePageComponent`, and wildcard redirect handling.                                                                                                                                                     |
+| `src/app/app.routes.spec.ts`                                                                                                   | Nested route configuration and lazy-loading, route-scoped `ThemeService` resolution, root activation, and fragment/history scrolling.                                                                                                                             |
 | `src/app/helper/core/favicon.service.spec.ts`                                                                                  | Dynamic SVG favicon element selection, creation, and reactive URL synchronization.                                                                                                                                                                                |
 | `src/app/helper/core/theme.service.spec.ts`                                                                                    | Theme resolution hierarchy (localStorage $\to$ media query $\to$ light default), transition classes, and persistence.                                                                                                                                             |
 | `src/app/helper/directive/image-zome/image-zoom.directive.spec.ts`                                                             | Image downscale threshold detection ($< 1 - \text{tolerance}$), mouse hover triggers, and touch tap interactions.                                                                                                                                                 |

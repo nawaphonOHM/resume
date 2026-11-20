@@ -51,7 +51,7 @@ describe('ThemeService', () => {
       'resume-theme-dark',
       transitionClass,
     );
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ providers: [ThemeService] });
     storageKey = TestBed.inject(RESUME_THEME_STORAGE_KEY);
   });
 
@@ -209,7 +209,7 @@ describe('ThemeService', () => {
   it('does not start transitions outside the browser', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      providers: [{ provide: PLATFORM_ID, useValue: 'server' }],
+      providers: [{ provide: PLATFORM_ID, useValue: 'server' }, ThemeService],
     });
     const service = TestBed.inject(ThemeService);
 

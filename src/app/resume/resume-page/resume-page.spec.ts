@@ -33,6 +33,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { routes } from '../../app.routes';
 import { RESUME_THEME_STORAGE_KEY } from '../../helper/injection-token/resume-theme-storage-key.variable.ts';
 import { ResumeDataService } from '../../helper/core/resume-data.service.ts';
+import { ThemeService } from '../../helper/core/theme.service.ts';
 import { RESUME_DATA_API_BASE_URL } from '../../helper/injection-token/resume-data-api-base-url.variable.ts';
 import type { ApiResponse } from '../../helper/interface/api-response/api-response.interface.ts';
 import { IMAGE_ASSET_ORIGIN as IMAGE_ASSET_ORIGIN_TOKEN } from '../../helper/injection-token/image-asset-origin.variable.ts';
@@ -228,6 +229,7 @@ describe('ResumePage', () => {
           }),
           withRouterConfig({ onSameUrlNavigation: 'reload' }),
         ),
+        ThemeService,
         { provide: TechnologyIconContrastService, useValue: { optimize } },
         { provide: ResumePdfService, useValue: { download, isAvailable } },
         { provide: ErrorHandler, useValue: { handleError } },
@@ -1555,6 +1557,7 @@ describe('ResumePage live HTTP envelope integration', () => {
           }),
           withRouterConfig({ onSameUrlNavigation: 'reload' }),
         ),
+        ThemeService,
         { provide: TechnologyIconContrastService, useValue: { optimize } },
         { provide: ResumePdfService, useValue: { download, isAvailable } },
         { provide: ErrorHandler, useValue: { handleError } },
