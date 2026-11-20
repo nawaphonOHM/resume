@@ -20,6 +20,22 @@
   }
 }
 
+.video-page__content {
+  display: grid;
+  gap: clamp(1.5rem, 5vw, 3rem);
+  width: min(100%, 72rem);
+  margin-inline: auto;
+}
+
+.video-page__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  margin: 0;
+  font-size: clamp(3rem, 12vw, 8rem);
+  line-height: 1;
+}
+
 .video-page__frame {
   width: min(100%, 72rem);
   margin-inline: auto;

@@ -5,15 +5,23 @@
   tabindex="-1"
   aria-label="Video page"
 >
-  <div class="video-page__frame">
-    <iframe
-      appPlayerFrameDirective
-      src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&controls=1"
-      title="Never Gonna Give You Up by Rick Astley — YouTube video"
-      allow="autoplay; encrypted-media; picture-in-picture; web-share"
-      referrerpolicy="strict-origin-when-cross-origin"
-      allowfullscreen
-      (load)="restorePageFocusAfterPlayerLoad()"
-    ></iframe>
+  <div class="video-page__content">
+    <h1 class="video-page__title" aria-label="404">
+      <span aria-hidden="true">4</span>
+      <span aria-hidden="true">0</span>
+      <span aria-hidden="true">4</span>
+    </h1>
+
+    <div class="video-page__frame">
+      <iframe
+        appPlayerFrameDirective
+        src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&controls=1"
+        title="Never Gonna Give You Up by Rick Astley — YouTube video"
+        allow="autoplay; encrypted-media; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen
+        (load)="restorePageFocusAfterPlayerLoad()"
+      ></iframe>
+    </div>
   </div>
 </main>

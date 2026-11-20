@@ -83,12 +83,20 @@ describe('VideoPage', () => {
     expect(iframe?.hasAttribute('allowfullscreen')).toBe(true);
   });
 
-  it('shows only the accessible video player without visible copy or links', () => {
+  it('shows an accessible 404 heading above the video without links or other copy', () => {
     const page = fixture.nativeElement as HTMLElement;
     const main = page.querySelector('main');
+    const heading = page.querySelector('h1');
+    const frame = page.querySelector('.video-page__frame');
+    const digits = Array.from(heading?.querySelectorAll('span') ?? [])
+      .map((digit) => digit.textContent)
+      .join('');
 
     expect(main?.getAttribute('aria-label')).toBe('Video page');
-    expect(main?.textContent.trim()).toBe('');
+    expect(heading?.getAttribute('aria-label')).toBe('404');
+    expect(digits).toBe('404');
+    expect(heading?.querySelectorAll('[aria-hidden="true"]')).toHaveLength(3);
+    expect(heading?.nextElementSibling).toBe(frame);
     expect(page.querySelectorAll('a')).toHaveLength(0);
     expect(page.querySelectorAll('iframe')).toHaveLength(1);
   });
