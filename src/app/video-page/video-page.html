@@ -3,32 +3,17 @@
   class="video-page"
   id="video-page-main"
   tabindex="-1"
-  aria-labelledby="video-page-title"
+  aria-label="Video page"
 >
-  <section class="video-page__content" aria-describedby="video-page-description">
-    <h1 id="video-page-title">A video break</h1>
-    <p id="video-page-description">
-      This video will attempt to play automatically. If playback does not start, use the player
-      controls.
-    </p>
-
-    <div class="video-page__frame">
-      <iframe
-        appPlayerFrameDirective
-        src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&controls=1"
-        title="Never Gonna Give You Up by Rick Astley — YouTube video"
-        allow="autoplay; encrypted-media; picture-in-picture; web-share"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allowfullscreen
-        (load)="restorePageFocusAfterPlayerLoad()"
-      ></iframe>
-    </div>
-
-    <p class="video-page__fallback">
-      If the embedded player is unavailable,
-      <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">watch the video on YouTube</a>.
-    </p>
-
-    <a class="video-page__resume-link" routerLink="/">Return to the résumé</a>
-  </section>
+  <div class="video-page__frame">
+    <iframe
+      appPlayerFrameDirective
+      src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&controls=1"
+      title="Never Gonna Give You Up by Rick Astley — YouTube video"
+      allow="autoplay; encrypted-media; picture-in-picture; web-share"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allowfullscreen
+      (load)="restorePageFocusAfterPlayerLoad()"
+    ></iframe>
+  </div>
 </main>

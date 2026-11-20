@@ -83,12 +83,14 @@ describe('VideoPage', () => {
     expect(iframe?.hasAttribute('allowfullscreen')).toBe(true);
   });
 
-  it('provides direct YouTube and résumé navigation links', () => {
+  it('shows only the accessible video player without visible copy or links', () => {
     const page = fixture.nativeElement as HTMLElement;
-    const links = Array.from(page.querySelectorAll('a'));
+    const main = page.querySelector('main');
 
-    expect(links[0]?.getAttribute('href')).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
-    expect(links[1]?.getAttribute('href')).toBe('/');
+    expect(main?.getAttribute('aria-label')).toBe('Video page');
+    expect(main?.textContent.trim()).toBe('');
+    expect(page.querySelectorAll('a')).toHaveLength(0);
+    expect(page.querySelectorAll('iframe')).toHaveLength(1);
   });
 
   it('moves focus to its main landmark after rendering', () => {

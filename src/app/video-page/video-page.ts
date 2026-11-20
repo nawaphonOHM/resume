@@ -1,13 +1,12 @@
 import { DOCUMENT } from '@angular/common';
 import { afterNextRender, Component, inject, viewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
 
 import { MainContentDirective } from './directive/main-content.directive.ts';
 import { PlayerFrameDirective } from './directive/player-frame.directive.ts';
 
 @Component({
   selector: 'app-video-page',
-  imports: [RouterLink, MainContentDirective, PlayerFrameDirective],
+  imports: [MainContentDirective, PlayerFrameDirective],
   host: {
     '(document:keydown)': 'cancelPendingFocusRestoration()',
     '(document:pointerdown)': 'cancelPendingFocusRestoration()',

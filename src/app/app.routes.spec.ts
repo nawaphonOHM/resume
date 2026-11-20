@@ -225,15 +225,10 @@ describe('application routes', () => {
     expect(router.url).toBe(requestedUrl);
   });
 
-  it('returns to the résumé through the fallback page link', async () => {
+  it('navigates from the video fallback back to the résumé route', async () => {
     const harness = await bootstrapHarnessAt('/portfolio/unknown/path');
-    const returnLink = harness.routeNativeElement?.querySelector<HTMLAnchorElement>(
-      '.video-page__resume-link',
-    );
 
-    expect(returnLink).not.toBeNull();
-    returnLink?.click();
-    await harness.fixture.whenStable();
+    await harness.navigateByUrl('/', ResumePage);
 
     expect(router.url).toBe('/');
     expect(harness.routeDebugElement?.componentInstance).toBeInstanceOf(ResumePage);
