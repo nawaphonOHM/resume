@@ -8,12 +8,13 @@ import { ThemeService } from '../helper/core/theme.service.ts';
 import VideoPage from './video-page';
 
 describe('VideoPage', () => {
-  let harness!: RouterTestingHarness;
+  let harness: RouterTestingHarness | undefined;
   let prefersDark: boolean;
   let systemThemeListener: ((event: MediaQueryListEvent) => void) | undefined;
   let originalMatchMedia: PropertyDescriptor | undefined;
 
   beforeEach(async () => {
+    harness = undefined;
     prefersDark = false;
     systemThemeListener = undefined;
     originalMatchMedia = Object.getOwnPropertyDescriptor(window, 'matchMedia');
@@ -75,12 +76,22 @@ describe('VideoPage', () => {
     vi.restoreAllMocks();
   });
 
-  async function bootstrapVideoPage(): Promise<void> {
-    harness = await RouterTestingHarness.create('/unknown/path');
-    await harness.fixture.whenStable();
+  async function bootstrapVideoPage(): Promise<RouterTestingHarness> {
+    const createdHarness = await RouterTestingHarness.create('/unknown/path');
+    harness = createdHarness;
+    await createdHarness.fixture.whenStable();
+    return createdHarness;
   }
 
-  function getThemeService(): ThemeService {
+  function getVideoPageElement(harness: RouterTestingHarness): HTMLElement {
+    const page = harness.routeNativeElement;
+    if (!page) {
+      throw new Error('Video page route element not found');
+    }
+    return page;
+  }
+
+  function getThemeService(harness: RouterTestingHarness): ThemeService {
     const injector = harness.routeDebugElement?.injector;
     if (!injector) {
       throw new Error('Video page route injector not found');
@@ -89,7 +100,7 @@ describe('VideoPage', () => {
   }
 
   it('renders the autoplay-enabled, controllable YouTube player with a descriptive title', async () => {
-    await bootstrapVideoPage();
+    const harness = await bootstrapVideoPage();
     const iframe = harness.routeNativeElement?.querySelector('iframe');
 
     expect(iframe?.getAttribute('src')).toBe(
@@ -103,8 +114,8 @@ describe('VideoPage', () => {
   });
 
   it('provides direct YouTube and résumé navigation links', async () => {
-    await bootstrapVideoPage();
-    const page = harness.routeNativeElement as HTMLElement;
+    const harness = await bootstrapVideoPage();
+    const page = getVideoPageElement(harness);
     const links = Array.from(page.querySelectorAll('a'));
 
     expect(links[0]?.getAttribute('href')).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
@@ -112,7 +123,7 @@ describe('VideoPage', () => {
   });
 
   it('moves focus to its main landmark after rendering', async () => {
-    await bootstrapVideoPage();
+    const harness = await bootstrapVideoPage();
     const main = harness.routeNativeElement?.querySelector('main');
 
     expect(main?.getAttribute('tabindex')).toBe('-1');
@@ -120,8 +131,8 @@ describe('VideoPage', () => {
   });
 
   it('restores main landmark focus if the player takes focus while initially loading', async () => {
-    await bootstrapVideoPage();
-    const page = harness.routeNativeElement as HTMLElement;
+    const harness = await bootstrapVideoPage();
+    const page = getVideoPageElement(harness);
     const main = page.querySelector('main');
     const iframe = page.querySelector('iframe');
 
@@ -132,7 +143,7 @@ describe('VideoPage', () => {
   });
 
   it('does not restore initial focus after keyboard navigation begins', async () => {
-    await bootstrapVideoPage();
+    const harness = await bootstrapVideoPage();
     const iframe = harness.routeNativeElement?.querySelector('iframe');
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
@@ -143,7 +154,7 @@ describe('VideoPage', () => {
   });
 
   it('does not restore focus after pointer interaction begins', async () => {
-    await bootstrapVideoPage();
+    const harness = await bootstrapVideoPage();
     const iframe = harness.routeNativeElement?.querySelector('iframe');
 
     document.dispatchEvent(new PointerEvent('pointerdown'));
@@ -154,8 +165,8 @@ describe('VideoPage', () => {
   });
 
   it('does not steal focus on repeated player loads', async () => {
-    await bootstrapVideoPage();
-    const page = harness.routeNativeElement as HTMLElement;
+    const harness = await bootstrapVideoPage();
+    const page = getVideoPageElement(harness);
     const main = page.querySelector('main');
     const iframe = page.querySelector('iframe');
 
@@ -171,8 +182,8 @@ describe('VideoPage', () => {
 
   it.each(['light', 'dark'] as const)('inherits the stored %s theme', async (theme) => {
     localStorage.setItem(TestBed.inject(RESUME_THEME_STORAGE_KEY), theme);
-    await bootstrapVideoPage();
-    const themeService = getThemeService();
+    const harness = await bootstrapVideoPage();
+    const themeService = getThemeService(harness);
 
     expect(themeService.theme()).toBe(theme);
     expect(document.documentElement.classList.contains(`resume-theme-${theme}`)).toBe(true);
@@ -180,8 +191,8 @@ describe('VideoPage', () => {
 
   it('follows system theme changes while the page is active', async () => {
     prefersDark = true;
-    await bootstrapVideoPage();
-    const themeService = getThemeService();
+    const harness = await bootstrapVideoPage();
+    const themeService = getThemeService(harness);
     expect(themeService.theme()).toBe('dark');
     expect(document.documentElement.classList.contains('resume-theme-dark')).toBe(true);
 
