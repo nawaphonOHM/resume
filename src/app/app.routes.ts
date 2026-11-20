@@ -1,10 +1,17 @@
 import type { Routes } from '@angular/router';
+import { ThemeService } from './helper/core/theme.service.ts';
 
-/** The résumé remains an eager, root-only page in the initial application bundle. */
+/** The empty-path parent provides ThemeService to its lazy résumé-page child. */
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () => import('./resume/resume-page/resume-page'),
-    pathMatch: 'full',
+    providers: [ThemeService],
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./resume/resume-page/resume-page'),
+        pathMatch: 'full',
+      },
+    ],
   },
 ];

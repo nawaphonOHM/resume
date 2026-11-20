@@ -1,6 +1,6 @@
 /** Verifies root activation and the application's Router-managed scrolling contract. */
 import { PlatformLocation, ViewportScroller } from '@angular/common';
-import { APP_BOOTSTRAP_LISTENER, ApplicationRef, signal } from '@angular/core';
+import { APP_BOOTSTRAP_LISTENER, ApplicationRef, Injector, signal } from '@angular/core';
 import { DeferBlockBehavior, TestBed } from '@angular/core/testing';
 import { NavigationEnd, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -9,6 +9,7 @@ import { vi } from 'vitest';
 import { appConfig } from './app.config';
 import { routes } from './app.routes';
 import { ResumeDataService } from './helper/core/resume-data.service.ts';
+import { ThemeService } from './helper/core/theme.service.ts';
 import { resumeProfileFixture } from '../../test/fixtures/resume-profile.ts';
 import { TechnologyIconContrastService } from './resume/experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts';
 import ResumePage from './resume/resume-page/resume-page.ts';
@@ -107,19 +108,32 @@ describe('application routes', () => {
     return harness;
   }
 
-  it('defines only the lazy root résumé route', async () => {
+  it('defines a route-scoped provider around the lazy résumé route', async () => {
     expect(routes).toEqual([
       {
         path: '',
-        loadComponent: expect.any(Function) as unknown,
-        pathMatch: 'full',
+        providers: [ThemeService],
+        children: [
+          {
+            path: '',
+            loadComponent: expect.any(Function) as unknown,
+            pathMatch: 'full',
+          },
+        ],
       },
     ]);
 
-    const loadComponent = routes[0].loadComponent;
+    const loadComponent = routes[0].children?.[0]?.loadComponent;
     expect(loadComponent).toBeDefined();
     const loadedComponent = await (loadComponent as () => Promise<unknown>)();
     expect(loadedComponent).toMatchObject({ default: ResumePage });
+  });
+
+  it('resolves ThemeService from the active route, not the root injector', async () => {
+    const harness = await bootstrapHarnessAt('/');
+
+    expect(harness.routeDebugElement?.injector.get(ThemeService)).toBeInstanceOf(ThemeService);
+    expect(TestBed.inject(Injector).get(ThemeService, null)).toBeNull();
   });
 
   it('activates ResumePage at the root URL and enables history position restoration', async () => {

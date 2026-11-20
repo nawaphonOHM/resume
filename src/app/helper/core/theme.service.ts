@@ -43,7 +43,7 @@ import { THEME_TRANSITION_DURATION_MS } from '../injection-token/theme-transitio
  * (`THEME_TRANSITION_DURATION_MS`) to smooth color token interpolation. Rapid toggling resets the timer
  * to prevent premature class removal.
  */
-@Service()
+@Service({ autoProvided: false })
 export class ThemeService {
   private readonly document = inject(DOCUMENT);
   private readonly platformId = inject(PLATFORM_ID);
