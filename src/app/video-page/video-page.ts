@@ -11,7 +11,6 @@ import {
 import { YouTubePlayer } from '@angular/youtube-player';
 import { RouterLink } from '@angular/router';
 
-import { ThemeService } from '../helper/core/theme.service.ts';
 import { MainContentDirective } from './directive/main-content.directive.ts';
 import { PlayerHostDirective } from './directive/player-host.directive.ts';
 import { MINIMUM_PLAYER_WIDTH } from '../helper/injection-token/minimum-player-width.variable.ts';
@@ -53,8 +52,6 @@ export default class VideoPage {
   };
 
   constructor() {
-    inject(ThemeService);
-
     afterNextRender(() => {
       this.mainContent().mainContent.nativeElement.focus({ preventScroll: true });
       this.initializeObservers();
