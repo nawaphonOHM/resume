@@ -1,6 +1,6 @@
 {
   "name": "resume",
-  "version": "5.2.1",
+  "version": "5.2.2",
   "type": "module",
   "scripts": {
     "ng": "ng",
@@ -23,6 +23,7 @@
     "@angular/material": "^22.2.7",
     "@angular/platform-browser": "^22.2.6",
     "@angular/router": "^22.2.6",
+    "@angular/youtube-player": "^22.2.7",
     "material-icons": "^1.13.14",
     "rxjs": "~7.8.0",
     "tslib": "^2.9.1"
@@ -35,6 +36,7 @@
     "@eslint/js": "^10.0.1",
     "@tailwindcss/postcss": "^4.3.5",
     "angular-eslint": "22.8.0",
+    "axe-core": "^4.14.1",
     "eslint": "^10.13.0",
     "jsdom": "^31.0.1",
     "prettier": "^3.10.1",

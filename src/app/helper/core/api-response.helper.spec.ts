@@ -14,7 +14,7 @@ describe('unwrapApiResponse', () => {
         timestamp: '2026-11-02T19:44:20Z',
       };
 
-      const result = unwrapApiResponse<string>(envelope);
+      const result = unwrapApiResponse(envelope);
 
       expect(result).toBe('Jane Doe');
     });
@@ -27,7 +27,7 @@ describe('unwrapApiResponse', () => {
         timestamp: '2026-11-02T19:44:20Z',
       };
 
-      const result = unwrapApiResponse<readonly string[]>(envelope);
+      const result = unwrapApiResponse(envelope);
 
       expect(result).toEqual(summaries);
       expect(result).toBe(summaries);
@@ -47,7 +47,7 @@ describe('unwrapApiResponse', () => {
         timestamp: '2026-11-02T19:44:20Z',
       };
 
-      const result = unwrapApiResponse<typeof details>(envelope);
+      const result = unwrapApiResponse(envelope);
 
       expect(result).toEqual(details);
       expect(result).toBe(details);
@@ -55,7 +55,7 @@ describe('unwrapApiResponse', () => {
 
     it('extracts falsy primitive values correctly when present in envelope data', () => {
       expect(
-        unwrapApiResponse<number>({
+        unwrapApiResponse({
           success: true,
           data: 0,
           timestamp: '2026-11-02T19:44:20Z',
@@ -63,7 +63,7 @@ describe('unwrapApiResponse', () => {
       ).toBe(0);
 
       expect(
-        unwrapApiResponse<string>({
+        unwrapApiResponse({
           success: true,
           data: '',
           timestamp: '2026-11-02T19:44:20Z',
@@ -71,7 +71,7 @@ describe('unwrapApiResponse', () => {
       ).toBe('');
 
       expect(
-        unwrapApiResponse<boolean>({
+        unwrapApiResponse({
           success: true,
           data: false,
           timestamp: '2026-11-02T19:44:20Z',
@@ -79,7 +79,7 @@ describe('unwrapApiResponse', () => {
       ).toBe(false);
 
       expect(
-        unwrapApiResponse<null>({
+        unwrapApiResponse({
           success: true,
           data: null,
           timestamp: '2026-11-02T19:44:20Z',
@@ -91,56 +91,54 @@ describe('unwrapApiResponse', () => {
   describe('direct / un-enveloped fallback payloads', () => {
     it('returns raw string as-is when not wrapped in envelope', () => {
       const raw = 'Direct String';
-      expect(unwrapApiResponse<string>(raw)).toBe('Direct String');
+      expect(unwrapApiResponse(raw)).toBe('Direct String');
     });
 
     it('returns raw array as-is when not wrapped in envelope', () => {
       const rawArray = ['Skill 1', 'Skill 2'];
-      expect(unwrapApiResponse<readonly string[]>(rawArray)).toBe(rawArray);
+      expect(unwrapApiResponse(rawArray)).toBe(rawArray);
     });
 
     it('returns raw plain object as-is when not wrapped in envelope', () => {
       const rawObject = { custom: 'value', nested: { a: 1 } };
-      expect(unwrapApiResponse<typeof rawObject>(rawObject)).toBe(rawObject);
+      expect(unwrapApiResponse(rawObject)).toBe(rawObject);
     });
 
     it('returns object with data but missing success as-is', () => {
       const objWithoutSuccess = { data: 'some data' };
-      expect(unwrapApiResponse<typeof objWithoutSuccess>(objWithoutSuccess)).toBe(
-        objWithoutSuccess,
-      );
+      expect(unwrapApiResponse(objWithoutSuccess)).toBe(objWithoutSuccess);
     });
 
     it('returns object with success but missing data as-is', () => {
       const objWithoutData = { success: true };
-      expect(unwrapApiResponse<typeof objWithoutData>(objWithoutData)).toBe(objWithoutData);
+      expect(unwrapApiResponse(objWithoutData)).toBe(objWithoutData);
     });
 
     it('returns null and undefined as-is', () => {
-      expect(unwrapApiResponse<null>(null)).toBeNull();
-      const undefinedResult = unwrapApiResponse<unknown>(undefined);
+      expect(unwrapApiResponse(null)).toBeNull();
+      const undefinedResult = unwrapApiResponse(undefined);
       expect(undefinedResult).toBeUndefined();
     });
 
     it('returns primitive numbers and booleans as-is', () => {
-      expect(unwrapApiResponse<number>(42)).toBe(42);
-      expect(unwrapApiResponse<boolean>(true)).toBe(true);
-      expect(unwrapApiResponse<boolean>(false)).toBe(false);
+      expect(unwrapApiResponse(42)).toBe(42);
+      expect(unwrapApiResponse(true)).toBe(true);
+      expect(unwrapApiResponse(false)).toBe(false);
     });
 
     it('returns object with data and success but missing timestamp as-is', () => {
       const ambiguous = { data: 'some data', success: true };
-      expect(unwrapApiResponse<typeof ambiguous>(ambiguous)).toBe(ambiguous);
+      expect(unwrapApiResponse(ambiguous)).toBe(ambiguous);
     });
 
     it('returns object with data and non-boolean success as-is', () => {
       const ambiguous = { data: 1, success: 'yes', timestamp: '2026-11-02T19:44:20Z' };
-      expect(unwrapApiResponse<typeof ambiguous>(ambiguous)).toBe(ambiguous);
+      expect(unwrapApiResponse(ambiguous)).toBe(ambiguous);
     });
 
     it('returns object with data, success and non-string timestamp as-is', () => {
       const ambiguous = { data: 1, success: true, timestamp: 1730576660 };
-      expect(unwrapApiResponse<typeof ambiguous>(ambiguous)).toBe(ambiguous);
+      expect(unwrapApiResponse(ambiguous)).toBe(ambiguous);
     });
   });
 
@@ -150,13 +148,13 @@ describe('unwrapApiResponse', () => {
         '{"success":true,"data":"Nawaphon Isarathanachaikul","timestamp":"2026-11-02T19:44:20Z"}',
       );
 
-      expect(unwrapApiResponse<string>(raw)).toBe('Nawaphon Isarathanachaikul');
+      expect(unwrapApiResponse(raw)).toBe('Nawaphon Isarathanachaikul');
     });
 
     it('returns a JSON-parsed raw array typed as unknown as-is', () => {
       const raw: unknown = JSON.parse('["Skill 1","Skill 2"]');
 
-      expect(unwrapApiResponse<readonly string[]>(raw)).toEqual(['Skill 1', 'Skill 2']);
+      expect(unwrapApiResponse(raw)).toEqual(['Skill 1', 'Skill 2']);
     });
 
     it('does not mutate the envelope passed as unknown', () => {
@@ -167,7 +165,7 @@ describe('unwrapApiResponse', () => {
       };
       const snapshot = JSON.stringify(raw);
 
-      unwrapApiResponse<readonly string[]>(raw);
+      unwrapApiResponse(raw);
 
       expect(JSON.stringify(raw)).toBe(snapshot);
     });

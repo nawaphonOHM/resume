@@ -1,14 +1,24 @@
 import { DOCUMENT } from '@angular/common';
-import { afterNextRender, Component, inject, viewChild } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  DestroyRef,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { YouTubePlayer } from '@angular/youtube-player';
 import { RouterLink } from '@angular/router';
 
-import { ThemeService } from '../helper/core/theme.service.ts';
 import { MainContentDirective } from './directive/main-content.directive.ts';
-import { PlayerFrameDirective } from './directive/player-frame.directive.ts';
+import { PlayerHostDirective } from './directive/player-host.directive.ts';
+import { MINIMUM_PLAYER_WIDTH } from '../helper/injection-token/minimum-player-width.variable.ts';
+import { PLAYER_FRAME_TITLE } from '../helper/injection-token/player-frame-title.variable.ts';
 
 @Component({
   selector: 'app-video-page',
-  imports: [RouterLink, MainContentDirective, PlayerFrameDirective],
+  imports: [RouterLink, MainContentDirective, YouTubePlayer, PlayerHostDirective],
   host: {
     '(document:keydown)': 'cancelPendingFocusRestoration()',
     '(document:pointerdown)': 'cancelPendingFocusRestoration()',
@@ -17,16 +27,42 @@ import { PlayerFrameDirective } from './directive/player-frame.directive.ts';
   styleUrl: './video-page.scss',
 })
 export default class VideoPage {
+  private readonly MINIMUM_PLAYER_WIDTH_ = inject(MINIMUM_PLAYER_WIDTH);
+  private readonly PLAYER_FRAME_TITLE_ = inject(PLAYER_FRAME_TITLE);
+
   private readonly mainContent = viewChild.required(MainContentDirective);
-  private readonly playerFrame = viewChild.required(PlayerFrameDirective);
+  private readonly playerHost = viewChild.required(PlayerHostDirective);
   private readonly document = inject(DOCUMENT);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly frameWidth = signal(0);
+  private resizeObserver: ResizeObserver | null = null;
+  private playerFrameObserver: MutationObserver | null = null;
+  private observedPlayerFrame: HTMLIFrameElement | null = null;
+  private playerFrameLoadListener: (() => void) | null = null;
   private shouldRestoreFocus = true;
+  private isDestroyed = false;
+  readonly videoId = 'dQw4w9WgXcQ';
+  readonly playerWidth = computed(() => Math.floor(this.frameWidth()));
+  readonly playerHeight = computed(() =>
+    Math.max(this.MINIMUM_PLAYER_WIDTH_, Math.round((this.playerWidth() * 9) / 16)),
+  );
+  readonly canRenderPlayer = computed(() => this.playerWidth() >= this.MINIMUM_PLAYER_WIDTH_);
+  private readonly handleWindowResize = (): void => {
+    this.measureFrameWidth();
+  };
 
   constructor() {
-    inject(ThemeService);
-
     afterNextRender(() => {
       this.mainContent().mainContent.nativeElement.focus({ preventScroll: true });
+      this.initializeObservers();
+    });
+
+    this.destroyRef.onDestroy(() => {
+      this.isDestroyed = true;
+      this.resizeObserver?.disconnect();
+      this.playerFrameObserver?.disconnect();
+      this.removePlayerFrameLoadListener();
+      this.document.defaultView?.removeEventListener('resize', this.handleWindowResize);
     });
   }
 
@@ -40,8 +76,101 @@ export default class VideoPage {
     }
 
     this.shouldRestoreFocus = false;
-    if (this.document.activeElement === this.playerFrame().playerFrame.nativeElement) {
+    if (this.document.activeElement === this.observedPlayerFrame) {
       this.mainContent().mainContent.nativeElement.focus({ preventScroll: true });
     }
+  }
+
+  handlePlayerReady(event: YT.PlayerEvent): void {
+    this.observePlayerFrame();
+    this.restorePageFocusAfterPlayerLoad();
+
+    const player = event.target;
+    const playerFrame = player.getIframe();
+    queueMicrotask(() => {
+      if (
+        this.isDestroyed ||
+        playerFrame !== this.observedPlayerFrame ||
+        playerFrame !== this.playerHost().playerHost.nativeElement.querySelector('iframe')
+      ) {
+        return;
+      }
+
+      player.playVideo();
+    });
+  }
+
+  private initializeObservers(): void {
+    const playerHost = this.playerHost().playerHost.nativeElement;
+    this.measureFrameWidth();
+
+    const ResizeObserverConstructor = globalThis.ResizeObserver;
+    if (typeof ResizeObserverConstructor === 'function') {
+      this.resizeObserver = new ResizeObserverConstructor((entries) => {
+        const entry = entries.find((candidate) => candidate.target === playerHost);
+        this.setFrameWidth(entry?.contentRect.width ?? playerHost.getBoundingClientRect().width);
+      });
+      this.resizeObserver.observe(playerHost);
+    } else {
+      this.document.defaultView?.addEventListener('resize', this.handleWindowResize);
+    }
+
+    const MutationObserverConstructor = globalThis.MutationObserver;
+    if (typeof MutationObserverConstructor === 'function') {
+      this.playerFrameObserver = new MutationObserverConstructor(() => {
+        this.observePlayerFrame();
+      });
+      this.playerFrameObserver.observe(playerHost, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['title', 'referrerpolicy'],
+      });
+    }
+
+    this.observePlayerFrame();
+  }
+
+  private measureFrameWidth(): void {
+    this.setFrameWidth(this.playerHost().playerHost.nativeElement.getBoundingClientRect().width);
+  }
+
+  private setFrameWidth(width: number): void {
+    this.frameWidth.set(Number.isFinite(width) ? Math.max(0, width) : 0);
+  }
+
+  private observePlayerFrame(): void {
+    const playerFrame =
+      this.playerHost().playerHost.nativeElement.querySelector<HTMLIFrameElement>('iframe');
+    if (!playerFrame) {
+      return;
+    }
+
+    if (playerFrame.getAttribute('title') !== this.PLAYER_FRAME_TITLE_) {
+      playerFrame.setAttribute('title', this.PLAYER_FRAME_TITLE_);
+    }
+    if (playerFrame.getAttribute('referrerpolicy') !== 'strict-origin-when-cross-origin') {
+      playerFrame.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+    }
+
+    if (playerFrame === this.observedPlayerFrame) {
+      return;
+    }
+
+    this.removePlayerFrameLoadListener();
+    this.observedPlayerFrame = playerFrame;
+    this.playerFrameLoadListener = () => {
+      this.restorePageFocusAfterPlayerLoad();
+    };
+    playerFrame.addEventListener('load', this.playerFrameLoadListener, { once: true });
+  }
+
+  private removePlayerFrameLoadListener(): void {
+    if (this.observedPlayerFrame && this.playerFrameLoadListener) {
+      this.observedPlayerFrame.removeEventListener('load', this.playerFrameLoadListener);
+    }
+
+    this.playerFrameLoadListener = null;
+    this.observedPlayerFrame = null;
   }
 }

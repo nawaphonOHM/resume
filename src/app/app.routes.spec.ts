@@ -14,6 +14,7 @@ import { resumeProfileFixture } from '../../test/fixtures/resume-profile.ts';
 import { TechnologyIconContrastService } from './resume/experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts';
 import ResumePage from './resume/resume-page/resume-page.ts';
 import VideoPage from './video-page/video-page';
+import { installYouTubeIframeApiTestDouble } from './video-page/testing/youtube-iframe-api.test-double.ts';
 
 describe('application routes', () => {
   let router: Router;
@@ -27,6 +28,7 @@ describe('application routes', () => {
   >;
 
   beforeEach(() => {
+    installYouTubeIframeApiTestDouble();
     document.documentElement.style.scrollPaddingTop = '88px';
     setOffset = vi.fn<ViewportScroller['setOffset']>();
     getScrollPosition = vi.fn<ViewportScroller['getScrollPosition']>(() => [0, 0]);
@@ -64,7 +66,6 @@ describe('application routes', () => {
         },
       ],
     });
-
     router = TestBed.inject(Router);
   });
 

@@ -31,7 +31,7 @@ export class ResumeDataService {
       url: `${this.baseUrl}/api/v1/names`,
       headers: { 'X-Api-Type': 'resume-data' },
     }),
-    { parse: (raw) => unwrapApiResponse<string>(raw) },
+    { parse: (raw) => unwrapApiResponse(raw) as string },
   );
 
   /** Resource for candidate professional headline. */
@@ -40,7 +40,7 @@ export class ResumeDataService {
       url: `${this.baseUrl}/api/v1/titles`,
       headers: { 'X-Api-Type': 'resume-data' },
     }),
-    { parse: (raw) => unwrapApiResponse<string>(raw) },
+    { parse: (raw) => unwrapApiResponse(raw) as string },
   );
 
   /** Resource for candidate summary paragraphs. */
@@ -49,7 +49,7 @@ export class ResumeDataService {
       url: `${this.baseUrl}/api/v1/summaries`,
       headers: { 'X-Api-Type': 'resume-data' },
     }),
-    { parse: (raw) => unwrapApiResponse<readonly string[]>(raw) },
+    { parse: (raw) => unwrapApiResponse(raw) as readonly string[] },
   );
 
   /** Resource for candidate contact and personal details. */
@@ -58,7 +58,7 @@ export class ResumeDataService {
       url: `${this.baseUrl}/api/v1/details`,
       headers: { 'X-Api-Type': 'resume-data' },
     }),
-    { parse: (raw) => unwrapApiResponse<ResumeDetails>(raw) },
+    { parse: (raw) => unwrapApiResponse(raw) as ResumeDetails },
   );
 
   /** Resource for candidate external links and brand metadata. */
@@ -67,7 +67,7 @@ export class ResumeDataService {
       url: `${this.baseUrl}/api/v1/links`,
       headers: { 'X-Api-Type': 'resume-data' },
     }),
-    { parse: (raw) => unwrapApiResponse<readonly ResumeLink[]>(raw) },
+    { parse: (raw) => unwrapApiResponse(raw) as readonly ResumeLink[] },
   );
 
   /** Resource for candidate curated skill tags. */
@@ -76,7 +76,7 @@ export class ResumeDataService {
       url: `${this.baseUrl}/api/v1/skills`,
       headers: { 'X-Api-Type': 'resume-data' },
     }),
-    { parse: (raw) => unwrapApiResponse<readonly string[]>(raw) },
+    { parse: (raw) => unwrapApiResponse(raw) as readonly string[] },
   );
 
   /** Resource for candidate employment experiences. */
@@ -85,7 +85,7 @@ export class ResumeDataService {
       url: `${this.baseUrl}/api/v1/experiences`,
       headers: { 'X-Api-Type': 'resume-data' },
     }),
-    { parse: (raw) => unwrapApiResponse<readonly Experience[]>(raw) },
+    { parse: (raw) => unwrapApiResponse(raw) as readonly Experience[] },
   );
 
   /** Resource for candidate highest education record. */
@@ -94,7 +94,7 @@ export class ResumeDataService {
       url: `${this.baseUrl}/api/v1/educations`,
       headers: { 'X-Api-Type': 'resume-data' },
     }),
-    { parse: (raw) => unwrapApiResponse<ResumeEducation>(raw) },
+    { parse: (raw) => unwrapApiResponse(raw) as ResumeEducation },
   );
 
   /** Whether any resource is currently loading. */

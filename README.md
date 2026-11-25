@@ -63,6 +63,12 @@ npm start
 
 Navigate to `http://localhost:4200/`. The development server supports live reloading and hot module replacement as source files are modified.
 
+### Fallback video
+
+Unmatched routes load an Angular YouTube player and provide a direct YouTube link when the embed is unavailable or too narrow. Autoplay depends on browser policy. YouTube creates the iframe and controls its initial request and permissions; the page applies `strict-origin-when-cross-origin` when it observes the iframe, which may be after the initial navigation.
+
+In browser validation, the iframe exposed autoplay and fullscreen permissions, but YouTube reported the video unavailable, so playback and fullscreen operation could not be verified. Accessibility scans of the host page passed in both themes; the cross-origin player itself was not scanned.
+
 ## Architecture & Core Design Patterns
 
 The application is structured around modern Angular standalone architecture, fine-grained Signal reactivity, Inverted Dependency Injection via modular `InjectionToken`s, computer vision algorithms, and real-time kinematic calculations.
