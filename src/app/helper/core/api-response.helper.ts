@@ -23,19 +23,16 @@ function isApiResponse(value: unknown): value is ApiResponse<unknown> {
  * Defensive parser function to extract domain data from an API envelope or raw input.
  *
  * @remarks
- * Accepts `unknown` so it can be passed directly as an `httpResource` `parse` option.
+ * Accepts and returns `unknown` so it can be passed directly as an `httpResource` `parse` option.
  * If the payload is a full `ApiResponse<T>` envelope, the inner `data` payload is returned.
  * Otherwise, the input is returned as-is for graceful fallback and backward compatibility.
- * The input is never mutated.
- *
- * @typeParam T - The expected domain data type.
+ * The input is never mutated, and no runtime validation of the domain payload is performed.
  * @param response - Payload received from the network or static fallback, typed as `unknown`.
- * @returns The inner `data` payload if wrapped in an `ApiResponse`, or the input as-is.
+ * @returns The inner `data` payload if wrapped in an `ApiResponse`, or the input as-is, typed as `unknown`.
  */
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- T selects the domain type at call sites (e.g. parse: (raw) => unwrapApiResponse<T>(raw))
-export function unwrapApiResponse<T>(response: unknown): T {
+export function unwrapApiResponse(response: unknown): unknown {
   if (isApiResponse(response)) {
-    return response.data as T;
+    return response.data;
   }
-  return response as T;
+  return response;
 }

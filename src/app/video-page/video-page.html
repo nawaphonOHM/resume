@@ -12,16 +12,20 @@
       controls.
     </p>
 
-    <div class="video-page__frame">
-      <iframe
-        appPlayerFrameDirective
-        src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&controls=1"
-        title="Never Gonna Give You Up by Rick Astley — YouTube video"
-        allow="autoplay; encrypted-media; picture-in-picture; web-share"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allowfullscreen
-        (load)="restorePageFocusAfterPlayerLoad()"
-      ></iframe>
+    <div
+      appPlayerHostDirective
+      class="video-page__frame"
+      [style.height.px]="canRenderPlayer() ? playerHeight() : 0"
+    >
+      @if (canRenderPlayer()) {
+        <youtube-player
+          [videoId]="videoId"
+          [disablePlaceholder]="true"
+          [width]="playerWidth()"
+          [height]="playerHeight()"
+          (ready)="handlePlayerReady($event)"
+        ></youtube-player>
+      }
     </div>
 
     <p class="video-page__fallback">

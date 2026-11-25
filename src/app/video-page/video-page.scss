@@ -21,6 +21,7 @@
 }
 
 .video-page__content {
+  min-width: 0;
   width: min(100%, 72rem);
   margin-inline: auto;
   padding: clamp(1.25rem, 4vw, 3rem);
@@ -43,17 +44,18 @@ p {
 
 .video-page__frame {
   overflow: hidden;
+  min-width: 0;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  max-width: 100%;
   border-radius: 0.875rem;
   background-color: #000;
 }
 
-iframe {
+youtube-player {
   display: block;
   width: 100%;
   height: 100%;
-  border: 0;
+  max-width: 100%;
 }
 
 .video-page__fallback {

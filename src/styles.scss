@@ -311,6 +311,11 @@ html {
   background: var(--resume-page);
 }
 
+html:has(app-video-page),
+body:has(app-video-page) {
+  min-width: 0;
+}
+
 body {
   min-width: 20rem;
   min-height: 100vh;
