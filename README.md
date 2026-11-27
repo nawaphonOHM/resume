@@ -15,7 +15,7 @@
 - **Per-Instance Hero Clock Transitions**: Each hero selects one transition style (`slide-fade`, `opacity-pulse`, or `soft-glow`); code-badge coordinates and status luminance update through signals.
 - **Project Logo Normalization**: Recognized legacy logo URLs are normalized to canonical asset URLs while preserving object identity when no change is needed.
 - **Live UTC+7 Bangkok Clock & Dynamic Status Favicon**: Real-time availability engine that tracks working hours in Asia/Bangkok time, drives status dot harmonic luminance oscillation ($f = 0.5\text{ Hz}$), and dynamically selects an asset-hosted favicon using an encoded status JSON query.
-- **Physics-Driven Orbital Badges**: Hero section code badge kinematics computed in 60fps frame loops via time-dependent parametric trigonometry with zero default phase offsets ($x = r \cos(\omega t)$, $y = r \sin(\omega t)$) and injectable phase tokens, with starter positions seeded by current Unix epoch time in seconds (`Date.now() / 1000`), continuous animation time integration ($t = t_{\text{unixStart}} + t_{\text{elapsed}}$), and deterministic frequency derived from the calendar day of the month ($f = \text{dayOfMonth} / 3600\text{ Hz}$).
+- **Physics-Driven Orbital Badges**: Hero section code badge kinematics computed in 60fps frame loops via time-dependent parametric trigonometry with zero default phase offsets ($x = r \cos(\omega t)$, $y = r \sin(\omega t)$) and injectable phase tokens, with starter positions seeded by current Unix epoch time in seconds (`Date.now() / 1000`), continuous animation time integration ($`t = t_{\text{unixStart}} + t_{\text{elapsed}}`$), and deterministic frequency derived from the calendar day of the month ($f = \text{dayOfMonth} / 3600\text{ Hz}$).
 - **Client-Side OpenCV.js CLAHE Image Enhancement**: Shared contrast optimization for technology and online-link icons using WebAssembly CLAHE in CIE $L^{\ast}a^{\ast}b^{\ast}$ color space with cooperative idle scheduling (`requestIdleCallback`) and explicit C++ memory management.
 - **Accessible Online Links**: A responsive navigation icon row reveals enhanced artwork on hover or keyboard focus, falls back gracefully, and retains labels and destinations in native print.
 - **Smart Image Zoom Previews**: Image preview overlay powered by Angular CDK Overlay with `ResizeObserver`-driven downscale detection and automatic viewport collision containment.
@@ -263,29 +263,43 @@ flowchart TD
 Driven by `requestAnimationFrame` and executed after initial render (`afterNextRender`), the continuous loop updates signal-backed badge coordinates and status luminance; the template binds these values to CSS custom properties:
 
 - **Parametric Circular Orbital Kinematics & Starter Coordinates**:
-  The hero code badges orbit continuously around the central avatar along parametric circular paths. At component instantiation, the initial starter coordinates are computed directly from the current Unix epoch timestamp in seconds ($t_{\text{unixStart}} = \text{Date.now()} / 1000$), after which continuous frame callbacks advance position at $t = t_{\text{unixStart}} + t_{\text{elapsed}}$ (where $t_{\text{elapsed}} = (t_{\text{current}} - t_{\text{start}}) / 1000$ via `performance.now()`). With the default phase offsets cancelled to zero ($\phi_{\text{left}} = \phi_{\text{right}} = 0\text{ rad}$), the left badge orbital frequency is scaled by the radius ratio ($r_{\text{right}} / r_{\text{left}}$):
-  $$\theta_{\text{left}}(t) = \omega\left(f \cdot \frac{r_{\text{right}}}{r_{\text{left}}}\right) \cdot t$$
-  $$x_{\text{left}}(t) = r_{\text{left}} \cdot \cos(\theta_{\text{left}}(t)), \quad y_{\text{left}}(t) = r_{\text{left}} \cdot \sin(\theta_{\text{left}}(t))$$
-  $$\theta_{\text{right}}(t) = \omega(f) \cdot t$$
-  $$x_{\text{right}}(t) = r_{\text{right}} \cdot \cos(\theta_{\text{right}}(t)), \quad y_{\text{right}}(t) = r_{\text{right}} \cdot \sin(\theta_{\text{right}}(t))$$
+  The hero code badges orbit continuously around the central avatar along parametric circular paths. At component instantiation, the initial starter coordinates are computed directly from the current Unix epoch timestamp in seconds ($`t_{\text{unixStart}} = \text{Date.now()} / 1000`$), after which continuous frame callbacks advance position at $`t = t_{\text{unixStart}} + t_{\text{elapsed}}`$ (where $`t_{\text{elapsed}} = (t_{\text{current}} - t_{\text{start}}) / 1000`$ via `performance.now()`). With the default phase offsets cancelled to zero ($`\phi_{\text{left}} = \phi_{\text{right}} = 0\text{ rad}`$), the left badge orbital frequency is scaled by the radius ratio ($`r_{\text{right}} / r_{\text{left}}`$):
+
+  ```math
+  \begin{aligned}
+  \theta_{\text{left}}(t) = \omega\left(f \cdot \frac{r_{\text{right}}}{r_{\text{left}}}\right) \cdot t \\
+  x_{\text{left}}(t) = r_{\text{left}} \cdot \cos(\theta_{\text{left}}(t)), \quad y_{\text{left}}(t) = r_{\text{left}} \cdot \sin(\theta_{\text{left}}(t)) \\
+  \theta_{\text{right}}(t) = \omega(f) \cdot t \\
+  x_{\text{right}}(t) = r_{\text{right}} \cdot \cos(\theta_{\text{right}}(t)), \quad y_{\text{right}}(t) = r_{\text{right}} \cdot \sin(\theta_{\text{right}}(t))
+  \end{aligned}
+  ```
 
 - **Physical & Mathematical Parameters**:
   - **Orbital Radii ($r$)**: $r_{\text{left}} = 37\%$ (`HERO_CODE_R_LEFT`), $r_{\text{right}} = 50\%$ (`HERO_CODE_R_RIGHT`)
   - **Phase Offsets ($\phi$)**: $\phi_{\text{left}} = 0\text{ rad}$ (`HERO_CODE_PHI_LEFT`), $\phi_{\text{right}} = 0\text{ rad}$ (`HERO_CODE_PHI_RIGHT`) by default; both injection tokens remain overridable for custom phase offsets.
   - **Dynamic Calendar Frequency ($f$)**: Derived from the current day of the month in UTC+7 (`HERO_CODE_F`):
-    $$f = \frac{\text{dayOfMonth}}{\text{secondsPerHour}} = \frac{\text{dayOfMonth}}{3600}\text{ Hz}$$
+
+    ```math
+    f = \frac{\text{dayOfMonth}}{\text{secondsPerHour}} = \frac{\text{dayOfMonth}}{3600}\text{ Hz}
+    ```
+
     _(e.g., day 1 rotates at $1\text{ rev/hour}$, day 31 rotates at $31\text{ rev/hour}$)_.
+
   - **Angular Velocity Function ($\omega(f)$)**: $\omega(f) = 2\pi f$ (`HERO_CODE_OMEGA`).
 
 - **Harmonic Status Dot Luminance Pulsation**:
   The status indicator dot pulses with continuous harmonic luminance:
-  $$L(t) = \mathrm{clamp}\left(0.5 + A \cdot \cos(\omega t + \phi), 0, 1\right)$$
+
+  ```math
+  L(t) = \mathrm{clamp}\left(0.5 + A \cdot \cos(\omega t + \phi), 0, 1\right)
+  ```
+
   where $A = 0.5$ (`STATUS_LUMINANCE_A`), $f = 0.5\text{ Hz}$ (`STATUS_LUMINANCE_F`, period $T = 2\text{ s}$), $\omega = \pi\text{ rad/s}$ (`STATUS_LUMINANCE_OMEGA`), and $\phi = 0\text{ rad}$ (`STATUS_LUMINANCE_PHI`).
   The calculated value updates the `statusLuminance` signal, which the hero template binds to `--status-dot-luminance` on the status indicator.
 
 - **Lifecycle & Motion Reduction**:
   - Automatically registered via `afterNextRender` and cleaned up in `DestroyRef.onDestroy(() => { clearInterval(clockTimer); cancelAnimationFrame(rafId); })`.
-  - Under `@media (prefers-reduced-motion: reduce)`, coordinates and luminance lock to static defaults ($x_{\text{left}}=-32.04\%, y_{\text{left}}=-18.5\%, x_{\text{right}}=43.3\%, y_{\text{right}}=25\%, L=0.5$).
+  - Under `@media (prefers-reduced-motion: reduce)`, coordinates and luminance lock to static defaults ($`x_{\text{left}}=-32.04\%, y_{\text{left}}=-18.5\%, x_{\text{right}}=43.3\%, y_{\text{right}}=25\%, L=0.5`$).
 
 ### 4. Client-Side OpenCV.js CLAHE Image Enhancement Pipeline
 
@@ -317,13 +331,23 @@ flowchart TD
    - Converts raw 4-channel RGBA pixels $\to$ 3-channel RGB $\to$ CIE $L^{\ast}a^{\ast}b^{\ast}$ (`cv.cvtColor`), decoupling perceptual lightness ($L^{\ast}$) from chromaticity ($a^{\ast}, b^{\ast}$).
 4. **Adaptive Tile Grid CLAHE Equalization**:
    Calculates local tile grid dimensions based on target tile pixel size ($16\text{px}$) clamped between $2$ and $8$ tiles:
-   $$\text{tileCount}(\text{dimension}) = \max\left(\text{minTiles}, \min\left(\text{maxTiles}, \left\lceil \frac{\text{dimension}}{\text{pixelTarget}} \right\rceil\right)\right)$$
+
+   ```math
+   \text{tileCount}(\text{dimension}) = \max\left(\text{minTiles}, \min\left(\text{maxTiles}, \left\lceil \frac{\text{dimension}}{\text{pixelTarget}} \right\rceil\right)\right)
+   ```
+
    Applies `cv.CLAHE(clipLimit = 2.0, tileGrid)` exclusively to the isolated $L^{\ast}$ channel, equalizing local contrast while preserving original brand colors.
+
 5. **Dual Candidate Surface Scoring via Alpha-Weighted WCAG 2.1 Contrast**:
    Evaluates original and enhanced marks across `LightSurface` (`#ffffff`, RGB `[255, 255, 255]`) and `DarkSurface` (`#0d1b2d`, RGB `[13, 27, 45]`).
    Computes alpha-weighted WCAG 2.1 relative luminance contrast:
-   $$\text{Score} = \frac{\sum_{i \in \text{opaque pixels}} \left( \text{Contrast}(L_{\text{fg}, i}, L_{\text{bg}}) \cdot \alpha_i \right)}{\sum_{i \in \text{opaque pixels}} \alpha_i}$$
-   where $\text{Contrast}(L_1, L_2) = \frac{\max(L_1, L_2) + 0.05}{\min(L_1, L_2) + 0.05}$, and relative luminance $L = 0.2126 R_{\text{lin}} + 0.7152 G_{\text{lin}} + 0.0722 B_{\text{lin}}$ with standard sRGB gamma linearization.
+
+   ```math
+   \text{Score} = \frac{\sum_{i \in \text{opaque pixels}} \left( \text{Contrast}(L_{\text{fg}, i}, L_{\text{bg}}) \cdot \alpha_i \right)}{\sum_{i \in \text{opaque pixels}} \alpha_i}
+   ```
+
+   where $`\text{Contrast}(L_1, L_2) = \frac{\max(L_1, L_2) + 0.05}{\min(L_1, L_2) + 0.05}`$, and relative luminance $`L = 0.2126 R_{\text{lin}} + 0.7152 G_{\text{lin}} + 0.0722 B_{\text{lin}}`$ with standard sRGB gamma linearization.
+
 6. **Strict Native WebAssembly Memory Disposal**:
    JavaScript garbage collection cannot reclaim native C++ allocations in the WebAssembly heap. The service explicitly frees all 13 allocated OpenCV instances (`cv.Mat`, `cv.MatVector`, `cv.Size`, `cv.CLAHE`) in `finally` blocks via `dispose()` and `.delete()`.
 7. **Signal Resource Integration**:
@@ -360,7 +384,11 @@ flowchart TD
   ```
 - **Proportional Virtual Scanline Projection**:
   Instead of relying on crude viewport midpoints or static pixel offsets, the algorithm projects an activation scanline at $18\%$ from the viewport top (`SECTION_ACTIVATION_RATIO = 0.18`):
-  $$\text{activationLine} = \text{viewport.top} + (\text{viewport.height} \cdot \text{sectionActivationRatio})$$
+
+  ```math
+  \text{activationLine} = \text{viewport.top} + (\text{viewport.height} \cdot \text{sectionActivationRatio})
+  ```
+
 - **Frustum Culling & Document-Space Bounding Evaluation**:
   Extracts document-space bounding rectangles for all registered sections (`RESUME_SECTIONS`: `about`, `experience`, `education`, `skills`, `profile`). Sections outside the viewport frustum ($\text{bottom} \le \text{viewport.top} \lor \text{top} \ge \text{viewport.bottom}$) are culled immediately.
 - **Collision Detection & Nearest-Neighbor Euclidean Distance Fallback**:
@@ -375,10 +403,17 @@ Located at `src/app/helper/directive/image-zome/image-zoom.directive.ts` and `sr
 
 - **Downscale Detection via `ResizeObserver`**:
   `ImageZoomDirective` inspects the host image's natural dimensions against its rendered content box (excluding CSS border and padding):
-  $$W_{\text{content}} = W_{\text{bounds}} - (\text{border}_{\text{left}} + \text{border}_{\text{right}} + \text{padding}_{\text{left}} + \text{padding}_{\text{right}})$$
-  $$H_{\text{content}} = H_{\text{bounds}} - (\text{border}_{\text{top}} + \text{border}_{\text{bottom}} + \text{padding}_{\text{top}} + \text{padding}_{\text{bottom}})$$
-  $$\text{containedScale} = \min\left(\frac{W_{\text{content}}}{\text{naturalWidth}}, \frac{H_{\text{content}}}{\text{naturalHeight}}\right)$$
-  An image is marked eligible for zoom if and only if $\text{containedScale} < 1 - \text{tolerance}$ (with `DOWNSCALE_TOLERANCE = 0.01`). Full-scale, upscaled, or broken images remain inert.
+
+  ```math
+  \begin{aligned}
+  W_{\text{content}} = W_{\text{bounds}} - (\text{border}_{\text{left}} + \text{border}_{\text{right}} + \text{padding}_{\text{left}} + \text{padding}_{\text{right}}) \\
+  H_{\text{content}} = H_{\text{bounds}} - (\text{border}_{\text{top}} + \text{border}_{\text{bottom}} + \text{padding}_{\text{top}} + \text{padding}_{\text{bottom}}) \\
+  \text{containedScale} = \min\left(\frac{W_{\text{content}}}{\text{naturalWidth}}, \frac{H_{\text{content}}}{\text{naturalHeight}}\right)
+  \end{aligned}
+  ```
+
+  An image is marked eligible for zoom if and only if $`\text{containedScale} < 1 - \text{tolerance}`$ (with `DOWNSCALE_TOLERANCE = 0.01`). Full-scale, upscaled, or broken images remain inert.
+
 - **Dual Interaction Ownership**:
   - **Pointer Hover Mode**: `pointerenter` opens a hover-owned overlay with `pointer-events: none` on the overlay pane, preventing mouse cursor trap and flickering. `pointerleave` automatically closes hover ownership.
   - **Mobile Touch Mode**: Tap (`click`) toggles an interactive touch-owned overlay panel.
@@ -412,8 +447,13 @@ Located at `src/app/resume/resume-page/service/resume-pdf/resume-pdf.service.ts`
   Streams the résumé PDF from the configured asset host (default: `https://ohm-mho.space/assets/Nawaphon_Isarathanachaikul.pdf`) via Angular `HttpClient` using `{ reportDownloadProgress: true, observe: 'events', responseType: 'blob' }`.
 - **Live Percentage Calculation**:
   Observes `HttpEventType.DownloadProgress` events, calculating real-time download percentage as:
-  $$\text{percentage} = \min\left(100, \max\left(0, \mathrm{round}\left(\frac{\text{loaded}}{\text{total}} \times 100\right)\right)\right)$$
+
+  ```math
+  \text{percentage} = \min\left(100, \max\left(0, \mathrm{round}\left(\frac{\text{loaded}}{\text{total}} \times 100\right)\right)\right)
+  ```
+
   Emits `null` when `Content-Length` is absent (indeterminate stream).
+
 - **Dynamic Spinner UI States**:
   - Renders `mat-progress-spinner` in `mode="indeterminate"` while establishing the HTTP stream or when the `total` content length is indeterminate.
   - Smoothly transitions to `mode="determinate"` with `[value]="downloadProgress()"` as streamed data arrives.
@@ -823,39 +863,39 @@ The `scripts/test-runner.mjs` script acts as a resilient process supervisor and 
 
 The test suite contains **31 spec files** and **343 unit tests** validating key architectural invariants:
 
-| Test Suite File                                                                                                                | Scope & Invariants Verified                                                                                                                                                                                                                                       |
-| :----------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/test-setup.spec.ts`                                                                                                       | Verifies CI environment detection via `isCiEnvironment()` and headless `MockIntersectionObserver` DOM mock lifecycle.                                                                                                                                             |
-| `src/app/app.spec.ts`                                                                                                          | Root component instantiation, document title setting, and splash screen lifecycle.                                                                                                                                                                                |
-| `src/app/app.routes.spec.ts`                                                                                                   | Nested route configuration and lazy-loading, route-scoped `ThemeService` resolution, root activation, and fragment/history scrolling.                                                                                                                             |
-| `src/app/helper/core/favicon.service.spec.ts`                                                                                  | Dynamic SVG favicon element selection, creation, and reactive URL synchronization.                                                                                                                                                                                |
-| `src/app/helper/core/theme.service.spec.ts`                                                                                    | Theme resolution hierarchy (localStorage $\to$ media query $\to$ light default), transition classes, and persistence.                                                                                                                                             |
-| `src/app/helper/directive/image-zome/image-zoom.directive.spec.ts`                                                             | Image downscale threshold detection ($< 1 - \text{tolerance}$), mouse hover triggers, and touch tap interactions.                                                                                                                                                 |
-| `src/app/helper/injection-token/hero-code-position.function.spec.ts`                                                           | Cartesian orbit coordinates in percentage units, dynamic calendar frequency scaling, and parametric circular trajectory calculations.                                                                                                                             |
-| `src/app/helper/injection-token/status-favicon-for-status-color.function.spec.ts`                                              | Availability status colors to encoded asset favicon URLs, including unavailable fallback behavior.                                                                                                                                                                |
-| `src/app/resume/experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.spec.ts` | OpenCV.js lazy loader, LAB color conversion, CLAHE tile sizing, WCAG relative luminance scoring, and WASM memory cleanup.                                                                                                                                         |
-| `src/app/resume/experience-timeline/technology-icon/technology-icon.spec.ts`                                                   | Technology icon component rendering, reactive surface contrast score binding, and fallback image states.                                                                                                                                                          |
-| `src/app/resume/experience-timeline/technology-icon/technology-icons.spec.ts`                                                  | SVG icon mappings and contrast evaluation across light and dark candidate surfaces.                                                                                                                                                                               |
-| `src/app/resume/hero-section/hero-section.spec.ts`                                                                             | Dual-rate loop coordination: 1 Hz Bangkok clock ticker, Unix epoch seconds-initialized orbital starter coordinates (`Date.now() / 1000`), continuous 60/120 Hz orbital kinematics ($t = t_{\text{unixStart}} + t_{\text{elapsed}}$), and reduced-motion clamping. |
-| `src/app/resume/image-zoom-preview/image-zoom-preview.spec.ts`                                                                 | Overlay preview component rendering, natural aspect ratio calculations, and keyboard/touch dismissal.                                                                                                                                                             |
-| `src/app/resume/image-zoom-preview/service/image-zoom.service.spec.ts`                                                         | CDK Overlay creation, `FlexibleConnectedPositionStrategy` configuration, viewport margin clamping, and backdrop cleanup.                                                                                                                                          |
-| `src/app/resume/resume-navigation/resume-navigation.spec.ts`                                                                   | Navigation bar section tracking, theme toggle emission, and accessible PDF download button state indicators.                                                                                                                                                      |
-| `src/app/resume/resume-page/dialog/resume-pdf-confirm-dialog/resume-pdf-confirm-dialog.spec.ts`                                | Accessible confirmation dialog (`role="alertdialog"`), keyboard focus trapping, and modal dismissal actions.                                                                                                                                                      |
-| `src/app/resume/resume-page/service/resume-pdf/resume-pdf.service.spec.ts`                                                     | HTTP `HEAD` pre-flight verification, chunked `DownloadProgress` byte streaming, and `URL.revokeObjectURL` cleanup.                                                                                                                                                |
-| `src/app/resume/resume-page/resume-page.spec.ts`                                                                               | CDK `ScrollDispatcher` scanline collision detection, Euclidean distance sorting, and single-flight PDF download locking.                                                                                                                                          |
-| `src/app/helper/core/api-response.helper.spec.ts`                                                                              | Full API envelope detection, `data` extraction, and raw-payload fallback.                                                                                                                                                                                         |
-| `src/app/helper/core/resume-data.service.spec.ts`                                                                              | Eight-resource aggregation, profile/logo normalization, loading and error state, progress, and reload behavior.                                                                                                                                                   |
-| `src/app/helper/interceptor/resume-api-retry.interceptor.spec.ts`                                                              | Tagged request filtering, transient error classification, retry limits, backoff, and cache-busting parameters.                                                                                                                                                    |
-| `src/app/helper/injection-token/asset-url-builder.function.spec.ts`                                                            | Configured asset URL construction for files and directories.                                                                                                                                                                                                      |
-| `src/app/helper/injection-token/project_logo_file_name_from_source.function.spec.ts`                                           | Root-relative and trusted-origin project-logo resolution, including rejected URL forms.                                                                                                                                                                           |
-| `src/app/resume/experience-timeline/experience-timeline.spec.ts`                                                               | Experience record rendering, date/location content, and the technology icon list.                                                                                                                                                                                 |
-| `src/app/resume/resume-navigation/online-link-icon/online-link-icon.spec.ts`                                                   | Original/enhanced logo presentation, surface selection, and image-failure fallback behavior.                                                                                                                                                                      |
-| `src/app/resume/summary-section/summary-section.spec.ts`                                                                       | Summary section content rendering and accessible presentation.                                                                                                                                                                                                    |
-| `src/app/resume/education-section/education-section.spec.ts`                                                                   | Education record content, institution artwork, and section rendering.                                                                                                                                                                                             |
-| `src/app/resume/profile-sidebar/profile-sidebar.spec.ts`                                                                       | Profile contact details, online links, and responsive sidebar rendering.                                                                                                                                                                                          |
-| `src/app/video-page/video-page.spec.ts`                                                                                        | Responsive player sizing, iframe attributes, autoplay/focus guards, and accessibility checks.                                                                                                                                                                     |
-| `src/app/video-page/directive/main-content.directive.spec.ts`                                                                  | Main landmark focus target and host-element behavior.                                                                                                                                                                                                             |
-| `src/app/video-page/directive/player-host.directive.spec.ts`                                                                   | Player host element access used for sizing and iframe observation.                                                                                                                                                                                                |
+| Test Suite File                                                                                                                | Scope & Invariants Verified                                                                                                                                                                                                                                         |
+| :----------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/test-setup.spec.ts`                                                                                                       | Verifies CI environment detection via `isCiEnvironment()` and headless `MockIntersectionObserver` DOM mock lifecycle.                                                                                                                                               |
+| `src/app/app.spec.ts`                                                                                                          | Root component instantiation, document title setting, and splash screen lifecycle.                                                                                                                                                                                  |
+| `src/app/app.routes.spec.ts`                                                                                                   | Nested route configuration and lazy-loading, route-scoped `ThemeService` resolution, root activation, and fragment/history scrolling.                                                                                                                               |
+| `src/app/helper/core/favicon.service.spec.ts`                                                                                  | Dynamic SVG favicon element selection, creation, and reactive URL synchronization.                                                                                                                                                                                  |
+| `src/app/helper/core/theme.service.spec.ts`                                                                                    | Theme resolution hierarchy (localStorage $\to$ media query $\to$ light default), transition classes, and persistence.                                                                                                                                               |
+| `src/app/helper/directive/image-zome/image-zoom.directive.spec.ts`                                                             | Image downscale threshold detection ($< 1 - \text{tolerance}$), mouse hover triggers, and touch tap interactions.                                                                                                                                                   |
+| `src/app/helper/injection-token/hero-code-position.function.spec.ts`                                                           | Cartesian orbit coordinates in percentage units, dynamic calendar frequency scaling, and parametric circular trajectory calculations.                                                                                                                               |
+| `src/app/helper/injection-token/status-favicon-for-status-color.function.spec.ts`                                              | Availability status colors to encoded asset favicon URLs, including unavailable fallback behavior.                                                                                                                                                                  |
+| `src/app/resume/experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.spec.ts` | OpenCV.js lazy loader, LAB color conversion, CLAHE tile sizing, WCAG relative luminance scoring, and WASM memory cleanup.                                                                                                                                           |
+| `src/app/resume/experience-timeline/technology-icon/technology-icon.spec.ts`                                                   | Technology icon component rendering, reactive surface contrast score binding, and fallback image states.                                                                                                                                                            |
+| `src/app/resume/experience-timeline/technology-icon/technology-icons.spec.ts`                                                  | SVG icon mappings and contrast evaluation across light and dark candidate surfaces.                                                                                                                                                                                 |
+| `src/app/resume/hero-section/hero-section.spec.ts`                                                                             | Dual-rate loop coordination: 1 Hz Bangkok clock ticker, Unix epoch seconds-initialized orbital starter coordinates (`Date.now() / 1000`), continuous 60/120 Hz orbital kinematics ($`t = t_{\text{unixStart}} + t_{\text{elapsed}}`$), and reduced-motion clamping. |
+| `src/app/resume/image-zoom-preview/image-zoom-preview.spec.ts`                                                                 | Overlay preview component rendering, natural aspect ratio calculations, and keyboard/touch dismissal.                                                                                                                                                               |
+| `src/app/resume/image-zoom-preview/service/image-zoom.service.spec.ts`                                                         | CDK Overlay creation, `FlexibleConnectedPositionStrategy` configuration, viewport margin clamping, and backdrop cleanup.                                                                                                                                            |
+| `src/app/resume/resume-navigation/resume-navigation.spec.ts`                                                                   | Navigation bar section tracking, theme toggle emission, and accessible PDF download button state indicators.                                                                                                                                                        |
+| `src/app/resume/resume-page/dialog/resume-pdf-confirm-dialog/resume-pdf-confirm-dialog.spec.ts`                                | Accessible confirmation dialog (`role="alertdialog"`), keyboard focus trapping, and modal dismissal actions.                                                                                                                                                        |
+| `src/app/resume/resume-page/service/resume-pdf/resume-pdf.service.spec.ts`                                                     | HTTP `HEAD` pre-flight verification, chunked `DownloadProgress` byte streaming, and `URL.revokeObjectURL` cleanup.                                                                                                                                                  |
+| `src/app/resume/resume-page/resume-page.spec.ts`                                                                               | CDK `ScrollDispatcher` scanline collision detection, Euclidean distance sorting, and single-flight PDF download locking.                                                                                                                                            |
+| `src/app/helper/core/api-response.helper.spec.ts`                                                                              | Full API envelope detection, `data` extraction, and raw-payload fallback.                                                                                                                                                                                           |
+| `src/app/helper/core/resume-data.service.spec.ts`                                                                              | Eight-resource aggregation, profile/logo normalization, loading and error state, progress, and reload behavior.                                                                                                                                                     |
+| `src/app/helper/interceptor/resume-api-retry.interceptor.spec.ts`                                                              | Tagged request filtering, transient error classification, retry limits, backoff, and cache-busting parameters.                                                                                                                                                      |
+| `src/app/helper/injection-token/asset-url-builder.function.spec.ts`                                                            | Configured asset URL construction for files and directories.                                                                                                                                                                                                        |
+| `src/app/helper/injection-token/project_logo_file_name_from_source.function.spec.ts`                                           | Root-relative and trusted-origin project-logo resolution, including rejected URL forms.                                                                                                                                                                             |
+| `src/app/resume/experience-timeline/experience-timeline.spec.ts`                                                               | Experience record rendering, date/location content, and the technology icon list.                                                                                                                                                                                   |
+| `src/app/resume/resume-navigation/online-link-icon/online-link-icon.spec.ts`                                                   | Original/enhanced logo presentation, surface selection, and image-failure fallback behavior.                                                                                                                                                                        |
+| `src/app/resume/summary-section/summary-section.spec.ts`                                                                       | Summary section content rendering and accessible presentation.                                                                                                                                                                                                      |
+| `src/app/resume/education-section/education-section.spec.ts`                                                                   | Education record content, institution artwork, and section rendering.                                                                                                                                                                                               |
+| `src/app/resume/profile-sidebar/profile-sidebar.spec.ts`                                                                       | Profile contact details, online links, and responsive sidebar rendering.                                                                                                                                                                                            |
+| `src/app/video-page/video-page.spec.ts`                                                                                        | Responsive player sizing, iframe attributes, autoplay/focus guards, and accessibility checks.                                                                                                                                                                       |
+| `src/app/video-page/directive/main-content.directive.spec.ts`                                                                  | Main landmark focus target and host-element behavior.                                                                                                                                                                                                               |
+| `src/app/video-page/directive/player-host.directive.spec.ts`                                                                   | Player host element access used for sizing and iframe observation.                                                                                                                                                                                                  |
 
 ---
 
