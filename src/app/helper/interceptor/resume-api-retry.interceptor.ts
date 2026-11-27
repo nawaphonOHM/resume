@@ -14,7 +14,11 @@ import { RESUME_API_RETRY_DELAY_MULTIPLIER } from '../injection-token/resume-api
 import { RESUME_API_RETRY_JITTER_MS } from '../injection-token/resume-api-retry-jitter-ms.variable.ts';
 
 /**
- * Checks whether an HTTP error is transient and eligible for retry (network error or 5xx server error).
+ * Checks whether an error is transient and eligible for retry.
+ *
+ * @remarks
+ * HTTP network failures and 5xx responses are transient; non-HTTP errors are also retried because
+ * they do not carry a reliable HTTP status that can rule out a temporary failure.
  */
 function isTransientError(error: unknown): boolean {
   if (error instanceof HttpErrorResponse) {
@@ -24,8 +28,8 @@ function isTransientError(error: unknown): boolean {
 }
 
 /**
- * HTTP interceptor that targets requests with `X-Api-Type: resume-data` and executes
- * retries with exponential backoff and `?retry={attempt}` query parameters upon network or 5xx failures.
+ * HTTP interceptor that targets `X-Api-Type: resume-data` requests and retries transient failures
+ * with exponential backoff and `?retry={attempt}` cache-busting query parameters.
  */
 export const resumeApiRetryInterceptor: HttpInterceptorFn = (
   req: HttpRequest<unknown>,
@@ -47,6 +51,7 @@ export const resumeApiRetryInterceptor: HttpInterceptorFn = (
       attempt === 0
         ? req
         : req.clone({
+            // Distinguish each retry so intermediary caches do not replay a failed response.
             params: req.params.set('retry', String(attempt)),
           });
 
@@ -57,8 +62,10 @@ export const resumeApiRetryInterceptor: HttpInterceptorFn = (
         }
 
         const nextAttempt = attempt + 1;
+        // delay = base × multiplier^(nextAttempt - 1) + jitter; retry attempts are one-based here.
         const delay = retryDelayMs * retryDelayMultiplier ** (nextAttempt - 1) + retryJitterMs;
 
+        // Re-enter with the incremented attempt after the backoff timer expires.
         return timer(Math.max(0, delay)).pipe(switchMap(() => executeAttempt(nextAttempt)));
       }),
     );

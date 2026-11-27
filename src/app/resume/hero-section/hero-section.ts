@@ -29,12 +29,14 @@ import { statusFaviconForStatusColor } from '../../helper/injection-token/status
  * ### Dual-Rate Temporal Architecture
  * The component coordinates two asynchronous timing subsystems:
  * 1. **Discrete Clock Loop (1 Hz)**: Runs on a `setInterval` timer governed by `CLOCK_UPDATE_INTERVAL_MS`
- *    (default: 1000ms). Updates `currentInstant` and flips `isTickAlternate` to trigger CSS slide-and-fade
- *    keyframe transitions on every second boundary.
+ *    (default: 1000ms). Updates `currentInstant` and flips `isTickAlternate`; one transition is randomly
+ *    selected per component instance from `HERO_CLOCK_TRANSITIONS`, while the alternating classes retrigger
+ *    the clock's CSS animation on each second boundary.
  * 2. **Continuous Physics Animation Loop (60/120 Hz)**: Driven by `requestAnimationFrame` and
  *    anchored against high-resolution timer baseline `performance.now()`. Initial orbital starter coordinates
  *    are established at component instantiation using current Unix time in seconds ($t_{\text{unixStart}} = \text{Date.now()} / 1000$),
  *    and subsequent continuous updates evaluate $t = t_{\text{unixStart}} + t_{\text{elapsed}}$ (where $t_{\text{elapsed}} = (t_{\text{current}} - t_{\text{start}}) / 1000$) to compute:
+ *    - Signal updates for luminance and orbital coordinates are consumed by template style bindings.
  *    - Harmonic luminance pulsation: $L(t_{\text{elapsed}}) = \text{clamp}(0.5 + A \cos(\omega t_{\text{elapsed}} + \phi), 0, 1)$
  *    - Circular orbital badge paths:
  *      - Left: $\theta_{\text{left}}(t) = \omega \cdot \frac{r_{\text{right}}}{r_{\text{left}}} \cdot t$, $x_{\text{left}}(t) = r_{\text{left}} \cos(\theta_{\text{left}}(t))$, $y_{\text{left}}(t) = r_{\text{left}} \sin(\theta_{\text{left}}(t))$
@@ -62,13 +64,13 @@ export class HeroSection {
   private readonly statusFaviconForStatusColor = inject(statusFaviconForStatusColor);
   private readonly theDocument = inject(DOCUMENT);
 
-  /** Selected transition effect applied on each clock tick. */
+  /** Transition style selected once for this component instance. */
   private readonly clockTransition = inject(heroClockTransitionPicker)();
 
   /** Complete profile supplying the candidate identity and public contact details. */
   readonly profile = input.required<ResumeProfile>();
 
-  /** Alternates on each clock tick to re-trigger slide-and-fade CSS animations. */
+  /** Alternates on each clock tick to re-trigger the clock's CSS update classes. */
   private readonly isTickAlternate = signal(false);
 
   /** Availability color for the same current instant as the visible UTC+7 clock. */

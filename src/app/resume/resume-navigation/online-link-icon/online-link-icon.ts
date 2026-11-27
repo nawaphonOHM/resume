@@ -27,16 +27,24 @@ export class OnlineLinkIcon {
     params: () => this.link().logo ?? undefined,
     loader: ({ params: logo }) => this.contrastService.optimize(logo),
   });
+  /** Tracks source-image failures independently; a failed enhancement must not hide valid original art. */
   private readonly originalArtworkFailed = linkedSignal({
     source: () => this.link().logo,
     computation: () => false,
   });
+  /** Resets with the source logo so a new enhancement attempt does not inherit an old image failure. */
   private readonly enhancedArtworkFailed = linkedSignal({
     source: () => this.link().logo,
     computation: () => false,
   });
 
-  /** Keeps the original available until an enhancement succeeds and whenever artwork fails. */
+  /**
+   * Chooses the visible artwork in fallback-first order.
+   *
+   * @remarks
+   * Missing or failed original artwork yields no image; otherwise the original is used until a
+   * distinct enhanced image is ready, and an enhanced-image failure falls back to the original.
+   */
   readonly artwork = computed<OnlineLinkArtwork | undefined>(() => {
     const original = this.link().logo;
     if (!original || this.originalArtworkFailed()) {
