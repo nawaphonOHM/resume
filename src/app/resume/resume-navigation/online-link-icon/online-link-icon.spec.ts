@@ -145,7 +145,9 @@ describe('OnlineLinkIcon', () => {
     original?.dispatchEvent(new Event('error'));
     TestBed.tick();
 
-    expect(element.querySelector<HTMLAnchorElement>('a')?.getAttribute('href')).toBe(LINK_WITH_LOGO.url);
+    expect(element.querySelector<HTMLAnchorElement>('a')?.getAttribute('href')).toBe(
+      LINK_WITH_LOGO.url,
+    );
     expect(element.querySelector('mat-icon')?.textContent.trim()).toBe('link');
     expect(element.querySelector('img')).toBeNull();
 
@@ -185,7 +187,9 @@ describe('OnlineLinkIcon', () => {
       backgroundColor: '#0d1b2d',
     });
     TestBed.tick();
-    expect((fixture.nativeElement as HTMLElement).querySelector('.online-link-artwork--enhanced')).toBeNull();
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('.online-link-artwork--enhanced'),
+    ).toBeNull();
 
     const replacementEnhancedLogo: BrandLogo = {
       ...ENHANCED_LOGO,

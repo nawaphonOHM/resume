@@ -1591,9 +1591,7 @@ describe('ResumePage live HTTP envelope integration', () => {
     expect(element.querySelector('.resume-page-error')).toBeNull();
     expect(element.querySelector('app-hero-section')).not.toBeNull();
 
-    const onlineLinks = Array.from(
-      element.querySelectorAll<HTMLAnchorElement>('.online-links a'),
-    );
+    const onlineLinks = Array.from(element.querySelectorAll<HTMLAnchorElement>('.online-links a'));
     expect(onlineLinks.map((link) => link.getAttribute('href'))).toEqual(
       fullResume.links.map(({ url }) => url),
     );

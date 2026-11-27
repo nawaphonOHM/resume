@@ -9,12 +9,7 @@ import type { ResumeProfile } from '../../helper/interface/resume-profile/resume
 /** Presents the candidate's skills and public profile details. */
 @Component({
   selector: 'app-profile-sidebar',
-  imports: [
-    MatCardModule,
-    MatChipsModule,
-    MatDividerModule,
-    MatIconModule,
-  ],
+  imports: [MatCardModule, MatChipsModule, MatDividerModule, MatIconModule],
   templateUrl: './profile-sidebar.html',
   styleUrl: './profile-sidebar.scss',
 })

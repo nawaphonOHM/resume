@@ -101,9 +101,7 @@ describe('ResumeNavigation', () => {
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    const onlineLinks = Array.from(
-      element.querySelectorAll<HTMLAnchorElement>('.online-links a'),
-    );
+    const onlineLinks = Array.from(element.querySelectorAll<HTMLAnchorElement>('.online-links a'));
 
     expect(element.querySelector('.online-links')?.getAttribute('aria-label')).toBe('Online links');
     expect(onlineLinks).toHaveLength(resumeProfileFixture.links.length);
