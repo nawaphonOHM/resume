@@ -1,0 +1,98 @@
+:host {
+  display: block;
+  flex: 0 0 auto;
+}
+
+.online-link-icon {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid var(--resume-muted);
+  border-radius: 50%;
+  background: var(--resume-surface);
+  color: var(--resume-text);
+  text-decoration: none;
+  touch-action: manipulation;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.online-link-icon:hover {
+  border-color: var(--resume-brand);
+  background: var(--resume-brand-soft);
+  color: var(--resume-brand);
+}
+
+.online-link-icon:focus-visible {
+  outline: 3px solid var(--resume-brand);
+  outline-offset: 3px;
+}
+
+.online-link-artwork-frame {
+  position: relative;
+  display: grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 0.3rem;
+  background-color: var(--online-link-original-surface);
+  transition: background-color 160ms ease;
+}
+
+.online-link-artwork {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.online-link-artwork--original {
+  filter: grayscale(1);
+}
+
+.online-link-icon:hover .online-link-artwork--original,
+.online-link-icon:focus-visible .online-link-artwork--original {
+  filter: none;
+}
+
+.online-link-artwork--enhanced {
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.online-link-icon:hover .online-link-artwork-frame,
+.online-link-icon:focus-visible .online-link-artwork-frame {
+  background-color: var(--online-link-enhanced-surface);
+}
+
+.online-link-icon:hover .online-link-artwork--enhanced,
+.online-link-icon:focus-visible .online-link-artwork--enhanced {
+  opacity: 1;
+}
+
+.online-link-icon mat-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 1.5rem;
+  color: var(--resume-muted);
+}
+
+.online-link-icon:hover mat-icon,
+.online-link-icon:focus-visible mat-icon {
+  color: var(--resume-brand);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .online-link-icon {
+    transition: none;
+  }
+
+  .online-link-artwork-frame,
+  .online-link-artwork--enhanced {
+    transition: none;
+  }
+}

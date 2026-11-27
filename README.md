@@ -12,7 +12,8 @@
 - **Inverted Dependency Injection**: Strict decoupling of data tokens, utility functions, physical constants, and UI components via 60+ granular `InjectionToken` definitions in `src/app/helper/injection-token/`.
 - **Live UTC+7 Bangkok Clock & Dynamic Status Favicon**: Real-time availability engine that tracks working hours in Asia/Bangkok time, drives status dot harmonic luminance oscillation ($f = 0.5\text{ Hz}$), and dynamically selects an asset-hosted favicon using an encoded status JSON query.
 - **Physics-Driven Orbital Badges**: Hero section code badge kinematics computed in 60fps frame loops via time-dependent parametric trigonometry with zero default phase offsets ($x = r \cos(\omega t)$, $y = r \sin(\omega t)$) and injectable phase tokens, with starter positions seeded by current Unix epoch time in seconds (`Date.now() / 1000`), continuous animation time integration ($t = t_{\text{unixStart}} + t_{\text{elapsed}}$), and deterministic frequency derived from the calendar day of the month ($f = \text{dayOfMonth} / 3600\text{ Hz}$).
-- **Client-Side OpenCV.js CLAHE Image Enhancement**: Real-time contrast optimization for dark technology icons using WebAssembly CLAHE in CIE $L^{\ast}a^{\ast}b^{\ast}$ color space with cooperative idle scheduling (`requestIdleCallback`) and explicit C++ memory management.
+- **Client-Side OpenCV.js CLAHE Image Enhancement**: Shared contrast optimization for technology and online-link icons using WebAssembly CLAHE in CIE $L^{\ast}a^{\ast}b^{\ast}$ color space with cooperative idle scheduling (`requestIdleCallback`) and explicit C++ memory management.
+- **Accessible Online Links**: A responsive navigation icon row reveals enhanced artwork on hover or keyboard focus, falls back gracefully, and retains labels and destinations in native print.
 - **Smart Image Zoom Previews**: Image preview overlay powered by Angular CDK Overlay with `ResizeObserver`-driven downscale detection and automatic viewport collision containment.
 - **Resilient Streaming PDF Download & Pre-Flight Verification**: User-triggered résumé PDF download featuring pre-flight remote asset availability verification (`HEAD` request), reactive availability status signaling (`isAvailable`), accessible confirmation alert dialog (`ResumePdfConfirmDialog`) for proceeding with unverified or unavailable assets, Angular `HttpClient` event streaming with real-time percentage progress tracking, and automatic object URL cleanup.
 - **Material 3 Theme System & Print Foundation**: CSS `@property` color token interpolation supporting Light, Dark, and System modes with dedicated A4 print layout stylesheets and WCAG AA accessibility compliance.
@@ -84,6 +85,7 @@ graph TD
     subgraph PageLayer["Routed Page & Presentational Sections"]
         ROUTES -->|loadComponent| RESUME_PAGE["ResumePage<br/>resume-page.ts"]
         RESUME_PAGE --> NAV["ResumeNavigation"]
+        NAV --> ONLINE_ICON["OnlineLinkIcon"]
         NAV -.->|themeToggled| RESUME_PAGE
         NAV -.->|downloadRequested| RESUME_PAGE
         RESUME_PAGE -.->|confirm on unavailable| PDF_DIALOG["ResumePdfConfirmDialog<br/>dialog/resume-pdf-confirm-dialog/"]
@@ -105,6 +107,7 @@ graph TD
         RESUME_PAGE --> THEME_SERVICE["ThemeService"]
         RESUME_PAGE --> PDF_SERVICE["ResumePdfService<br/>HEAD pre-flight & GET stream"]
         TECHNOLOGY_ICON --> CONTRAST_SERVICE["TechnologyIconContrastService"]
+        ONLINE_ICON --> CONTRAST_SERVICE
         RESUME_PAGE --> CDK_SCROLL["CDK ScrollDispatcher & ViewportRuler<br/>Scanline Collision Scroll-Spy"]
     end
 
@@ -260,7 +263,7 @@ Driven by `requestAnimationFrame` and executed after initial render (`afterNextR
 
 ### 4. Client-Side OpenCV.js CLAHE Image Enhancement Pipeline
 
-`TechnologyIconContrastService` (`src/app/resume/experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts`) optimizes low-contrast dark technology marks directly in the user's browser using WebAssembly computer vision:
+`TechnologyIconContrastService` (`src/app/resume/experience-timeline/technology-icon/service/technology-icon-contrast/technology-icon-contrast.service.ts`) optimizes technology and online-link marks directly in the user's browser using WebAssembly computer vision:
 
 ```mermaid
 flowchart TD
@@ -298,11 +301,13 @@ flowchart TD
 6. **Strict Native WebAssembly Memory Disposal**:
    JavaScript garbage collection cannot reclaim native C++ allocations in the WebAssembly heap. The service explicitly frees all 13 allocated OpenCV instances (`cv.Mat`, `cv.MatVector`, `cv.Size`, `cv.CLAHE`) in `finally` blocks via `dispose()` and `.delete()`.
 7. **Signal Resource Integration**:
-   `TechnologyIconComponent` coordinates contrast enhancement using Angular's declarative `resource()` API, resetting image loading state reactively via `linkedSignal()`.
+   `TechnologyIconComponent` and `OnlineLinkIcon` coordinate shared contrast enhancement using Angular's declarative `resource()` API and reset image failure state reactively via `linkedSignal()`. Online links retain their original artwork or a generic icon if processing or image loading fails.
 
 ### 5. Viewport Scroll-Spy Navigation & Scanline Collision System
 
 Located in `ResumePage` (`src/app/resume/resume-page/resume-page.ts`) and `ResumeNavigation` (`src/app/resume/resume-navigation/`):
+
+`ResumeNavigation` owns the profile's ordered online links in a horizontally scrollable icon row. The row reveals color on hover or keyboard focus, while native print substitutes a text list of labels and URLs; the remote PDF download remains separate.
 
 ```mermaid
 flowchart TD
@@ -624,11 +629,12 @@ resume/
 │   │   │   │   ├── image-zoom-preview.html
 │   │   │   │   ├── image-zoom-preview.scss
 │   │   │   │   └── image-zoom-preview.spec.ts
-│   │   │   ├── profile-sidebar/           # Skills, profile details, and external links sidebar
+│   │   │   ├── profile-sidebar/           # Skills and profile details sidebar
 │   │   │   │   ├── profile-sidebar.ts
 │   │   │   │   ├── profile-sidebar.html
 │   │   │   │   └── profile-sidebar.scss
-│   │   │   ├── resume-navigation/         # Header navigation bar & PDF download trigger
+│   │   │   ├── resume-navigation/         # Navigation, online links & PDF download trigger
+│   │   │   │   ├── online-link-icon/      # Accessible link artwork & contrast processing
 │   │   │   │   ├── resume-navigation.ts
 │   │   │   │   ├── resume-navigation.html
 │   │   │   │   ├── resume-navigation.scss

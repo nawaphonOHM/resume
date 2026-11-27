@@ -8,9 +8,11 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 
+import type { ResumeLink } from '../../helper/interface/ressume-link/resume-link.interface.ts';
 import type { ResumeTheme } from '../../helper/type/resume-theme.type.ts';
 import type { ResumeSectionId } from '../../helper/type/resume-section-id.type.ts';
 import { RESUME_SECTIONS } from '../../helper/injection-token/resume-sections.variable.ts';
+import { OnlineLinkIcon } from './online-link-icon/online-link-icon.ts';
 /**
  * Renders responsive section links and résumé-level theme and download controls.
  *
@@ -27,6 +29,7 @@ import { RESUME_SECTIONS } from '../../helper/injection-token/resume-sections.va
     MatProgressSpinner,
     MatToolbarModule,
     MatTooltipModule,
+    OnlineLinkIcon,
     RouterLink,
   ],
   templateUrl: './resume-navigation.html',
@@ -41,6 +44,9 @@ export class ResumeNavigation {
 
   /** Whether the remote PDF asset is known to be available (null = checking/unknown, true = available, false = unavailable). */
   readonly downloadAvailable = input<boolean | null>(null);
+
+  /** Ordered external destinations supplied by the loaded profile. */
+  readonly links = input<readonly ResumeLink[]>([]);
 
   /** Whether a PDF request is running and both responsive controls must remain disabled. */
   readonly downloadPending = input(false);

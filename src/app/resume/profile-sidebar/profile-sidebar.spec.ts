@@ -1,6 +1,6 @@
 /**
- * Verifies ProfileSidebar rendering of skills chips, contact details dl list,
- * external link buttons, mailto href, and accessibility landmarks.
+ * Verifies ProfileSidebar rendering of skills chips, contact details, mailto href,
+ * and accessibility landmarks without duplicating navigation-owned links.
  */
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
@@ -48,27 +48,16 @@ describe('ProfileSidebar', () => {
     expect(emailLink?.textContent.trim()).toBe(fullData.details.email);
   });
 
-  it('renders external links with target="_blank" and noopener rel', () => {
+  it('keeps external profile links out of the sidebar', () => {
     const fullData = resumeProfileFixture;
     const fixture = TestBed.createComponent(ProfileSidebar);
     fixture.componentRef.setInput('profile', fullData);
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    const linkButtons = Array.from(
-      element.querySelectorAll<HTMLAnchorElement>('.links-list a[mat-stroked-button]'),
-    );
-
-    expect(linkButtons.length).toBe(fullData.links.length);
-    for (let i = 0; i < fullData.links.length; i++) {
-      const link = fullData.links[i];
-      const btn = linkButtons[i];
-
-      expect(btn.getAttribute('href')).toBe(link.url);
-      expect(btn.getAttribute('target')).toBe('_blank');
-      expect(btn.getAttribute('rel')).toBe('noopener noreferrer');
-      expect(btn.textContent).toContain(link.label);
-    }
+    expect(element.querySelector('.links-list')).toBeNull();
+    expect(element.querySelector('mat-card-title')?.textContent.trim()).toBe('Profile details');
+    expect(element.querySelectorAll('a[target="_blank"]')).toHaveLength(0);
   });
 
   it('preserves section landmark and ARIA label associations', () => {
@@ -79,7 +68,7 @@ describe('ProfileSidebar', () => {
 
     const element = fixture.nativeElement as HTMLElement;
     const aside = element.querySelector('aside');
-    expect(aside?.getAttribute('aria-label')).toBe('Skills and public profile');
+    expect(aside?.getAttribute('aria-label')).toBe('Skills and profile details');
 
     const skillsSection = element.querySelector('section#skills');
     expect(skillsSection?.getAttribute('data-resume-section')).toBe('');

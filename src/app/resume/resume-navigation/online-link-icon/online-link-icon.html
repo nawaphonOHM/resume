@@ -1,0 +1,41 @@
+<a
+  class="online-link-icon"
+  [href]="link().url"
+  target="_blank"
+  rel="noopener noreferrer"
+  [attr.aria-label]="link().label"
+  [matTooltip]="'Open ' + link().label + ' in a new tab'"
+  matTooltipPosition="below"
+>
+  @if (artwork(); as resolved) {
+    <span
+      class="online-link-artwork-frame"
+      [style.--online-link-original-surface]="resolved.originalSurface"
+      [style.--online-link-enhanced-surface]="resolved.enhancedSurface"
+    >
+      <img
+        class="online-link-artwork online-link-artwork--original"
+        [ngSrc]="resolved.original.src"
+        [width]="resolved.original.width"
+        [height]="resolved.original.height"
+        loading="lazy"
+        alt=""
+        aria-hidden="true"
+        (error)="onOriginalArtworkError()"
+      />
+      @if (resolved.enhanced; as enhanced) {
+        <img
+          class="online-link-artwork online-link-artwork--enhanced"
+          [src]="enhanced.src"
+          [width]="enhanced.width"
+          [height]="enhanced.height"
+          alt=""
+          aria-hidden="true"
+          (error)="onEnhancedArtworkError()"
+        />
+      }
+    </span>
+  } @else {
+    <mat-icon aria-hidden="true">link</mat-icon>
+  }
+</a>

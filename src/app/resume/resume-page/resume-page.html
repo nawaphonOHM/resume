@@ -3,6 +3,7 @@
 <app-resume-navigation
   [activeSection]="activeSection()"
   [downloadAvailable]="downloadAvailable()"
+  [links]="profile()?.links ?? []"
   [downloadPending]="downloadPending()"
   [downloadProgress]="downloadProgress()"
   [theme]="theme()"

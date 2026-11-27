@@ -1,6 +1,6 @@
 // Defines the themed résumé page shell, accessibility skip link, content canvas, and footer.
 //
-// The page contains decorative backgrounds on screen, suppresses navigation during print, and
+// The page contains decorative backgrounds on screen, suppresses navigation chrome during print, and
 // removes constrained containers so child sections can control their own A4 presentation.
 
 :host {
@@ -161,7 +161,6 @@ $resume-defer-enter-distance: 0.5rem;
   }
 
   .skip-link,
-  app-resume-navigation,
   .resume-defer-spinner {
     display: none !important;
   }
