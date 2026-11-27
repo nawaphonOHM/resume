@@ -12,6 +12,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { provideRouter, Router, RouterLink } from '@angular/router';
 import { vi } from 'vitest';
 
+import { resumeProfileFixture } from '../../../../test/fixtures/resume-profile.ts';
 import { ResumeNavigation } from './resume-navigation';
 
 @Component({ template: '' })
@@ -56,7 +57,9 @@ describe('ResumeNavigation', () => {
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    const navigationLinks = Array.from(element.querySelectorAll<HTMLAnchorElement>('nav a'));
+    const navigationLinks = Array.from(
+      element.querySelectorAll<HTMLAnchorElement>('nav[aria-label="Portfolio sections"] a'),
+    );
 
     expect(navigationLinks.map((link) => link.getAttribute('href'))).toEqual([
       '/#about',
@@ -90,6 +93,60 @@ describe('ResumeNavigation', () => {
     ).toEqual(['/#about', '/#experience', '/#education', '/#skills', '/#profile']);
   });
 
+  it('renders ordered online links with accessible names and secure new-tab behavior', () => {
+    const fixture = TestBed.createComponent(ResumeNavigation);
+    fixture.componentRef.setInput('activeSection', 'about');
+    fixture.componentRef.setInput('theme', 'light');
+    fixture.componentRef.setInput('links', resumeProfileFixture.links);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const onlineLinks = Array.from(
+      element.querySelectorAll<HTMLAnchorElement>('.online-links a'),
+    );
+
+    expect(element.querySelector('.online-links')?.getAttribute('aria-label')).toBe('Online links');
+    expect(onlineLinks).toHaveLength(resumeProfileFixture.links.length);
+    expect(onlineLinks.map((link) => link.getAttribute('href'))).toEqual(
+      resumeProfileFixture.links.map(({ url }) => url),
+    );
+
+    onlineLinks.forEach((onlineLink, index) => {
+      const link = resumeProfileFixture.links[index];
+      expect(onlineLink.getAttribute('aria-label')).toBe(link.label);
+      expect(onlineLink.getAttribute('target')).toBe('_blank');
+      expect(onlineLink.getAttribute('rel')).toBe('noopener noreferrer');
+    });
+    expect(onlineLinks[0].querySelector('img[alt=""]')).not.toBeNull();
+    expect(onlineLinks[1].querySelector('mat-icon')?.textContent.trim()).toBe('link');
+  });
+
+  it('omits the online links row when there are no profile links', () => {
+    const fixture = TestBed.createComponent(ResumeNavigation);
+    fixture.componentRef.setInput('activeSection', 'about');
+    fixture.componentRef.setInput('theme', 'light');
+    fixture.componentRef.setInput('links', []);
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('.online-links')).toBeNull();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.print-online-links')).toBeNull();
+  });
+
+  it('renders ordered labels and destinations for native print', () => {
+    const fixture = TestBed.createComponent(ResumeNavigation);
+    fixture.componentRef.setInput('activeSection', 'about');
+    fixture.componentRef.setInput('theme', 'light');
+    fixture.componentRef.setInput('links', resumeProfileFixture.links);
+    fixture.detectChanges();
+
+    const items = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('.print-online-links li'),
+    );
+    expect(items.map((item) => item.textContent.trim())).toEqual(
+      resumeProfileFixture.links.map(({ label, url }) => `${label}: ${url}`),
+    );
+  });
+
   it('transfers the active presentation immediately without changing stable section anchors', () => {
     const fixture = TestBed.createComponent(ResumeNavigation);
     fixture.componentRef.setInput('activeSection', 'about');
@@ -97,7 +154,9 @@ describe('ResumeNavigation', () => {
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    const navigationLinks = Array.from(element.querySelectorAll<HTMLAnchorElement>('nav a'));
+    const navigationLinks = Array.from(
+      element.querySelectorAll<HTMLAnchorElement>('nav[aria-label="Portfolio sections"] a'),
+    );
     const aboutLink = navigationLinks.find((link) => link.getAttribute('href') === '/#about');
     const experienceLink = navigationLinks.find(
       (link) => link.getAttribute('href') === '/#experience',
@@ -112,7 +171,9 @@ describe('ResumeNavigation', () => {
     fixture.componentRef.setInput('activeSection', 'experience');
     fixture.detectChanges();
 
-    const updatedLinks = Array.from(element.querySelectorAll<HTMLAnchorElement>('nav a'));
+    const updatedLinks = Array.from(
+      element.querySelectorAll<HTMLAnchorElement>('nav[aria-label="Portfolio sections"] a'),
+    );
 
     expect(updatedLinks.map((link) => link.getAttribute('href'))).toEqual(stableHrefs);
     updatedLinks.forEach((link, index) => {

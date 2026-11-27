@@ -1,6 +1,6 @@
 <header class="navigation-shell print-hidden">
   <mat-toolbar class="navigation-toolbar">
-    <a class="brand-mark" routerLink="/" fragment="about" aria-label="Go to About section">
+    <a class="brand-mark" routerLink="/" fragment="about" aria-label="NI — Go to About section">
       <span aria-hidden="true">NI</span>
     </a>
 
@@ -69,7 +69,28 @@
       </button>
     </div>
   </mat-toolbar>
+
+  @if (links().length > 0) {
+    <nav class="online-links" aria-label="Online links">
+      <ul class="online-links-list">
+        @for (link of links(); track link.url) {
+          <li><app-online-link-icon [link]="link" /></li>
+        }
+      </ul>
+    </nav>
+  }
 </header>
+
+@if (links().length > 0) {
+  <section class="print-online-links" aria-labelledby="print-online-links-heading">
+    <h2 id="print-online-links-heading">Online</h2>
+    <ul>
+      @for (link of links(); track link.url) {
+        <li><strong>{{ link.label }}:</strong> {{ link.url }}</li>
+      }
+    </ul>
+  </section>
+}
 
 <mat-menu #mobileMenu="matMenu" xPosition="before">
   @for (section of sections; track section.id) {

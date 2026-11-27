@@ -1,5 +1,5 @@
 ////
-/// Styles the skills banner, profile details, and external-link cards.
+/// Styles the skills banner and profile details card.
 ///
 /// Angular Material card, chip, divider, and button tokens bridge global theme semantics into
 /// encapsulated components; responsive and print layouts preserve contrast and readable metadata.
@@ -164,21 +164,6 @@ dd a {
   text-underline-offset: 0.2em;
 }
 
-.links-list a {
-  --mat-button-outlined-label-text-color: var(--resume-text);
-  --mat-button-outlined-outline-color: var(--resume-border);
-  justify-content: space-between;
-  min-height: 3.35rem;
-}
-
-.link-logo-frame--light {
-  background: #ffffff;
-}
-
-.link-logo-frame--dark {
-  background: #071a2e;
-}
-
 @media (min-width: 48rem) {
   .skills-panel mat-card-content,
   .section-heading {
@@ -193,7 +178,7 @@ dd a {
   }
 }
 
-// Print the skills banner as a compact contrast panel and profile/link cards as a two-column grid.
+// Print the skills banner and profile details as compact, readable panels.
 @media print {
   #skills {
     padding: 0 !important;
@@ -248,12 +233,6 @@ dd a {
     line-height: 1.4;
   }
 
-  #profile > .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 4mm !important;
-    margin-top: 4mm !important;
-  }
-
   .profile-card {
     border-radius: 2.5mm;
     break-inside: avoid;
@@ -290,16 +269,4 @@ dd a {
     font-size: 7.5pt;
   }
 
-  .links-list {
-    gap: 2mm;
-  }
-
-  .links-list a {
-    min-height: 9mm;
-    font-size: 7.5pt;
-  }
-
-  .links-list mat-icon {
-    display: none;
-  }
 }
