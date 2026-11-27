@@ -8,18 +8,12 @@ import type { BrandLogo } from '../../../helper/interface/brand-logo/brand-logo.
 import type { ResumeLink } from '../../../helper/interface/ressume-link/resume-link.interface.ts';
 import type { TechnologyIconPresentation } from '../../../helper/interface/technology-icon-presentation/technology-icon-presentation.interface.ts';
 import type { TechnologyIconBackgroundColor } from '../../../helper/type/technology-icon-background-color.type.ts';
+import type {OnlineLinkArtwork} from '../../../helper/interface/online-link-artwork/online-link-artwork.interface.ts';
 
 const SURFACE_BACKGROUND: Readonly<Record<BrandLogo['surface'], TechnologyIconBackgroundColor>> = {
   light: '#ffffff',
   dark: '#0d1b2d',
 };
-
-interface OnlineLinkArtwork {
-  readonly original: BrandLogo;
-  readonly enhanced?: BrandLogo;
-  readonly originalSurface: TechnologyIconBackgroundColor;
-  readonly enhancedSurface: TechnologyIconBackgroundColor;
-}
 
 /** Renders one accessible external destination with its logo or a generic link mark. */
 @Component({
