@@ -123,7 +123,12 @@ export class ResumeDataService {
       this.educations.error() !== undefined,
   );
 
-  /** The first error encountered across all resources, or undefined if none. */
+  /**
+   * The first error encountered across all resources, or undefined if none.
+   *
+   * @remarks
+   * Nullish coalescing preserves a deterministic priority based on resource declaration order.
+   */
   readonly error = computed<unknown>(
     () =>
       this.names.error() ??
@@ -136,7 +141,12 @@ export class ResumeDataService {
       this.educations.error(),
   );
 
-  /** Progress percentage (0..100) based on resolved resources count. */
+  /**
+   * Progress percentage (0..100) based on resolved resources count.
+   *
+   * @remarks
+   * Each resource with a value contributes one eighth of the total progress.
+   */
   readonly progress = computed<number>(() => {
     const loadedCount =
       Number(this.names.hasValue()) +
@@ -169,6 +179,7 @@ export class ResumeDataService {
       return undefined;
     }
 
+    // Keep canonical records referentially stable so dependent computeds and @for tracking stay quiet.
     const links = this.links.value().map((link) => {
       if (!link.logo || typeof link.logo !== 'object') {
         return link;
@@ -184,6 +195,7 @@ export class ResumeDataService {
       const clientLogo = client?.logo;
       let normalizedClient = client;
       if (client && clientLogo) {
+        // Clone the nested client only when its own logo URL actually changes.
         const normalizedClientLogo = this.normalizeProjectLogo(clientLogo);
         if (clientLogo !== normalizedClientLogo) {
           normalizedClient = { ...client, logo: normalizedClientLogo };

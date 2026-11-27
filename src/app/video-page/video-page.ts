@@ -16,6 +16,14 @@ import { PlayerHostDirective } from './directive/player-host.directive.ts';
 import { MINIMUM_PLAYER_WIDTH } from '../helper/injection-token/minimum-player-width.variable.ts';
 import { PLAYER_FRAME_TITLE } from '../helper/injection-token/player-frame-title.variable.ts';
 
+/**
+ * Provides an accessible YouTube fallback for every unmatched application route.
+ *
+ * @remarks
+ * The player is measured and observed after rendering because YouTube owns iframe creation,
+ * while focus hand-back is suppressed as soon as the user interacts with the page. Observers and
+ * frame listeners are disconnected when the component is destroyed.
+ */
 @Component({
   selector: 'app-video-page',
   imports: [RouterLink, MainContentDirective, YouTubePlayer, PlayerHostDirective],
@@ -43,6 +51,7 @@ export default class VideoPage {
   private isDestroyed = false;
   readonly videoId = 'dQw4w9WgXcQ';
   readonly playerWidth = computed(() => Math.floor(this.frameWidth()));
+  /** Keeps the player near 16:9 while enforcing a minimum height for narrow hosts. */
   readonly playerHeight = computed(() =>
     Math.max(this.MINIMUM_PLAYER_WIDTH_, Math.round((this.playerWidth() * 9) / 16)),
   );
@@ -66,10 +75,12 @@ export default class VideoPage {
     });
   }
 
+  /** Cancels automatic focus hand-back once the user starts interacting. */
   cancelPendingFocusRestoration(): void {
     this.shouldRestoreFocus = false;
   }
 
+  /** Returns focus to the main landmark only when the iframe took it before user interaction. */
   restorePageFocusAfterPlayerLoad(): void {
     if (!this.shouldRestoreFocus) {
       return;
@@ -87,6 +98,7 @@ export default class VideoPage {
 
     const player = event.target;
     const playerFrame = player.getIframe();
+    // Let YouTube finish its ready callback, then avoid autoplaying a replaced or destroyed frame.
     queueMicrotask(() => {
       if (
         this.isDestroyed ||
@@ -104,6 +116,7 @@ export default class VideoPage {
     const playerHost = this.playerHost().playerHost.nativeElement;
     this.measureFrameWidth();
 
+    // Observe element-size changes when supported; older browsers can still react to window resizes.
     const ResizeObserverConstructor = globalThis.ResizeObserver;
     if (typeof ResizeObserverConstructor === 'function') {
       this.resizeObserver = new ResizeObserverConstructor((entries) => {
@@ -115,6 +128,7 @@ export default class VideoPage {
       this.document.defaultView?.addEventListener('resize', this.handleWindowResize);
     }
 
+    // YouTube may recreate the iframe or rewrite its accessibility/security attributes after insertion.
     const MutationObserverConstructor = globalThis.MutationObserver;
     if (typeof MutationObserverConstructor === 'function') {
       this.playerFrameObserver = new MutationObserverConstructor(() => {
@@ -139,6 +153,7 @@ export default class VideoPage {
     this.frameWidth.set(Number.isFinite(width) ? Math.max(0, width) : 0);
   }
 
+  /** Reasserts iframe metadata and attaches a one-shot load hook to each new frame. */
   private observePlayerFrame(): void {
     const playerFrame =
       this.playerHost().playerHost.nativeElement.querySelector<HTMLIFrameElement>('iframe');

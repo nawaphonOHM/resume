@@ -33,6 +33,7 @@ const timer = setTimeout(() => {
   console.error(
     `\n[test-runner] ERROR: Process exceeded timeout of ${timeoutMs / 1000}s. Terminating.`,
   );
+  // Request graceful shutdown first; force-kill only if the child has not exited after 3 seconds.
   child.kill('SIGTERM');
   setTimeout(() => child.kill('SIGKILL'), 3000).unref();
 }, timeoutMs);
@@ -84,7 +85,7 @@ child.on('close', (code) => {
       console.error(`Execution timed out after ${timeoutMs / 1000}s`);
     }
 
-    // Extract individual test failure blocks (between Failed Tests separator lines)
+    // Capture Vitest's named failure block up to its numbered closing separator.
     const failedBlockMatch = combined.match(/⎯+ Failed Tests \d+ ⎯+([\s\S]*?)⎯+\[\d+\/\d+\]⎯+/);
     if (failedBlockMatch) {
       console.error(failedBlockMatch[1].trim());
@@ -108,5 +109,6 @@ child.on('close', (code) => {
   }
   console.log(`========================================\n`);
 
+  // Use 124 for deadline expiry so callers can distinguish timeout from the child's signal exit.
   process.exit(timedOut ? 124 : (code ?? 1));
 });

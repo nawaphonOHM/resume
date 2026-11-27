@@ -1,15 +1,19 @@
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
-[![Dependabot Updates](https://github.com/nawaphonOHM/resume/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/nawaphonOHM/resume/actions/workflows/dependabot/dependabot-updates)
-[![Angular](https://img.shields.io/badge/Angular-22.2-DD0031.svg?style=flat-square&logo=angular&logoColor=white)](https://angular.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6.svg?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.3-06B6D4.svg?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![Vitest](https://img.shields.io/badge/Vitest-5.0-6E9F18.svg?style=flat-square&logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D22.22.3-339933.svg?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![CI](https://github.com/nawaphonOHM/resume/actions/workflows/CI.yml/badge.svg)](https://github.com/nawaphonOHM/resume/actions/workflows/CI.yml)
+[![Angular](https://img.shields.io/badge/Angular-22.3-DD0031.svg?style=flat-square&logo=angular&logoColor=white)](https://angular.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0.2-3178C6.svg?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.3.4-06B6D4.svg?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Vitest](https://img.shields.io/badge/Vitest-5.1-6E9F18.svg?style=flat-square&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-22-339933.svg?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
 
 ## Key Features
 
-- **Angular 22 Signals Architecture**: Standalone component model with default `OnPush` change detection, fine-grained Signal state (`signal`, `computed`, `effect`, `linkedSignal`, `resource`), Signal inputs/outputs (`input.required`, `output`), and native control flow (`@if`, `@for`, `@switch`, `@defer`).
-- **Inverted Dependency Injection**: Strict decoupling of data tokens, utility functions, physical constants, and UI components via 60+ granular `InjectionToken` definitions in `src/app/helper/injection-token/`.
+- **Angular 22 Signals Architecture**: Standalone component model with default `OnPush` change detection, fine-grained Signal state (`signal`, `computed`, `effect`, `linkedSignal`, `resource`, `httpResource`), Signal inputs/outputs (`input.required`, `output`), and native control flow (`@if`, `@for`, `@switch`, `@defer`).
+- **Inverted Dependency Injection**: Strict decoupling of data tokens, utility functions, physical constants, and UI components via 79 exported token/helper declarations in `src/app/helper/injection-token/`.
+- **Resilient Résumé API Data Layer**: Eight concurrent `httpResource` requests unwrap API envelopes, aggregate into a profile signal, and retry transient failures with token-configured backoff.
+- **Fallback Video Page**: Unmatched routes lazy-load a responsive YouTube player with enforced iframe attributes, focus restoration, and a direct YouTube link.
+- **Per-Instance Hero Clock Transitions**: Each hero selects one transition style (`slide-fade`, `opacity-pulse`, or `soft-glow`); code-badge coordinates and status luminance update through signals.
+- **Project Logo Normalization**: Recognized legacy logo URLs are normalized to canonical asset URLs while preserving object identity when no change is needed.
 - **Live UTC+7 Bangkok Clock & Dynamic Status Favicon**: Real-time availability engine that tracks working hours in Asia/Bangkok time, drives status dot harmonic luminance oscillation ($f = 0.5\text{ Hz}$), and dynamically selects an asset-hosted favicon using an encoded status JSON query.
 - **Physics-Driven Orbital Badges**: Hero section code badge kinematics computed in 60fps frame loops via time-dependent parametric trigonometry with zero default phase offsets ($x = r \cos(\omega t)$, $y = r \sin(\omega t)$) and injectable phase tokens, with starter positions seeded by current Unix epoch time in seconds (`Date.now() / 1000`), continuous animation time integration ($t = t_{\text{unixStart}} + t_{\text{elapsed}}$), and deterministic frequency derived from the calendar day of the month ($f = \text{dayOfMonth} / 3600\text{ Hz}$).
 - **Client-Side OpenCV.js CLAHE Image Enhancement**: Shared contrast optimization for technology and online-link icons using WebAssembly CLAHE in CIE $L^{\ast}a^{\ast}b^{\ast}$ color space with cooperative idle scheduling (`requestIdleCallback`) and explicit C++ memory management.
@@ -20,31 +24,36 @@
 
 ## Technology Stack
 
-| Category                      | Technology / Package                                                                            | Version                 | Purpose / Architectural Role                                                       |
-| :---------------------------- | :---------------------------------------------------------------------------------------------- | :---------------------- | :--------------------------------------------------------------------------------- |
-| **Core Framework**            | [Angular](https://angular.dev/) (`@angular/core`)                                               | `^22.2.0`               | Reactive web application framework with Signals & standalone components            |
-| **UI Components**             | [Angular Material](https://material.angular.io/) (`@angular/material`)                          | `^22.2.0`               | Material 3 UI component system (buttons, navigation, progress spinners)            |
-| **Component CDK**             | [Angular CDK](https://material.angular.io/cdk/categories) (`@angular/cdk`)                      | `^22.2.0`               | Overlay popovers, accessibility primitives, and layout utilities                   |
-| **Styling Engine**            | [Tailwind CSS](https://tailwindcss.com/) (`tailwindcss`, `@tailwindcss/postcss`)                | `^4.3.3`                | Utility-first CSS v4 engine with `@theme inline` and custom properties             |
-| **Programming Language**      | [TypeScript](https://www.typescriptlang.org/) (`typescript`)                                    | `~6.0.2`                | Strongly-typed JavaScript with strict type checking and modern ECMAScript features |
-| **Build & Dev Tooling**       | [Angular CLI & Build](https://angular.dev/tools/cli) (`@angular/build`, `@angular/cli`)         | `^22.2.0`               | Application bundler and Vite/esbuild development server                            |
-| **Unit Testing**              | [Vitest](https://vitest.dev/) (`vitest`, `@angular/build:unit-test`, `jsdom`)                   | `^5.0.2`                | High-performance unit test runner executing in simulated DOM environment           |
-| **Reactive Streams**          | [RxJS](https://rxjs.dev/) (`rxjs`)                                                              | `~7.8.0`                | Asynchronous event streams, HTTP progress event observation, and timers            |
-| **Code Formatting**           | [Prettier](https://prettier.io/) (`prettier`)                                                   | `^3.9.9`                | Multi-language code formatter for TypeScript, HTML, SCSS, JSON, and Markdown       |
-| **Dependency Analysis**       | [Skott](https://github.com/antoine-coulon/skott) (`skott`)                                      | `^0.35.12`              | Architectural dependency graph visualization and cycle detection                   |
-| **Linting & Static Analysis** | [Angular ESLint](https://github.com/angular-eslint/angular-eslint) (`angular-eslint`)           | `22.5.0`                | Angular-aware linting rules for TypeScript and templates                           |
-| **Linting & Static Analysis** | [ESLint](https://eslint.org/) (`eslint`)                                                        | `^10.9.1`               | Core JavaScript and TypeScript linting engine                                      |
-| **Linting & Static Analysis** | [TypeScript ESLint](https://typescript-eslint.io/) (`typescript-eslint`)                        | `8.70.0`                | TypeScript-aware parser and type-checked linting configurations                    |
-| **Linting & Static Analysis** | [ESLint JavaScript](https://github.com/eslint/eslint) (`@eslint/js`)                            | `^10.0.1`               | Recommended baseline ESLint JavaScript configurations                              |
-| **Computer Vision**           | [OpenCV.js](https://docs.opencv.org/4.13.0/) (`@techstark/opencv-js` via CDN)                   | `4.13.0` (jsDelivr ESM) | Client-side WebAssembly CLAHE contrast enhancement pipeline                        |
-| **Iconography**               | [Google Material Icons](https://fonts.google.com/icons) (`material-icons`)                      | `^1.13.14`              | Material design system icon font                                                   |
-| **Runtime Environment**       | [Node.js](https://nodejs.org/)                                                                  | `>=22.22.3`             | JavaScript runtime environment (compatible with Node.js 22 LTS and Node.js 24)     |
-| **Package Manager**           | [npm](https://www.npmjs.com/)                                                                   | `10.9.8`                | Project package manager and script execution engine                                |
-| **Hosting & Deployment**      | [Firebase Hosting](https://firebase.google.com/docs/hosting) (`firebase-tools`, GitHub Actions) | CLI / GitHub Actions    | Static SPA hosting, preview channels, and automated deployments                    |
+| Category                      | Technology / Package                                                                    | Version                 | Purpose / Architectural Role                                                         |
+| :---------------------------- | :-------------------------------------------------------------------------------------- | :---------------------- | :----------------------------------------------------------------------------------- |
+| **Core Framework**            | [Angular](https://angular.dev/) (`@angular/core`)                                       | `^22.3.0`               | Reactive web application framework with Signals & standalone components              |
+| **UI Components**             | [Angular Material](https://material.angular.io/) (`@angular/material`)                  | `^22.3.0`               | Material 3 UI component system (buttons, navigation, progress spinners)              |
+| **Component CDK**             | [Angular CDK](https://material.angular.io/cdk/categories) (`@angular/cdk`)              | `^22.3.0`               | Overlay popovers, accessibility primitives, and layout utilities                     |
+| **Angular Forms**             | [`@angular/forms`](https://angular.dev/guide/forms)                                     | `^22.3.0`               | Angular form APIs                                                                    |
+| **YouTube Player**            | [`@angular/youtube-player`](https://angular.dev/)                                       | `^22.2.7`               | Angular YouTube iframe player used by the fallback video page                        |
+| **Styling Engine**            | [Tailwind CSS](https://tailwindcss.com/) (`tailwindcss`, `@tailwindcss/postcss`)        | `^4.3.4` / `^4.3.5`     | Utility-first CSS v4 engine with `@theme inline` and custom properties               |
+| **Programming Language**      | [TypeScript](https://www.typescriptlang.org/) (`typescript`)                            | `~6.0.2`                | Strongly-typed JavaScript with strict type checking and modern ECMAScript features   |
+| **Build & Dev Tooling**       | [Angular CLI & Build](https://angular.dev/tools/cli) (`@angular/build`, `@angular/cli`) | `^22.3.0`               | Application bundler and Vite/esbuild development server                              |
+| **Build & Dev Tooling**       | [`@angular-devkit/core`](https://angular.dev/tools/cli)                                 | `^22.3.0`               | Angular CLI development-kit utilities                                                |
+| **Unit Testing**              | [Vitest](https://vitest.dev/) (`vitest`, `@angular/build:unit-test`, `jsdom`)           | `^5.1.0`                | High-performance unit test runner executing in simulated DOM environment             |
+| **Unit Testing**              | [`jsdom`](https://github.com/jsdom/jsdom)                                               | `^31.0.1`               | Simulated DOM environment for unit tests                                             |
+| **Accessibility Testing**     | [`axe-core`](https://github.com/dequelabs/axe-core)                                     | `^4.14.1`               | Automated accessibility checks                                                       |
+| **Reactive Streams**          | [RxJS](https://rxjs.dev/) (`rxjs`)                                                      | `~7.8.0`                | Asynchronous event streams, HTTP progress event observation, and timers              |
+| **Code Formatting**           | [Prettier](https://prettier.io/) (`prettier`)                                           | `^3.10.1`               | Multi-language code formatter for TypeScript, HTML, SCSS, JSON, and Markdown         |
+| **Dependency Analysis**       | [Skott](https://github.com/antoine-coulon/skott) (`skott`)                              | `^0.35.12`              | Architectural dependency graph visualization and cycle detection                     |
+| **Linting & Static Analysis** | [Angular ESLint](https://github.com/angular-eslint/angular-eslint) (`angular-eslint`)   | `22.8.0`                | Angular-aware linting rules for TypeScript and templates                             |
+| **Linting & Static Analysis** | [ESLint](https://eslint.org/) (`eslint`)                                                | `^10.13.0`              | Core JavaScript and TypeScript linting engine                                        |
+| **Linting & Static Analysis** | [TypeScript ESLint](https://typescript-eslint.io/) (`typescript-eslint`)                | `8.72.1`                | TypeScript-aware parser and type-checked linting configurations                      |
+| **Linting & Static Analysis** | [ESLint JavaScript](https://github.com/eslint/eslint) (`@eslint/js`)                    | `^10.0.1`               | Recommended baseline ESLint JavaScript configurations                                |
+| **Computer Vision**           | [OpenCV.js](https://docs.opencv.org/4.13.0/) (`@techstark/opencv-js` via CDN)           | `4.13.0` (jsDelivr ESM) | Client-side WebAssembly CLAHE contrast enhancement pipeline                          |
+| **Iconography**               | [Google Material Icons](https://fonts.google.com/icons) (`material-icons`)              | `^1.13.14`              | Material design system icon font                                                     |
+| **Runtime Environment**       | [Node.js](https://nodejs.org/)                                                          | `22` (devcontainer)     | CI uses repository variable `NODE_VERSION`; the devcontainer is based on Node.js 22  |
+| **Package Manager**           | [npm](https://www.npmjs.com/)                                                           | `10.9.8`                | Project package manager and script execution engine                                  |
+| **Continuous Integration**    | [GitHub Actions](https://github.com/features/actions) (`.github/workflows/CI.yml`)      | N/A                     | On PRs to `master`, runs format checks, lint, unit tests, and a lockfile-dirty guard |
 
 ## Requirements & Prerequisites
 
-- **Node.js**: Version `22.22.3` or newer (configured in `package.json` engines as `>=22.22.3`; Node.js 22 LTS or Node.js 24 recommended).
+- **Node.js**: Use the version configured by the CI repository variable `NODE_VERSION`; the devcontainer uses a Node.js 22 image. `package.json` does not constrain the Node.js version.
 - **npm**: Version `10.9.8` or compatible npm 10+.
 - **Browser Compatibility**: Modern evergreen browsers supporting WebAssembly, Canvas 2D rasterization, CSS Custom Properties with `@property` registration, and ES2022+ modules.
 
@@ -64,12 +73,6 @@ npm start
 
 Navigate to `http://localhost:4200/`. The development server supports live reloading and hot module replacement as source files are modified.
 
-### Fallback video
-
-Unmatched routes load an Angular YouTube player and provide a direct YouTube link when the embed is unavailable or too narrow. Autoplay depends on browser policy. YouTube creates the iframe and controls its initial request and permissions; the page applies `strict-origin-when-cross-origin` when it observes the iframe, which may be after the initial navigation.
-
-In browser validation, the iframe exposed autoplay and fullscreen permissions, but YouTube reported the video unavailable, so playback and fullscreen operation could not be verified. Accessibility scans of the host page passed in both themes; the cross-origin player itself was not scanned.
-
 ## Architecture & Core Design Patterns
 
 The application is structured around modern Angular standalone architecture, fine-grained Signal reactivity, Inverted Dependency Injection via modular `InjectionToken`s, computer vision algorithms, and real-time kinematic calculations.
@@ -83,7 +86,9 @@ graph TD
     end
 
     subgraph PageLayer["Routed Page & Presentational Sections"]
-        ROUTES -->|loadComponent| RESUME_PAGE["ResumePage<br/>resume-page.ts"]
+        ROUTES --> PARENT_ROUTE["Parent route path ''<br/>provides ThemeService"]
+        PARENT_ROUTE -->|child path: ''| RESUME_PAGE["ResumePage<br/>resume-page.ts"]
+        PARENT_ROUTE -->|child path: '**'| VIDEO_PAGE["VideoPage<br/>video-page.ts"]
         RESUME_PAGE --> NAV["ResumeNavigation"]
         NAV --> ONLINE_ICON["OnlineLinkIcon"]
         NAV -.->|themeToggled| RESUME_PAGE
@@ -104,7 +109,6 @@ graph TD
         TECHNOLOGY_ICON -.->|appImageZoom| ZOOM_DIRECTIVE
         ZOOM_DIRECTIVE --> ZOOM_SERVICE["ImageZoomService"]
         ZOOM_SERVICE -->|CDK Overlay| ZOOM_PREVIEW["ImageZoomPreview"]
-        RESUME_PAGE --> THEME_SERVICE["ThemeService"]
         RESUME_PAGE --> PDF_SERVICE["ResumePdfService<br/>HEAD pre-flight & GET stream"]
         TECHNOLOGY_ICON --> CONTRAST_SERVICE["TechnologyIconContrastService"]
         ONLINE_ICON --> CONTRAST_SERVICE
@@ -112,7 +116,8 @@ graph TD
     end
 
     subgraph DataTokens["API-Backed Résumé Data & Fine-Grained Injection Tokens"]
-        RESUME_DATA_SERVICE["ResumeDataService<br/>aggregates ResumeProfile"] -->|8 concurrent GET requests| RESUME_API["Résumé API<br/>/api/v1/names, titles, summaries, details,<br/>links, skills, experiences, educations"]
+        RESUME_DATA_SERVICE["ResumeDataService<br/>aggregates ResumeProfile"] -->|8 httpResource GET requests| RETRY_INTERCEPTOR["resumeApiRetryInterceptor"]
+        RETRY_INTERCEPTOR -->|X-Api-Type: resume-data| RESUME_API["Résumé API<br/>/api/v1/names, titles, summaries, details,<br/>links, skills, experiences, educations"]
         RESUME_DATA_SERVICE --> RESUME_PAGE
         API_BASE_URL["RESUME_DATA_API_BASE_URL<br/>default: current origin"] --> RESUME_DATA_SERVICE
         PDF_URL["RESUME_PDF_DOWNLOAD_URL"] --> PDF_SERVICE
@@ -152,7 +157,7 @@ The application fully embraces modern Angular 22 standalone architecture, fine-g
       computation: () => true,
     });
     ```
-  - **Asynchronous Data Resources (`resource`)**: `TechnologyIconComponent` utilizes Angular's `resource()` API with `params` and `loader` definitions to asynchronously coordinate client-side OpenCV CLAHE contrast optimizations.
+  - **Asynchronous Data Resources (`resource`, `httpResource`)**: `TechnologyIconComponent` uses `resource()` with `params` and `loader` definitions for asynchronous OpenCV CLAHE optimization; `ResumeDataService` uses eight `httpResource`s for API-backed résumé data.
   - **Reactive Side Effects (`effect`)**: `HeroSection` uses `effect()` to synchronize the dynamic availability status color with `document.head` favicon links via `FaviconService`, and `ImageZoomDirective` uses `effect()` to cleanly tear down CDK overlay preview state on cleanup.
 - **Signal-Based Inputs & Outputs**: All components consume props via `input.required<T>()` and `input<T>()`, and emit events using `output<T>()`, eliminating legacy `@Input` and `@Output` decorators.
 - **Modern `@Service()` Decorators & Functional Injection**:
@@ -167,17 +172,35 @@ The application fully embraces modern Angular 22 standalone architecture, fine-g
   - `@angular/cdk/scrolling`: `ScrollDispatcher` and `ViewportRuler` power the scanline collision and distance model for real-time viewport tracking.
   - `@angular/cdk/overlay` & `@angular/cdk/portal`: `Overlay`, `OverlayRef`, and `ComponentPortal` power the smart image zoom preview popover with connected positioning strategies.
 
+### Routing, Runtime Configuration & Fallback Video Page
+
+The empty-path parent route provides `ThemeService` to both lazy-loaded children: `''` loads `ResumePage`, while `'**'` loads `VideoPage`. `app.config.ts` enables in-memory anchor scrolling and scroll-position restoration, reloads same-URL navigations, and registers browser global error listeners. Before initial navigation, its app initializer reads the root element's computed CSS `scroll-padding-top` and uses that value as the `ViewportScroller` offset.
+
+#### Fallback Video Page
+
+The YouTube player is rendered only when its host is at least `MINIMUM_PLAYER_WIDTH` (200px); its height follows the 16:9 ratio with that same minimum. Because YouTube creates and may rewrite its iframe, observers reapply the configured `PLAYER_FRAME_TITLE` and `strict-origin-when-cross-origin` referrer policy when needed. The page initially focuses its main landmark, then restores focus there after player loading only if the iframe still owns focus and the user has not already interacted. Autoplay is attempted after the player is ready and remains subject to browser policy; a direct YouTube link and a résumé return link remain available.
+
+### Résumé API Data Layer
+
+`ResumeDataService` issues eight independent `httpResource` GETs for names, titles, summaries, details, links, skills, experiences, and educations. Each request sends `X-Api-Type: resume-data`; `unwrapApiResponse` unwraps a full `{ data, success, timestamp }` envelope and otherwise leaves raw input unchanged for backward compatibility. The helper does not validate the shape of the inner domain data.
+
+The service's derived signals report whether any resource is loading or has failed, expose the first error in resource declaration order, and calculate `progress` as the percentage of the eight resources that have resolved. `profile` remains undefined until all eight have values, and `reloadAll()` reloads every resource. Recognized legacy project-logo URLs are normalized to the shared asset origin during profile aggregation, while unchanged logo objects retain their identity.
+
+`resumeApiRetryInterceptor` applies only to tagged résumé API requests and retries transient failures with the configured `RESUME_API_RETRY_COUNT`, `RESUME_API_RETRY_DELAY_MS`, `RESUME_API_RETRY_DELAY_MULTIPLIER`, and `RESUME_API_RETRY_JITTER_MS` tokens. For one-based retry number `n`, the delay is `base × multiplier^(n − 1) + jitter`; retries add a `?retry=n` parameter to distinguish attempts in caches.
+
 ### 2. Inverted Dependency Injection Architecture
 
-Rather than relying on large monolithic service classes with hardcoded configuration constants, the application adheres to strict **Inverted Dependency Injection (Inverted DI)**. Over 60 fine-grained `InjectionToken` definitions reside in `src/app/helper/injection-token/`, decoupling parameters, math formulas, timing constants, pure transformation functions, and external asset/CDN URLs:
+Rather than relying on large monolithic service classes with hardcoded configuration constants, the application adheres to strict **Inverted Dependency Injection (Inverted DI)**. The `src/app/helper/injection-token/` directory contains 79 exported token/helper declarations, decoupling parameters, math formulas, timing constants, pure transformation functions, and external asset/CDN URLs:
 
-- **Kinematics & Orbital Badges**: `HERO_CODE_R_LEFT`, `HERO_CODE_R_RIGHT`, `HERO_CODE_PHI_LEFT`, `HERO_CODE_PHI_RIGHT`, `HERO_CODE_F`, `HERO_CODE_OMEGA`, `calculateHeroCodePosition`.
+- **Kinematics, Orbital Badges & Clock Transitions**: `HERO_CODE_R_LEFT`, `HERO_CODE_R_RIGHT`, `HERO_CODE_PHI_LEFT`, `HERO_CODE_PHI_RIGHT`, `HERO_CODE_F`, `HERO_CODE_OMEGA`, `calculateHeroCodePosition`, `HERO_CLOCK_TRANSITIONS`, `heroClockTransitionPicker`.
 - **Availability Scheduling & Photometry**: `UTC_PLUS_SEVEN_OFFSET_MS`, `CLOCK_UPDATE_INTERVAL_MS`, `STATUS_LUMINANCE_A`, `STATUS_LUMINANCE_F`, `STATUS_LUMINANCE_OMEGA`, `STATUS_LUMINANCE_PHI`, `calculateStatusLuminance`, `statusColor`, `statusColorForUtcPlusSeven`, `statusFaviconForStatusColor`.
-- **Computer Vision & CLAHE**: `OPEN_CV_CDN_URL`, `TECHNOLOGY_ICON_OPEN_CV_LOADER`, `CLAHE_CLIP_LIMIT`, `CLAHE_TILE_PIXEL_TARGET`, `MIN_CLAHE_TILES`, `MAX_CLAHE_TILES`, `IDLE_TIMEOUT_MS`, `OPEN_CV_RETRY_COUNT`, `OPEN_CV_RETRY_DELAY_MS`, `OPEN_CV_RETRY_DELAY_MULTIPLIER`, `OPEN_CV_RETRY_JITTER_MS`, `dispose`, `normalizeOpenCvExport`, `linearizeChannel`, `relativeLuminance`.
+- **Computer Vision, Shared Math & Iconography**: `OPEN_CV_CDN_URL`, `TECHNOLOGY_ICON_OPEN_CV_LOADER`, `CLAHE_CLIP_LIMIT`, `CLAHE_TILE_PIXEL_TARGET`, `MIN_CLAHE_TILES`, `MAX_CLAHE_TILES`, `IDLE_TIMEOUT_MS`, `RUNTIME_INITIALIZATION_TIMEOUT_MS`, `OPEN_CV_RETRY_COUNT`, `OPEN_CV_RETRY_DELAY_MS`, `OPEN_CV_RETRY_DELAY_MULTIPLIER`, `OPEN_CV_RETRY_JITTER_MS`, `SURFACE_BACKGROUND`, `TECHNOLOGY_ICONS`, `SPRING_ICON`, `GCD`, `dispose`, `normalizeOpenCvExport`, `linearizeChannel`, `relativeLuminance`.
 - **Overlay & Geometry**: `VIEWPORT_MARGIN`, `IMAGE_MAX_VIEWPORT_RATIO`, `ORIGIN_GAP`, `PANEL_CHROME_PX`, `IMAGE_ZOOM_POSITIONS`, `IMAGE_ZOOM_PREVIEW_DATA`, `DOWNSCALE_TOLERANCE`, `INITIAL_IMAGE_STATE`.
 - **Theme & Storage**: `RESUME_THEME_STORAGE_KEY`, `THEME_CLASSES`, `THEME_TRANSITION_CLASS`, `THEME_TRANSITION_DURATION_MS`.
 - **PDF & Navigation**: `RESUME_PDF_DOWNLOAD_URL`, `RESUME_PDF_FILENAME`, `RESUME_SECTIONS`, `SECTION_ACTIVATION_RATIO`, `VIEWPORT_EVENT_THROTTLE_MS`.
-- **Résumé API**: `RESUME_DATA_API_BASE_URL` configures the API base URL consumed by `ResumeDataService`; its empty default uses the current origin.
+- **Résumé API & Retry**: `RESUME_DATA_API_BASE_URL` configures the API base URL consumed by `ResumeDataService`; its empty default uses the current origin. `RESUME_API_RETRY_COUNT`, `RESUME_API_RETRY_DELAY_MS`, `RESUME_API_RETRY_DELAY_MULTIPLIER`, and `RESUME_API_RETRY_JITTER_MS` configure the interceptor's retry policy.
+- **Project Logos & Assets**: `PROJECT_LOGO_ORIGIN`, `PROJECT_LOGO_FILE_NAMES_BY_PATH`, `PROJECT_LOGO_FILE_NAME_FOR_PATH`, `PROJECT_LOGO_FILE_NAME_FROM_SOURCE`, `IMAGE_ASSET_ORIGIN`, and `assetUrlBuilder` control trusted logo normalization and shared asset URL generation.
+- **Fallback Player**: `MINIMUM_PLAYER_WIDTH` and `PLAYER_FRAME_TITLE` configure the YouTube player sizing threshold and iframe title.
 
 **Architectural Benefits:**
 
@@ -200,23 +223,26 @@ flowchart TD
             STAT_COL --> FAVICON[FaviconService.setFavicon via effect]
             STAT_COL --> DOT_COLOR[Update --status-dot-color CSS Variable]
             INSTANT --> TOGGLE[Toggle isTickAlternate Signal]
-            TOGGLE --> CSS_TICK[Trigger CSS Keyframe Slide-and-Fade Transition]
+            TOGGLE --> CSS_TICK[Toggle clock tick classes]
+            CLOCK_STYLE[Per-instance HERO_CLOCK_TRANSITIONS choice] --> CSS_TICK
         end
 
         subgraph ContinuousLoop["60/120 Hz Continuous Loop (requestAnimationFrame)"]
             RAF[rAF Frame Callback] --> TIME[Compute High-Res Elapsed Time t]
             TIME --> KINEMATICS[calculateHeroCodePosition: Orbital Kinematics]
             TIME --> PHOTOMETRY[calculateStatusLuminance: Harmonic Oscillation]
-            KINEMATICS --> CSS_ORBIT[Direct Host Style: --hero-code-left-x/y, --hero-code-right-x/y]
-            PHOTOMETRY --> CSS_LUM[Direct Host Style: --status-dot-luminance]
+            KINEMATICS --> ORBIT_SIGNALS[Left/right position Signals]
+            ORBIT_SIGNALS --> CSS_ORBIT[Template style bindings: hero-code coordinates]
+            PHOTOMETRY --> LUMINANCE_SIGNAL[statusLuminance Signal]
+            LUMINANCE_SIGNAL --> CSS_LUM[Template style binding: --status-dot-luminance]
         end
     end
 ```
 
-#### A. Discrete 1 Hz Clock Ticker & Keyframe Slide Transitions
+#### A. Discrete 1 Hz Clock Ticker & Per-Instance Transitions
 
 - **Ticker Loop**: Controlled by `CLOCK_UPDATE_INTERVAL_MS = 1000ms`. Every second, the ticker updates the `currentInstant` signal with the current timestamp.
-- **Alternating Slide-and-Fade Transitions**: Flips the boolean signal `isTickAlternate.update((v) => !v)` on each tick. The template binds this state to trigger alternating CSS keyframe animations (`hero-clock-tick-a` and `hero-clock-tick-b`), delivering smooth slide-in and fade-out transitions without layout reflows or DOM recreation.
+- **Clock Transition Choice**: `heroClockTransitionPicker` selects one of `HERO_CLOCK_TRANSITIONS` (`slide-fade`, `opacity-pulse`, or `soft-glow`) once per component instance. Separately, each tick flips `isTickAlternate`, and the template toggles `hero-clock-tick-a` / `hero-clock-tick-b` classes to animate clock updates.
 - **Asia/Bangkok (UTC+7) Availability State Machine**: Evaluates current time using a fixed offset $+7\text{ hours} = 25,200,000\text{ ms}$ (`UTC_PLUS_SEVEN_OFFSET_MS`) to compute candidate availability status:
 
 | Day Type               | Time Window (UTC+7) | Status State  | Semantic Color    | Work Context                  |
@@ -234,7 +260,7 @@ flowchart TD
 
 #### B. Continuous 60/120 Hz Orbital Kinematics & Photometric Pulsation
 
-Driven by `requestAnimationFrame` and executed after initial render (`afterNextRender`), the continuous loop calculates smooth sub-pixel kinematics and photometric luminance without triggering Angular change detection cycles:
+Driven by `requestAnimationFrame` and executed after initial render (`afterNextRender`), the continuous loop updates signal-backed badge coordinates and status luminance; the template binds these values to CSS custom properties:
 
 - **Parametric Circular Orbital Kinematics & Starter Coordinates**:
   The hero code badges orbit continuously around the central avatar along parametric circular paths. At component instantiation, the initial starter coordinates are computed directly from the current Unix epoch timestamp in seconds ($t_{\text{unixStart}} = \text{Date.now()} / 1000$), after which continuous frame callbacks advance position at $t = t_{\text{unixStart}} + t_{\text{elapsed}}$ (where $t_{\text{elapsed}} = (t_{\text{current}} - t_{\text{start}}) / 1000$ via `performance.now()`). With the default phase offsets cancelled to zero ($\phi_{\text{left}} = \phi_{\text{right}} = 0\text{ rad}$), the left badge orbital frequency is scaled by the radius ratio ($r_{\text{right}} / r_{\text{left}}$):
@@ -255,7 +281,7 @@ Driven by `requestAnimationFrame` and executed after initial render (`afterNextR
   The status indicator dot pulses with continuous harmonic luminance:
   $$L(t) = \mathrm{clamp}\left(0.5 + A \cdot \cos(\omega t + \phi), 0, 1\right)$$
   where $A = 0.5$ (`STATUS_LUMINANCE_A`), $f = 0.5\text{ Hz}$ (`STATUS_LUMINANCE_F`, period $T = 2\text{ s}$), $\omega = \pi\text{ rad/s}$ (`STATUS_LUMINANCE_OMEGA`), and $\phi = 0\text{ rad}$ (`STATUS_LUMINANCE_PHI`).
-  The calculated value is written directly to `--status-dot-luminance` on the host element.
+  The calculated value updates the `statusLuminance` signal, which the hero template binds to `--status-dot-luminance` on the status indicator.
 
 - **Lifecycle & Motion Reduction**:
   - Automatically registered via `afterNextRender` and cleaned up in `DestroyRef.onDestroy(() => { clearInterval(clockTimer); cancelAnimationFrame(rafId); })`.
@@ -541,20 +567,25 @@ The portfolio is engineered to meet strict accessibility standards:
 
 ```text
 resume/
+├── .devcontainer/
+│   └── devcontainer.json         # Node.js 22 development container
 ├── .github/                      # GitHub Actions workflows & repository configuration
 │   ├── workflows/
-│   │   ├── firebase-hosting-merge.yml        # CI validation & live Firebase Hosting deployment on merge
-│   │   ├── firebase-hosting-pull-request.yml  # CI validation & PR preview channel deployment
+│   │   ├── CI.yml                            # Pull request format, lint, test, and lockfile checks
 │   │   └── junie-tag.yml                     # Automated Junie AI agent interaction workflow
 │   ├── CODEOWNERS
 │   └── dependabot.yml            # Automated dependency update configuration
-├── public/                       # Reserved static-assets directory
+├── public/
+│   └── opencv/                   # Empty static-assets placeholder
+├── server/                       # Empty server-side placeholder
 ├── scripts/
 │   └── test-runner.mjs           # Vitest execution runner with timeout & diagnostics
 ├── src/
 │   ├── app/
 │   │   ├── helper/               # Fine-grained DI tokens, services, directives, types, and pure functions
 │   │   │   ├── core/             # Core services and API-backed résumé data
+│   │   │   │   ├── api-response.helper.ts    # Unwraps résumé API response envelopes
+│   │   │   │   ├── api-response.helper.spec.ts
 │   │   │   │   ├── favicon.service.ts         # Dynamic browser tab favicon management
 │   │   │   │   ├── favicon.service.spec.ts
 │   │   │   │   ├── resume-data.service.ts     # Aggregates the eight résumé API resources
@@ -565,7 +596,7 @@ resume/
 │   │   │   │   └── image-zome/   # Image zoom hover & touch directive
 │   │   │   │       ├── image-zoom.directive.ts
 │   │   │   │       └── image-zoom.directive.spec.ts
-│   │   │   ├── injection-token/  # 60+ tree-shakable InjectionTokens & math functions
+│   │   │   ├── injection-token/  # 79 exported token/helper declarations
 │   │   │   │   ├── clahe-*.variable.ts    # CLAHE parameters (clip limit, tile target)
 │   │   │   │   ├── downscale-tolerance.variable.ts
 │   │   │   │   ├── initial-image-state.variable.ts
@@ -581,6 +612,9 @@ resume/
 │   │   │   │   ├── status-favicon-for-status-color.function.ts
 │   │   │   │   ├── resume-data-api-base-url.variable.ts # Configurable résumé API base URL
 │   │   │   │   └── ...
+│   │   │   ├── interceptor/      # HTTP interceptors
+│   │   │   │   ├── resume-api-retry.interceptor.ts
+│   │   │   │   └── resume-api-retry.interceptor.spec.ts
 │   │   │   ├── interface/        # Strongly-typed data structures & models
 │   │   │   │   ├── brand-logo/            # Company and technology logo interfaces
 │   │   │   │   ├── candidate/             # Candidate contact and bio schema
@@ -656,6 +690,13 @@ resume/
 │   │   │       ├── summary-section.ts
 │   │   │       ├── summary-section.html
 │   │   │       └── summary-section.scss
+│   │   ├── video-page/           # Fallback page for unmatched routes
+│   │   │   ├── directive/        # Player and main-content host directives
+│   │   │   ├── testing/          # YouTube iframe API test double
+│   │   │   ├── video-page.ts
+│   │   │   ├── video-page.html
+│   │   │   ├── video-page.scss
+│   │   │   └── video-page.spec.ts
 │   │   ├── app.config.ts         # Application configuration & root providers
 │   │   ├── app.html              # Root shell template with splash loader
 │   │   ├── app.routes.ts         # Lazy-loaded application route table
@@ -673,13 +714,11 @@ resume/
 │   └── fixtures/
 │       └── resume-profile.ts       # Synthetic typed profile shared by specs
 ├── .editorconfig
-├── .firebaserc                   # Firebase project target configuration
 ├── .postcssrc.json
 ├── .prettierignore
 ├── .prettierrc
 ├── angular.json                  # Angular CLI workspace & target configuration
 ├── eslint.config.js              # Flat ESLint configuration with Angular-ESLint & TypeScript-ESLint
-├── firebase.json                 # Firebase Hosting configuration & SPA rewrite rules
 ├── package.json                  # Project metadata, dependencies, and npm scripts
 ├── tsconfig.app.json             # TypeScript compiler configuration for application
 ├── tsconfig.json                 # Base TypeScript compiler options
@@ -782,7 +821,7 @@ The `scripts/test-runner.mjs` script acts as a resilient process supervisor and 
 
 ### Test Suite Structure & Coverage Map
 
-The test suite contains **18 test suites** and **230+ unit tests** validating key architectural invariants:
+The test suite contains **31 spec files** and **343 unit tests** validating key architectural invariants:
 
 | Test Suite File                                                                                                                | Scope & Invariants Verified                                                                                                                                                                                                                                       |
 | :----------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -804,16 +843,29 @@ The test suite contains **18 test suites** and **230+ unit tests** validating ke
 | `src/app/resume/resume-page/dialog/resume-pdf-confirm-dialog/resume-pdf-confirm-dialog.spec.ts`                                | Accessible confirmation dialog (`role="alertdialog"`), keyboard focus trapping, and modal dismissal actions.                                                                                                                                                      |
 | `src/app/resume/resume-page/service/resume-pdf/resume-pdf.service.spec.ts`                                                     | HTTP `HEAD` pre-flight verification, chunked `DownloadProgress` byte streaming, and `URL.revokeObjectURL` cleanup.                                                                                                                                                |
 | `src/app/resume/resume-page/resume-page.spec.ts`                                                                               | CDK `ScrollDispatcher` scanline collision detection, Euclidean distance sorting, and single-flight PDF download locking.                                                                                                                                          |
+| `src/app/helper/core/api-response.helper.spec.ts`                                                                              | Full API envelope detection, `data` extraction, and raw-payload fallback.                                                                                                                                                                                         |
+| `src/app/helper/core/resume-data.service.spec.ts`                                                                              | Eight-resource aggregation, profile/logo normalization, loading and error state, progress, and reload behavior.                                                                                                                                                   |
+| `src/app/helper/interceptor/resume-api-retry.interceptor.spec.ts`                                                              | Tagged request filtering, transient error classification, retry limits, backoff, and cache-busting parameters.                                                                                                                                                    |
+| `src/app/helper/injection-token/asset-url-builder.function.spec.ts`                                                            | Configured asset URL construction for files and directories.                                                                                                                                                                                                      |
+| `src/app/helper/injection-token/project_logo_file_name_from_source.function.spec.ts`                                           | Root-relative and trusted-origin project-logo resolution, including rejected URL forms.                                                                                                                                                                           |
+| `src/app/resume/experience-timeline/experience-timeline.spec.ts`                                                               | Experience record rendering, date/location content, and the technology icon list.                                                                                                                                                                                 |
+| `src/app/resume/resume-navigation/online-link-icon/online-link-icon.spec.ts`                                                   | Original/enhanced logo presentation, surface selection, and image-failure fallback behavior.                                                                                                                                                                      |
+| `src/app/resume/summary-section/summary-section.spec.ts`                                                                       | Summary section content rendering and accessible presentation.                                                                                                                                                                                                    |
+| `src/app/resume/education-section/education-section.spec.ts`                                                                   | Education record content, institution artwork, and section rendering.                                                                                                                                                                                             |
+| `src/app/resume/profile-sidebar/profile-sidebar.spec.ts`                                                                       | Profile contact details, online links, and responsive sidebar rendering.                                                                                                                                                                                          |
+| `src/app/video-page/video-page.spec.ts`                                                                                        | Responsive player sizing, iframe attributes, autoplay/focus guards, and accessibility checks.                                                                                                                                                                     |
+| `src/app/video-page/directive/main-content.directive.spec.ts`                                                                  | Main landmark focus target and host-element behavior.                                                                                                                                                                                                             |
+| `src/app/video-page/directive/player-host.directive.spec.ts`                                                                   | Player host element access used for sizing and iframe observation.                                                                                                                                                                                                |
 
 ---
 
 ## Code Commenting & TSDoc Standards
 
-The codebase adheres to rigorous, uniform documentation conventions designed to maintain architectural clarity, convey mathematical foundations, and guarantee deterministic memory hygiene:
+Comments are used selectively to preserve architectural context, explain mathematical behavior, and document lifecycle or platform constraints where those details are not obvious from the code:
 
 ### 1. Architectural Context in JSDoc/TSDoc Block Headers
 
-Every class, service, directive, and major module file begins with a comprehensive TSDoc header detailing its role within the larger application architecture, its reactive dependencies, and its lifecycle guarantees:
+TSDoc headers describe the purpose, contracts, or lifecycle of components and helpers when those details need context; straightforward declarations keep documentation concise:
 
 ```typescript
 /**
@@ -827,7 +879,7 @@ Every class, service, directive, and major module file begins with a comprehensi
 
 ### 2. Multi-Stage Pipeline ASCII Diagrams
 
-Complex asynchronous workflows and image processing pipelines embed structured ASCII diagrams directly within the top-level documentation block to visualize data flow:
+Structured diagrams can help explain complex asynchronous workflows and image-processing pipelines when prose alone obscures the data flow:
 
 ```typescript
 /**
@@ -854,7 +906,7 @@ Complex asynchronous workflows and image processing pipelines embed structured A
 
 ### 3. Mathematical & Physics Algorithmic Formulations
 
-Algorithms governing physical animations, photometry, image processing, and geometry include explicit mathematical formulas (using LaTeX notation and formatted equation blocks) explaining parameter meanings, DC biases, angular velocities, and boundary limits:
+Mathematical formulas (including LaTeX notation and formatted equation blocks) are used where algorithm behavior depends on parameter meanings, angular velocities, or boundary limits:
 
 ```typescript
 /**
@@ -875,7 +927,7 @@ Algorithms governing physical animations, photometry, image processing, and geom
 
 ### 4. `@remarks` Deep-Dive & Architectural Subtlety Blocks
 
-The `@remarks` tag is used on services and directives to elaborate on nuanced technical decisions, platform constraints, and browser quirks:
+The `@remarks` tag provides additional context for nuanced technical decisions, platform constraints, and browser quirks:
 
 ```typescript
 /**
@@ -888,7 +940,7 @@ The `@remarks` tag is used on services and directives to elaborate on nuanced te
 
 ### 5. Deterministic Memory Hygiene & Lifecycle Annotations
 
-Where external WebAssembly runtimes, DOM overlays, synthetic Blob URLs, or long-lived event streams are created, the code explicitly documents cleanup protocols, `finally` block teardowns, and `DestroyRef` lifecycles:
+Comments describe cleanup protocols, `finally` teardowns, and `DestroyRef` lifecycles where resources such as WebAssembly objects, DOM overlays, Blob URLs, or long-lived event streams are created:
 
 ```typescript
 /**
@@ -902,11 +954,15 @@ Where external WebAssembly runtimes, DOM overlays, synthetic Blob URLs, or long-
 
 ### 6. Structured Parameter (`@param`) and Return (`@returns`) Documentation
 
-All public methods, helper functions, and custom injection token factories provide complete parameter typing, physical units (seconds, pixels, RGB color channels), coordinate systems, and explicit return type descriptions.
+Parameter and return documentation is added when a helper's arguments, units, coordinate system, or result contract are not self-evident.
 
 ### 7. Defensive & Privacy Annotations
 
-Inline comments explicitly mark privacy constraints (such as redacting candidate contact numbers), SSR platform guards (`isPlatformBrowser`), and fallback branches ensuring graceful degradation across diverse client environments.
+Inline comments call out privacy constraints, SSR platform guards (`isPlatformBrowser`), and fallback branches when they explain an important boundary or non-obvious choice.
+
+### 8. Rationale Comments for Non-Obvious Control Flow
+
+Comments focus on intent and invariants rather than restating operations. Recent examples explain `VideoPage` focus restoration and iframe observation, `ResumeDataService` identity-preserving logo normalization and aggregate state semantics, trusted-origin logo URL checks, retry backoff and cache-busting, and `OnlineLinkIcon`'s separate original/enhanced image failure paths. The test runner also documents its Vitest failure-block matcher, timeout exit status, and graceful-then-forced process termination.
 
 ---
 
